@@ -1,0 +1,6 @@
+@maria_HostAddress = http://localhost:5119
+
+GET {{maria_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
