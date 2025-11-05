@@ -1,33 +1,37 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\Projects\\Others\\Dot Net\\maria\\",
+  "WorkspaceRootPath": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\projects\\others\\dot net\\maria\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\marinapltqreport\\marinapltqreport-git\\marinapltqreport\\.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|solutionrelative:.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\marinapltqreport\\marinapltqreport-git\\marinapltqreport\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\projects\\others\\dot net\\maria\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\marinapltqreport\\marinapltqreport-git\\marinapltqreport\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\projects\\others\\dot net\\maria\\controllers\\equipmentreportcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\marinapltqreport\\marinapltqreport-git\\marinapltqreport\\controllers\\equipmentreportcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|solutionrelative:controllers\\equipmentreportcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\projects\\others\\dot net\\maria\\dto\\getallreportdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\marinapltqreport\\marinapltqreport-git\\marinapltqreport\\dto\\getallreportdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|solutionrelative:dto\\getallreportdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\projects\\others\\dot net\\maria\\dto\\sitereportdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\marinapltqreport\\marinapltqreport-git\\marinapltqreport\\dto\\sitereportdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|solutionrelative:dto\\sitereportdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\projects\\others\\dot net\\maria\\model\\sitereport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\marinapltqreport\\marinapltqreport-git\\marinapltqreport\\model\\sitereport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|solutionrelative:model\\sitereport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\projects\\others\\dot net\\maria\\model\\report.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|d:\\marinapltqreport\\marinapltqreport-git\\marinapltqreport\\model\\report.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3D5C8910-EA99-4CCC-BBDC-469B440BBAC9}|maria.csproj|solutionrelative:model\\report.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -38,129 +42,53 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 22,
+          "SelectedChildIndex": 0,
           "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:132:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:131:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:134:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:133:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:135:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:136:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:138:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:139:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:137:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:141:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:140:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:142:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:143:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:145:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:144:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:146:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:147:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:148:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": ".gitignore",
+              "DocumentMoniker": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\.gitignore",
+              "RelativeDocumentMoniker": ".gitignore",
+              "ToolTip": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\.gitignore",
+              "RelativeToolTip": ".gitignore",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-05T13:01:24.712Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "Program.cs",
-              "DocumentMoniker": "D:\\Projects\\Others\\Dot Net\\maria\\Program.cs",
+              "DocumentMoniker": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "D:\\Projects\\Others\\Dot Net\\maria\\Program.cs",
+              "ToolTip": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACMAAAAXAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACMAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-03T10:37:59.76Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\Projects\\Others\\Dot Net\\maria\\appsettings.json",
+              "DocumentMoniker": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\appsettings.json",
               "RelativeDocumentMoniker": "appsettings.json",
-              "ToolTip": "D:\\Projects\\Others\\Dot Net\\maria\\appsettings.json",
+              "ToolTip": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\appsettings.json",
               "RelativeToolTip": "appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-11-02T10:32:09.064Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-02T10:32:09.064Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "SiteReportDto.cs",
-              "DocumentMoniker": "D:\\Projects\\Others\\Dot Net\\maria\\Dto\\SiteReportDto.cs",
+              "DocumentMoniker": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\Dto\\SiteReportDto.cs",
               "RelativeDocumentMoniker": "Dto\\SiteReportDto.cs",
-              "ToolTip": "D:\\Projects\\Others\\Dot Net\\maria\\Dto\\SiteReportDto.cs",
+              "ToolTip": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\Dto\\SiteReportDto.cs",
               "RelativeToolTip": "Dto\\SiteReportDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -168,11 +96,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "SiteReport.cs",
-              "DocumentMoniker": "D:\\Projects\\Others\\Dot Net\\maria\\Model\\SiteReport.cs",
+              "DocumentMoniker": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\Model\\SiteReport.cs",
               "RelativeDocumentMoniker": "Model\\SiteReport.cs",
-              "ToolTip": "D:\\Projects\\Others\\Dot Net\\maria\\Model\\SiteReport.cs",
+              "ToolTip": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\Model\\SiteReport.cs",
               "RelativeToolTip": "Model\\SiteReport.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -180,11 +108,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "GetAllReportDto.cs",
-              "DocumentMoniker": "D:\\Projects\\Others\\Dot Net\\maria\\Dto\\GetAllReportDto.cs",
+              "DocumentMoniker": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\Dto\\GetAllReportDto.cs",
               "RelativeDocumentMoniker": "Dto\\GetAllReportDto.cs",
-              "ToolTip": "D:\\Projects\\Others\\Dot Net\\maria\\Dto\\GetAllReportDto.cs",
+              "ToolTip": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\Dto\\GetAllReportDto.cs",
               "RelativeToolTip": "Dto\\GetAllReportDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -192,11 +120,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "EquipmentReportController.cs",
-              "DocumentMoniker": "D:\\Projects\\Others\\Dot Net\\maria\\Controllers\\EquipmentReportController.cs",
+              "DocumentMoniker": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\Controllers\\EquipmentReportController.cs",
               "RelativeDocumentMoniker": "Controllers\\EquipmentReportController.cs",
-              "ToolTip": "D:\\Projects\\Others\\Dot Net\\maria\\Controllers\\EquipmentReportController.cs",
+              "ToolTip": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\Controllers\\EquipmentReportController.cs",
               "RelativeToolTip": "Controllers\\EquipmentReportController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAANMAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -204,11 +132,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "Report.cs",
-              "DocumentMoniker": "D:\\Projects\\Others\\Dot Net\\maria\\Model\\Report.cs",
+              "DocumentMoniker": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\Model\\Report.cs",
               "RelativeDocumentMoniker": "Model\\Report.cs",
-              "ToolTip": "D:\\Projects\\Others\\Dot Net\\maria\\Model\\Report.cs",
+              "ToolTip": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\Model\\Report.cs",
               "RelativeToolTip": "Model\\Report.cs",
               "ViewState": "AgIAABQAAAAAAAAAAAA6wCUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",

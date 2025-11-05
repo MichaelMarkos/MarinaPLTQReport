@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Bmb7mBHOpBo=",
+  "dgSpecHash": "+ACV7c6Y8co=",
   "success": true,
-  "projectFilePath": "D:\\MarinaPLTQReport\\MarinaPLTQReport\\maria.csproj",
+  "projectFilePath": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\maria.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Vetanoia04\\.nuget\\packages\\anglesharp\\1.2.0\\anglesharp.1.2.0.nupkg.sha512",
     "C:\\Users\\Vetanoia04\\.nuget\\packages\\azure.core\\1.35.0\\azure.core.1.35.0.nupkg.sha512",
@@ -100,9 +100,9 @@
       "code": "NU1701",
       "level": "Warning",
       "message": "Package 'OpenXmlPowerTools 4.5.3.2' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net8.0'. This package may not be fully compatible with your project.",
-      "projectPath": "D:\\MarinaPLTQReport\\MarinaPLTQReport\\maria.csproj",
+      "projectPath": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\maria.csproj",
       "warningLevel": 1,
-      "filePath": "D:\\MarinaPLTQReport\\MarinaPLTQReport\\maria.csproj",
+      "filePath": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\maria.csproj",
       "libraryId": "OpenXmlPowerTools",
       "targetGraphs": [
         "net8.0"
@@ -112,9 +112,9 @@
       "code": "NU1701",
       "level": "Warning",
       "message": "Package 'System.Management.Automation.dll 10.0.10586' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net8.0'. This package may not be fully compatible with your project.",
-      "projectPath": "D:\\MarinaPLTQReport\\MarinaPLTQReport\\maria.csproj",
+      "projectPath": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\maria.csproj",
       "warningLevel": 1,
-      "filePath": "D:\\MarinaPLTQReport\\MarinaPLTQReport\\maria.csproj",
+      "filePath": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\maria.csproj",
       "libraryId": "System.Management.Automation.dll",
       "targetGraphs": [
         "net8.0"

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\MarinaPLTQReport\\MarinaPLTQReport\\maria.csproj": {}
+    "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\maria.csproj": {}
   },
   "projects": {
-    "D:\\MarinaPLTQReport\\MarinaPLTQReport\\maria.csproj": {
+    "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\maria.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\MarinaPLTQReport\\MarinaPLTQReport\\maria.csproj",
+        "projectUniqueName": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\maria.csproj",
         "projectName": "maria",
-        "projectPath": "D:\\MarinaPLTQReport\\MarinaPLTQReport\\maria.csproj",
+        "projectPath": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\maria.csproj",
         "packagesPath": "C:\\Users\\Vetanoia04\\.nuget\\packages\\",
-        "outputPath": "D:\\MarinaPLTQReport\\MarinaPLTQReport\\obj\\",
+        "outputPath": "D:\\MarinaPLTQReport\\MarinaPLTQReport-GIT\\MarinaPLTQReport\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
