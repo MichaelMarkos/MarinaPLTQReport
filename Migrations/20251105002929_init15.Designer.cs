@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using maria.Model;
 
@@ -11,9 +12,11 @@ using maria.Model;
 namespace maria.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251105002929_init15")]
+    partial class init15
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,7 +39,7 @@ namespace maria.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CheckingItems", (string)null);
+                    b.ToTable("CheckingItems");
                 });
 
             modelBuilder.Entity("maria.Model.CheckingItemReport", b =>
@@ -73,7 +76,7 @@ namespace maria.Migrations
 
                     b.HasIndex("SiteReportId");
 
-                    b.ToTable("CheckingItemReports", (string)null);
+                    b.ToTable("CheckingItemReports");
                 });
 
             modelBuilder.Entity("maria.Model.DeliveryNote", b =>
@@ -94,7 +97,7 @@ namespace maria.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DeliveryNotes", (string)null);
+                    b.ToTable("DeliveryNotes");
                 });
 
             modelBuilder.Entity("maria.Model.DeliveryNoteReport", b =>
@@ -120,7 +123,7 @@ namespace maria.Migrations
 
                     b.HasIndex("deliveryReportId");
 
-                    b.ToTable("DeliveryNoteReport", (string)null);
+                    b.ToTable("DeliveryNoteReport");
                 });
 
             modelBuilder.Entity("maria.Model.DeliveryReport", b =>
@@ -170,7 +173,7 @@ namespace maria.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DeliveryReport", (string)null);
+                    b.ToTable("DeliveryReport");
                 });
 
             modelBuilder.Entity("maria.Model.Report", b =>
@@ -293,7 +296,7 @@ namespace maria.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Reports", (string)null);
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("maria.Model.ReportImage", b =>
@@ -319,7 +322,7 @@ namespace maria.Migrations
 
                     b.HasIndex("ReportId");
 
-                    b.ToTable("ReportFiles", (string)null);
+                    b.ToTable("ReportFiles");
                 });
 
             modelBuilder.Entity("maria.Model.SiteReport", b =>
@@ -356,7 +359,7 @@ namespace maria.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SiteReports", (string)null);
+                    b.ToTable("SiteReports");
                 });
 
             modelBuilder.Entity("maria.Model.SiteReportImage", b =>
@@ -382,7 +385,7 @@ namespace maria.Migrations
 
                     b.HasIndex("siteReportId");
 
-                    b.ToTable("SiteReportImages", (string)null);
+                    b.ToTable("SiteReportImages");
                 });
 
             modelBuilder.Entity("maria.Model.CheckingItemReport", b =>

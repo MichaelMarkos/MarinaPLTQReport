@@ -16,6 +16,26 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    try
+    {
+        // Check if DB exists and if there are any pending migrations
+        if (dbContext.Database.GetPendingMigrations().Any())
+        {
+            Console.WriteLine("Applying pending migrations...");
+            dbContext.Database.Migrate();
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database migration failed: {ex.Message}");
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

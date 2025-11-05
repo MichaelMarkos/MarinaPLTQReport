@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public DateTime Date { get; set; }
         public string ReportType { get; set; }
+        public long UserId { get; set; } = 1;
         public string? ReportNumber { get; set; }
         public string? InvoiceNumber { get; set; }
         public string CompanyName { get; set; }
@@ -39,6 +40,7 @@
         public string ClientSignaturePath { get; set; }
         public string TechSignaturePath { get; set; }
         public string TechName { get; set; }
+        public string? PhoneNum { get; set; }
         public ICollection<ReportImage> ReportFiles { get; set; } = new List<ReportImage>();
 
     }

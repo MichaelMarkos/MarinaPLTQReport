@@ -11,6 +11,9 @@ namespace maria.Model
         public int SiteReportId { get; set; }
         public string CorrectiveAction   { get; set; }
         public string fault { get; set; }
+
+        public bool CorrectiveActionFlag { get; set; }
+        public bool faultFlag { get; set; }
         public SiteReport siteReport { get; set; }
         public CheckingItem checkingItem { get; set; }
 

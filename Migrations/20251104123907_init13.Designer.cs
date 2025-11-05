@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using maria.Model;
 
@@ -11,9 +12,11 @@ using maria.Model;
 namespace maria.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251104123907_init13")]
+    partial class init13
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,7 +39,7 @@ namespace maria.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CheckingItems", (string)null);
+                    b.ToTable("CheckingItems");
                 });
 
             modelBuilder.Entity("maria.Model.CheckingItemReport", b =>
@@ -73,104 +76,7 @@ namespace maria.Migrations
 
                     b.HasIndex("SiteReportId");
 
-                    b.ToTable("CheckingItemReports", (string)null);
-                });
-
-            modelBuilder.Entity("maria.Model.DeliveryNote", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("DeliveryType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DeliveryNotes", (string)null);
-                });
-
-            modelBuilder.Entity("maria.Model.DeliveryNoteReport", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("deliveryNoteId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("deliveryReportId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("deliveryNoteId");
-
-                    b.HasIndex("deliveryReportId");
-
-                    b.ToTable("DeliveryNoteReport", (string)null);
-                });
-
-            modelBuilder.Entity("maria.Model.DeliveryReport", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClientName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClientSignaturePath")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("InvoiceNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProjectAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ReportNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TechName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TechSignaturePath")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DeliveryReport", (string)null);
+                    b.ToTable("CheckingItemReports");
                 });
 
             modelBuilder.Entity("maria.Model.Report", b =>
@@ -293,7 +199,7 @@ namespace maria.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Reports", (string)null);
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("maria.Model.ReportImage", b =>
@@ -319,7 +225,7 @@ namespace maria.Migrations
 
                     b.HasIndex("ReportId");
 
-                    b.ToTable("ReportFiles", (string)null);
+                    b.ToTable("ReportFiles");
                 });
 
             modelBuilder.Entity("maria.Model.SiteReport", b =>
@@ -356,7 +262,7 @@ namespace maria.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SiteReports", (string)null);
+                    b.ToTable("SiteReports");
                 });
 
             modelBuilder.Entity("maria.Model.SiteReportImage", b =>
@@ -382,7 +288,7 @@ namespace maria.Migrations
 
                     b.HasIndex("siteReportId");
 
-                    b.ToTable("SiteReportImages", (string)null);
+                    b.ToTable("SiteReportImages");
                 });
 
             modelBuilder.Entity("maria.Model.CheckingItemReport", b =>
@@ -402,25 +308,6 @@ namespace maria.Migrations
                     b.Navigation("checkingItem");
 
                     b.Navigation("siteReport");
-                });
-
-            modelBuilder.Entity("maria.Model.DeliveryNoteReport", b =>
-                {
-                    b.HasOne("maria.Model.DeliveryNote", "deliveryNote")
-                        .WithMany("deliveryNoteReport")
-                        .HasForeignKey("deliveryNoteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("maria.Model.DeliveryReport", "deliveryReport")
-                        .WithMany("checkingItemReport")
-                        .HasForeignKey("deliveryReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("deliveryNote");
-
-                    b.Navigation("deliveryReport");
                 });
 
             modelBuilder.Entity("maria.Model.ReportImage", b =>
@@ -446,16 +333,6 @@ namespace maria.Migrations
                 });
 
             modelBuilder.Entity("maria.Model.CheckingItem", b =>
-                {
-                    b.Navigation("checkingItemReport");
-                });
-
-            modelBuilder.Entity("maria.Model.DeliveryNote", b =>
-                {
-                    b.Navigation("deliveryNoteReport");
-                });
-
-            modelBuilder.Entity("maria.Model.DeliveryReport", b =>
                 {
                     b.Navigation("checkingItemReport");
                 });

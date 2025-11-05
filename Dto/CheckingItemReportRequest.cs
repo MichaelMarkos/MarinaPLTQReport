@@ -29,6 +29,8 @@ namespace maria.Dto
         public int CheckingItemId { get; set; }
         public string? Fault { get; set; }
         public string? CorrectiveAction { get; set; }
+        public bool CorrectiveActionFlag { get; set; }
+        public bool faultFlag { get; set; }
     }
 
     public class CheckItemReportFront
