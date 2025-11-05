@@ -10,7 +10,8 @@ namespace maria.Model
         [ForeignKey("deliveryReport")]
         public int deliveryReportId { get; set; }
         public int Quantity { get; set; }
-       
+        public int? UnitValue { get; set; }
+
         public DeliveryReport deliveryReport { get; set; }
         public DeliveryNote deliveryNote { get; set; }
     }
