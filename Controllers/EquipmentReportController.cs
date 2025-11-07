@@ -5,12 +5,14 @@ using maria.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OpenXmlPowerTools;
 using QuestPDF.Drawing;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using System.IO;
+using static maria.Dto.DeliveryReportDetailDto;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -104,6 +106,8 @@ public class EquipmentReportController : ControllerBase
             TechSignaturePath = form["techSignaturePath"],
             ClientName = form["clientName"],
             TechName = form["techName"],
+            UserId = long.Parse(form["userId"]),
+
 
             CreatedAt = DateTime.UtcNow
         };
@@ -191,33 +195,34 @@ public class EquipmentReportController : ControllerBase
     }
 
     [HttpGet("GetAllReports")]
-    public async Task<IActionResult> GetAllReports( long userId , int pageNumber = 1 , int pageSize = 10)
+    public async Task<IActionResult> GetAllReports(long userId , int pageNumber = 1 , int pageSize = 10)
     {
         if(pageNumber<1)
             pageNumber=1;
         if(pageSize<1)
             pageSize=10;
+       
 
         var totalReports = await _db.Reports.CountAsync();
 
         var reports = new List<Report>();
 
-        if (userId > 0)
+        if(userId>0)
         {
-             reports = await _db.Reports
-                .Where(x=>x.UserId == userId)
-                .OrderByDescending(r => r.CreatedAt)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            reports=await _db.Reports
+               .Where(x => x.UserId==userId)
+               .OrderByDescending(r => r.CreatedAt)
+               .Skip((pageNumber-1)*pageSize)
+               .Take(pageSize)
+               .ToListAsync();
         }
         else
         {
-             reports = await _db.Reports
-            .OrderByDescending(r => r.CreatedAt)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+            reports=await _db.Reports
+           .OrderByDescending(r => r.CreatedAt)
+           .Skip((pageNumber-1)*pageSize)
+           .Take(pageSize)
+           .ToListAsync();
         }
 
         var imagesDb = await _db.ReportFiles.ToListAsync();
@@ -330,12 +335,49 @@ public class EquipmentReportController : ControllerBase
                 Item=a.Item ,
                 fault=report.checkingItemReport.Where(x => x.CheckingItemId==a.Id).Select(w => w.fault).FirstOrDefault() ,
                 CorrectiveAction=report.checkingItemReport.Where(x => x.CheckingItemId==a.Id).Select(w => w.CorrectiveAction).FirstOrDefault() ,
+                faultFlag=report.checkingItemReport.Where(x => x.CheckingItemId==a.Id).Select(w => w.faultFlag).FirstOrDefault() ,
+                CorrectiveActionFlag=report.checkingItemReport.Where(x => x.CheckingItemId==a.Id).Select(w => w.CorrectiveActionFlag).FirstOrDefault() ,
 
             }).ToList()
         });
 
 
     }
+
+
+    [HttpGet("GetDeliveryReportDetails/{id}")]
+    public async Task<IActionResult> GetDeliveryReportDetails(int id)
+    {
+        var report = await _db.DeliveryReport
+        .Include(x => x.checkingItemReport).ThenInclude(r=>r.deliveryNote)
+        .FirstOrDefaultAsync(x => x.Id == id);
+
+       // var deliveryNoteDb = await _db.DeliveryNotes.ToListAsync();
+
+        if(report==null)
+            return NotFound();
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+        return Ok(new DeliveryReportDetailDto
+        {
+            CompanyName=report.CompanyName ,
+            ReportNumber=report.ReportNumber ,
+            Date=report.Date ,
+            ClientSignaturePath=report.ClientSignaturePath!=null ? baseUrl+report.ClientSignaturePath : null ,
+            TechSignaturePath=baseUrl+report.TechSignaturePath!=null ? baseUrl+report.TechSignaturePath : null ,
+            checkingItems=report.checkingItemReport.Select(a => new DeliveryItemsDto
+            {
+               Description = a.deliveryNote.Description ,
+               DeliveryType=a.deliveryNote.DeliveryType ,
+               Quantity= a.Quantity,
+               Unit=a.UnitValue != null ? a.UnitValue :null
+            }).ToList()
+        });
+
+
+    }
+
+
 
 
     [HttpGet("DeliveryNote")]
@@ -380,8 +422,12 @@ public class EquipmentReportController : ControllerBase
     {
         try
         {
+            
+         
 
-            var itemsJson = request ["items"];
+
+
+                var itemsJson = request ["items"];
             if(string.IsNullOrEmpty(itemsJson))
                 return BadRequest("No items data received.");
 
@@ -421,6 +467,7 @@ public class EquipmentReportController : ControllerBase
                 CompanyName = request["companyName"],
                 ClientName = request["clientName"],
                 TechName = request["techName"],
+                UserId = long.Parse(request["userId"]),
                 Date = DateTime.TryParse(request["date"], out var parsedDate) ? parsedDate : DateTime.Now
             };
 
@@ -483,7 +530,7 @@ public class EquipmentReportController : ControllerBase
                     //CreatedAt = DateTime.Now,
                     SiteReportId = sitereport.Id
                 };
-                if(string.IsNullOrEmpty(item.Fault)&&string.IsNullOrEmpty(item.CorrectiveAction)&& item.faultFlag==false &&item.CorrectiveActionFlag == item.faultFlag == false) 
+                if(string.IsNullOrEmpty(item.Fault)&&string.IsNullOrEmpty(item.CorrectiveAction)&&item.faultFlag==false&&item.CorrectiveActionFlag==item.faultFlag==false)
                     continue;
 
                 _db.CheckingItemReports.Add(report);
@@ -503,154 +550,422 @@ public class EquipmentReportController : ControllerBase
         }
     }
 
+    [HttpPost("DeliveryNoteReportList")]
+    public async Task<IActionResult> DeliveryNoteReportList([FromForm] IFormCollection request)
+    {
+        try
+        {
+            var currentYear = DateTime.Now.Year.ToString();
 
-//    [HttpPost("DeliveryNoteReportList")]
-//    public async Task<IActionResult> DeliveryNoteReportList([FromForm] IFormCollection request)
-//    {
-//        try
-//        {
-
-//            var itemsJson = request["items"];
-//            if (string.IsNullOrEmpty(itemsJson))
-//                return BadRequest("No items data received.");
-
-
-//            // var Items = System.Text.Json.JsonSerializer.Deserialize<List<CheckingItemDto>>(itemsJson)!;
-
-
-//            var Items = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>(
-//    itemsJson,
-//    new System.Text.Json.JsonSerializerOptions
-//    {
-//        PropertyNameCaseInsensitive = true
-//    }
-//)!;
-
-
-
-
-//            var itemsJson1 = request["items1"];
-//            if (string.IsNullOrEmpty(itemsJson))
-//                return BadRequest("No items data received.");
-//            var Items1 = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>(
-//   itemsJson1,
-//   new System.Text.Json.JsonSerializerOptions
-//   {
-//       PropertyNameCaseInsensitive = true
-//   }
-//)!;
+            var lastReport = _db.Reports
+            .Where(r => r.ReportNumber.StartsWith(currentYear + "/"))
+            .OrderByDescending(r => r.ReportNumber)
+            .FirstOrDefault();
+            int nextNumber = 1;
+            if(lastReport!=null)
+            {
+                var parts = lastReport.ReportNumber.Split('/');
+                if(parts.Length==2&&int.TryParse(parts [1] , out int lastNum))
+                {
+                    nextNumber=lastNum+1;
+                }
+            }
+            var newReportNumber = $"{currentYear}/{nextNumber}";
 
 
 
 
-
-//            string uploadRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "UploadSiteReport");
-
-//            if (!Directory.Exists(uploadRoot))
-//                Directory.CreateDirectory(uploadRoot);
-
-//            // حفظ الصور
-
-//            // ✅ حفظ الصور
+            var itemsJson = request["items"];
+            if(string.IsNullOrEmpty(itemsJson))
+                return BadRequest("No items data received.");
 
 
+            // var Items = System.Text.Json.JsonSerializer.Deserialize<List<CheckingItemDto>>(itemsJson)!;
 
 
-
-//            // حفظ التواقيع
-//            string? clientSignaturePath = null;
-//            string? techSignaturePath = null;
-//            var clientSig = request.Files.FirstOrDefault(f => f.Name == "clientSignature");
-//            var techSig = request.Files.FirstOrDefault(f => f.Name == "techSignature");
-
-//            var sitereport = new SiteReport
-//            {
-//                CompanyName = request["companyName"],
-//                ClientName = request["clientName"],
-//                TechName = request["techName"],
-//                Date = DateTime.TryParse(request["date"], out var parsedDate) ? parsedDate : DateTime.Now
-//            };
-
-//            if (clientSig != null)
-//            {
-//                string fileName = $"client_{Guid.NewGuid()}.png";
-//                string fullPath = Path.Combine(uploadRoot, fileName);
-//                using (var stream = new FileStream(fullPath, FileMode.Create))
-//                    await clientSig.CopyToAsync(stream);
-//                clientSignaturePath = $"/UploadSiteReport/{fileName}";
-//                sitereport.ClientSignaturePath = clientSignaturePath;
-//            }
-
-//            if (techSig != null)
-//            {
-//                string fileName = $"tech_{Guid.NewGuid()}.png";
-//                string fullPath = Path.Combine(uploadRoot, fileName);
-//                using (var stream = new FileStream(fullPath, FileMode.Create))
-//                    await techSig.CopyToAsync(stream);
-//                techSignaturePath = $"/UploadSiteReport/{fileName}";
-//                sitereport.TechSignaturePath = techSignaturePath;
-//            }
-
-
-//            _db.SiteReports.Add(sitereport);
-//            await _db.SaveChangesAsync();
-
-//            List<string> imagePaths = new List<string>();
-//            foreach (var file in request.Files.Where(f => f.Name == "images"))
-//            {
-//                string fileName = $"{Guid.NewGuid()}_{file.FileName}";
-//                string fullPath = Path.Combine(uploadRoot, fileName);
-//                using (var stream = new FileStream(fullPath, FileMode.Create))
-//                    await file.CopyToAsync(stream);
-//                imagePaths.Add($"/UploadSiteReport/{fileName}");
-//                _db.SiteReportImages.Add(new SiteReportImage
-//                {
-//                    siteReportId = sitereport.Id,
-//                    FileName = fileName,
-//                    FilePath = fullPath
-
-//                });
-//                await _db.SaveChangesAsync();
-
-//            }
+            var Items = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>(
+    itemsJson,
+    new System.Text.Json.JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true
+    }
+)!;
 
 
 
 
-//            // تحويل العناصر القادمة من JSON إلى كائنات
-//            foreach (var item in Items)
-//            {
-//                var report = new CheckingItemReport
-//                {
-//                    CheckingItemId = item.CheckingItemId,
-//                    fault = item.Fault,
-//                    CorrectiveAction = item.CorrectiveAction,
-//                    faultFlag = item.faultFlag,
-//                    CorrectiveActionFlag = item.CorrectiveActionFlag,
-//                    //CreatedAt = DateTime.Now,
-//                    SiteReportId = sitereport.Id
-//                };
-//                if (string.IsNullOrEmpty(item.Fault) && string.IsNullOrEmpty(item.CorrectiveAction) && item.faultFlag == false && item.CorrectiveActionFlag)
-//                    continue;
+            var itemsJson1 = request["items1"];
+            if(string.IsNullOrEmpty(itemsJson1))
+                return BadRequest("No items data received.");
+            var Items1 = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>( itemsJson1, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }
+)!;
 
-//                _db.CheckingItemReports.Add(report);
-//            }
+            var itemsJson2 = request["items2"];
+            if(string.IsNullOrEmpty(itemsJson2))
+                return BadRequest("No items data received.");
+            var Items2 = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>( itemsJson2, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }
+)!;
 
-//            await _db.SaveChangesAsync();
+            var itemsJson3 = request["items3"];
+            if(string.IsNullOrEmpty(itemsJson3))
+                return BadRequest("No items data received.");
+            var Items3 = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>( itemsJson3, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }
+)!;
 
-//            return Ok(new
-//            {
-//                message = "✅ تم حفظ البيانات والتواقيع بنجاح",
-//                imagePaths
-//            });
-//        }
-//        catch (Exception ex)
-//        {
-//            return StatusCode(500, ex.Message);
-//        }
-//    }
+            var itemsJson4 = request["items4"];
+            if(string.IsNullOrEmpty(itemsJson4))
+                return BadRequest("No items data received.");
+            var Items4 = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>( itemsJson4, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }
+)!;
 
 
+            var itemsJson5 = request["items5"];
+            if(string.IsNullOrEmpty(itemsJson5))
+                return BadRequest("No items data received.");
+            var Items5 = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>( itemsJson5, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }
+)!;
+
+            string uploadRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "UploadSiteReport");
+
+            if(!Directory.Exists(uploadRoot))
+                Directory.CreateDirectory(uploadRoot);
+
+            // حفظ الصور
+
+            // ✅ حفظ الصور
+
+
+
+
+
+            // حفظ التواقيع
+            string? clientSignaturePath = null;
+            string? techSignaturePath = null;
+            var clientSig = request.Files.FirstOrDefault(f => f.Name == "clientSignature");
+            var techSig = request.Files.FirstOrDefault(f => f.Name == "techSignature");
+
+            var deliveryreport = new DeliveryReport
+            {
+                CompanyName = request["companyName"],
+                ClientName = request["clientName"],
+                TechName = request["techName"],
+                Date = DateTime.TryParse(request["date"], out var parsedDate) ? parsedDate : DateTime.Now,
+                PhoneNum = request["phoneNum"],
+                Notes = request["notes"],
+                ReportNumber = newReportNumber,
+                UserId = long.Parse(request["userId"]),
+            };
+
+            if(clientSig!=null)
+            {
+                string fileName = $"client_{Guid.NewGuid()}.png";
+                string fullPath = Path.Combine(uploadRoot, fileName);
+                using(var stream = new FileStream(fullPath , FileMode.Create))
+                    await clientSig.CopyToAsync(stream);
+                clientSignaturePath=$"/UploadSiteReport/{fileName}";
+                deliveryreport.ClientSignaturePath=clientSignaturePath;
+            }
+
+            if(techSig!=null)
+            {
+                string fileName = $"tech_{Guid.NewGuid()}.png";
+                string fullPath = Path.Combine(uploadRoot, fileName);
+                using(var stream = new FileStream(fullPath , FileMode.Create))
+                    await techSig.CopyToAsync(stream);
+                techSignaturePath=$"/UploadSiteReport/{fileName}";
+                deliveryreport.TechSignaturePath=techSignaturePath;
+            }
+
+
+            _db.DeliveryReport.Add(deliveryreport);
+            await _db.SaveChangesAsync();
+
+            List<string> imagePaths = new List<string>();
+            foreach(var file in request.Files.Where(f => f.Name=="images"))
+            {
+                string fileName = $"{Guid.NewGuid()}_{file.FileName}";
+                string fullPath = Path.Combine(uploadRoot, fileName);
+                using(var stream = new FileStream(fullPath , FileMode.Create))
+                    await file.CopyToAsync(stream);
+                imagePaths.Add($"/UploadSiteReport/{fileName}");
+                _db.DelivryReportImages.Add(new DelivryReportImage
+                {
+                    deliveryReportId=deliveryreport.Id ,
+                    FileName=fileName ,
+                    FilePath=fullPath
+
+                });
+                await _db.SaveChangesAsync();
+
+            }
+
+
+
+
+            foreach(var item in Items)
+            {
+                if(item.quantity=="0"||item.checkingItemId==0)
+                    continue;
+
+                var report = new DeliveryNoteReport
+                {
+                    deliveryNoteId = item.checkingItemId,
+                    Quantity = int.Parse( item.quantity),
+                    deliveryReportId = deliveryreport.Id,
+
+                };
+
+
+                _db.DeliveryNoteReport.Add(report);
+            }
+
+            foreach(var item in Items1)
+            {
+                if(item.quantity=="0"||item.checkingItemId==0)
+                    continue;
+
+                var report = new DeliveryNoteReport
+                {
+                    deliveryNoteId = item.checkingItemId,
+                    Quantity = int.Parse( item.quantity),
+                    deliveryReportId = deliveryreport.Id,
+
+                };
+
+
+                _db.DeliveryNoteReport.Add(report);
+            }
+            foreach(var item in Items2)
+            {
+                if(item.quantity=="0"||item.checkingItemId==0)
+                    continue;
+
+                var report = new DeliveryNoteReport
+                {
+                    deliveryNoteId = item.checkingItemId,
+                    Quantity = int.Parse( item.quantity),
+                    deliveryReportId = deliveryreport.Id,
+
+                };
+
+
+                _db.DeliveryNoteReport.Add(report);
+            }
+            foreach(var item in Items3)
+            {
+                if(item.quantity=="0"||item.checkingItemId==0)
+                    continue;
+
+                var report = new DeliveryNoteReport
+                {
+                    deliveryNoteId =item.checkingItemId,
+                    Quantity = int.Parse( item.quantity),
+                    deliveryReportId = deliveryreport.Id,
+
+                };
+
+
+                _db.DeliveryNoteReport.Add(report);
+            }
+            foreach(var item in Items4)
+            {
+                if(item.quantity=="0"||item.checkingItemId==0)
+                    continue;
+
+                var report = new DeliveryNoteReport
+                {
+                    deliveryNoteId = item.checkingItemId,
+                    Quantity = int.Parse( item.quantity),
+                    deliveryReportId = deliveryreport.Id,
+                    UnitValue = !string.IsNullOrEmpty(item.unit) ? int.Parse(item.unit) : null
+                };
+
+
+                _db.DeliveryNoteReport.Add(report);
+            }
+            foreach(var item in Items5)
+            {
+                if(item.quantity=="0"||item.checkingItemId==0)
+                    continue;
+
+                var report = new DeliveryNoteReport
+                {
+                    deliveryNoteId = item.checkingItemId,
+                    Quantity = int.Parse( item.quantity),
+                    deliveryReportId = deliveryreport.Id,
+                    UnitValue = !string.IsNullOrEmpty(item.unit) ? int.Parse(item.unit) : null
+
+                };
+
+
+                _db.DeliveryNoteReport.Add(report);
+            }
+
+
+            var scissorliftsJson= request["scissorliftsList"];
+
+            var scissorlifts = System.Text.Json.JsonSerializer.Deserialize<List<scissorliftsDto>>( scissorliftsJson, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            if(scissorlifts.Count>0)
+            {
+                foreach(var item in scissorlifts)
+                {
+                    var newDeliveryNote =  _db.DeliveryNotes.Add(new DeliveryNote
+                    {
+                        Description=item.model+" / "+item.heightModel ,
+                        DeliveryType="Scissor lifts",
+                        OptionalFlag = true
+                    });
+                    await _db.SaveChangesAsync();
+
+                    var report = _db.DeliveryNoteReport.Add( new DeliveryNoteReport
+                    {
+                        deliveryNoteId = newDeliveryNote.Entity.Id ,
+                        Quantity = int.Parse( item.quantity),
+                        deliveryReportId = deliveryreport.Id,
+
+                    });
+
+                }
+            }
+
+
+
+            var manliftListJson= request["manliftList"];
+
+            var manliftList = System.Text.Json.JsonSerializer.Deserialize<List<scissorliftsDto>>( manliftListJson, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            if(manliftList.Count>0)
+            {
+                foreach(var item in manliftList)
+                {
+                    var newDeliveryNote =  _db.DeliveryNotes.Add(new DeliveryNote
+                    {
+                        Description=item.model+" / "+item.heightModel ,
+                        DeliveryType="Man lifts",
+                        OptionalFlag = true
+
+                    });
+                    await _db.SaveChangesAsync();
+
+                    var report =_db.DeliveryNoteReport.Add( new DeliveryNoteReport
+                    {
+                        deliveryNoteId = newDeliveryNote.Entity.Id ,
+                        Quantity = int.Parse( item.quantity),
+                        deliveryReportId = deliveryreport.Id,
+
+                    });
+
+                }
+            }
+
+
+
+
+
+            var productListJson= request["productList"];
+
+            var productList = System.Text.Json.JsonSerializer.Deserialize<List<productListDto>>( productListJson, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            if(productList.Count>0)
+            {
+                foreach(var item in productList)
+                {
+                    var newDeliveryNote =  _db.DeliveryNotes.Add(new DeliveryNote
+                    {
+                        Description=item.description ,
+                        DeliveryType="Other Products",
+                        OptionalFlag = true
+
+                    });
+                    await _db.SaveChangesAsync();
+
+                    var report = _db.DeliveryNoteReport.Add( new DeliveryNoteReport
+                    {
+                        deliveryNoteId = newDeliveryNote.Entity.Id ,
+                        Quantity = int.Parse( item.quantity),
+                        deliveryReportId = deliveryreport.Id,
+
+                    });
+
+                }
+            }
+
+
+
+
+
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "✅ تم حفظ البيانات والتواقيع بنجاح" ,
+                imagePaths
+            });
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(500 , ex.Message);
+        }
+    }
+
+
+    [HttpGet("GetPagedDeliveryReports")]
+    public async Task<IActionResult> GetPagedDeliveryReports(int page = 1 , int pageSize = 5)
+    {
+        var query = _db.DeliveryReport
+        .Include(x => x.checkingItemReport)
+        .OrderByDescending(x => x.Date);
+
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+        int totalCount = await query.CountAsync();
+        var reports = await query
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .Select(x => new DeliveryReportListDto
+        {
+            Id = x.Id,
+            CompanyName = x.CompanyName,
+            Date = x.Date,
+            ClientSignaturePath = baseUrl + x.ClientSignaturePath,
+            TechSignaturePath = baseUrl + x.TechSignaturePath,
+            DelveryNoteCount = x.checkingItemReport.Count,
+            PhoneNum = x.PhoneNum,
+            Notes = x.Notes
+        })
+        .ToListAsync();
+
+        return Ok(new
+        {
+            totalCount ,
+            page ,
+            pageSize ,
+            totalPages = (int)Math.Ceiling(totalCount/(double)pageSize) ,
+            reports
+        });
+    }
     [HttpGet("pdf")]
     public IActionResult GetReportPdf11()
     {
@@ -1076,7 +1391,7 @@ public class EquipmentReportController : ControllerBase
     [HttpGet("GetReportPdf")]
     public IActionResult GetReportPdf(int Id)
     {
-        QuestPDF.Settings.License = LicenseType.Community;
+        QuestPDF.Settings.License=LicenseType.Community;
 
         var fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fonts", "Cairo-Regular.ttf");
         FontManager.RegisterFont(System.IO.File.OpenRead(fontPath));
@@ -1094,18 +1409,18 @@ public class EquipmentReportController : ControllerBase
         var techImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", techPath);
 
         byte[] techImage = Array.Empty<byte>();
-        if (System.IO.File.Exists(techImagePath))
+        if(System.IO.File.Exists(techImagePath))
         {
-            techImage = System.IO.File.ReadAllBytes(techImagePath);
+            techImage=System.IO.File.ReadAllBytes(techImagePath);
         }
 
         var clientPath = reportDb.ClientSignaturePath?.TrimStart('/');
         var clientImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", clientPath);
 
         byte[] clientImage = Array.Empty<byte>();
-        if (System.IO.File.Exists(clientImagePath))
+        if(System.IO.File.Exists(clientImagePath))
         {
-            clientImage = System.IO.File.ReadAllBytes(clientImagePath);
+            clientImage=System.IO.File.ReadAllBytes(clientImagePath);
         }
 
 
@@ -1340,7 +1655,7 @@ public class EquipmentReportController : ControllerBase
         });
 
         var pdf = document.GeneratePdf();
-        return File(pdf, "application/pdf", "report.pdf");
+        return File(pdf , "application/pdf" , "report.pdf");
     }
     private static string ConvertSparePartsToString(string? json)
     {

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using maria.Model;
 
@@ -11,9 +12,11 @@ using maria.Model;
 namespace maria.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251106133203_OptionalFlag")]
+    partial class OptionalFlag
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -183,32 +186,6 @@ namespace maria.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DeliveryReport");
-                });
-
-            modelBuilder.Entity("maria.Model.DelivryReportImage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("deliveryReportId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("deliveryReportId");
-
-                    b.ToTable("DelivryReportImages");
                 });
 
             modelBuilder.Entity("maria.Model.Report", b =>
@@ -459,17 +436,6 @@ namespace maria.Migrations
                     b.Navigation("deliveryNote");
 
                     b.Navigation("deliveryReport");
-                });
-
-            modelBuilder.Entity("maria.Model.DelivryReportImage", b =>
-                {
-                    b.HasOne("maria.Model.DeliveryReport", "deliveryReports")
-                        .WithMany()
-                        .HasForeignKey("deliveryReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("deliveryReports");
                 });
 
             modelBuilder.Entity("maria.Model.ReportImage", b =>

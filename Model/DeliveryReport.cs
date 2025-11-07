@@ -15,6 +15,7 @@
         public string? ProjectAddress { get; set; }
         public string ClientName { get; set; }
         public string TechName { get; set; }
+        public string? PhoneNum { get; set; }
 
         public ICollection<DeliveryNoteReport> checkingItemReport { get; set; } = new List<DeliveryNoteReport>();
     }

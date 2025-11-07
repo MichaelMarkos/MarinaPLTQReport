@@ -18,5 +18,7 @@ namespace maria.Dto
         public string Item { get; set; }
         public string? CorrectiveAction { get; set; }
         public string? fault { get; set; }
+        public bool CorrectiveActionFlag { get; set; }
+        public bool faultFlag { get; set; }
     }
 }
