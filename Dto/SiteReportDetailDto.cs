@@ -20,5 +20,6 @@ namespace maria.Dto
         public string? fault { get; set; }
         public bool CorrectiveActionFlag { get; set; }
         public bool faultFlag { get; set; }
+        public bool Review { get; set; }
     }
 }

@@ -48,7 +48,7 @@ public class EquipmentReportController : ControllerBase
     public async Task<IActionResult> PostReport()
     {
         var form = await Request.ReadFormAsync();
-        var currentYear = DateTime.Now.Year.ToString();
+        var currentYear = DateTime.Now.Year.ToString().Substring(2);
 
         // ابحث عن آخر تقرير في نفس السنة
         var lastReport = _db.Reports
@@ -64,7 +64,7 @@ public class EquipmentReportController : ControllerBase
                 nextNumber=lastNum+1;
             }
         }
-        var newReportNumber = $"{currentYear}/{nextNumber}";
+        var newReportNumber = $"{currentYear}/{nextNumber:D3}";
 
         var report = new Report
         {
@@ -334,23 +334,29 @@ public class EquipmentReportController : ControllerBase
             return NotFound();
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
-        return Ok(new SiteReportDetailDto
-        {
+        var result = new SiteReportDetailDto{
             CompanyName=report.CompanyName ,
             Date=report.Date ,
             ClientSignaturePath=report.ClientSignaturePath!=null ? baseUrl+report.ClientSignaturePath : null ,
             TechSignaturePath=baseUrl+report.TechSignaturePath!=null ? baseUrl+report.TechSignaturePath : null ,
-            checkingItems=checkItemDb.Select(a => new CheckingItemsDto
+            checkingItems=checkItemDb.Select(a =>
             {
-                Item=a.Item ,
-                fault=report.checkingItemReport.Where(x => x.CheckingItemId==a.Id).Select(w => w.fault).FirstOrDefault() ,
-                CorrectiveAction=report.checkingItemReport.Where(x => x.CheckingItemId==a.Id).Select(w => w.CorrectiveAction).FirstOrDefault() ,
-                faultFlag=report.checkingItemReport.Where(x => x.CheckingItemId==a.Id).Select(w => w.faultFlag).FirstOrDefault() ,
-                CorrectiveActionFlag=report.checkingItemReport.Where(x => x.CheckingItemId==a.Id).Select(w => w.CorrectiveActionFlag).FirstOrDefault() ,
 
+                var reportItem = report.checkingItemReport.Where(x => x.CheckingItemId==a.Id).FirstOrDefault();
+
+
+                return new CheckingItemsDto
+                {
+                    Item=a.Item ,
+                    fault=reportItem?.fault ,
+                    CorrectiveAction=reportItem?.CorrectiveAction ,
+                    faultFlag=reportItem?.faultFlag??false ,
+                    CorrectiveActionFlag=reportItem?.CorrectiveActionFlag??false ,
+                    Review=!(reportItem?.faultFlag??false)&&!(reportItem?.CorrectiveActionFlag??false)
+                };
             }).ToList()
-        });
-
+        };
+        return Ok(result);
 
     }
 
@@ -1010,7 +1016,7 @@ public class EquipmentReportController : ControllerBase
             reports
         });
     }
-   
+
 
     [HttpGet("pdf22")]
     public IActionResult GetReportPdf22()
@@ -1924,22 +1930,23 @@ public class EquipmentReportController : ControllerBase
         }
 
         var checkItemDb =  _db.CheckingItems.ToList();
-        var checkingItems = checkItemDb.Select(a => new
+        var  checkingItems=checkItemDb.Select(a =>
         {
-            Item = a.Item,
-            fault =SiteReportDb?.checkingItemReport
-                     .Where(x => x.CheckingItemId == a.Id)
-                     .Select(w => w.fault).FirstOrDefault(),
-            CorrectiveAction = SiteReportDb?.checkingItemReport
-                     .Where(x => x.CheckingItemId == a.Id)
-                     .Select(w => w.CorrectiveAction).FirstOrDefault(),
-            faultFlag = SiteReportDb?.checkingItemReport
-                     .Where(x => x.CheckingItemId == a.Id)
-                     .Select(w => w.faultFlag).FirstOrDefault(),
-            CorrectiveActionFlag = SiteReportDb?.checkingItemReport
-                     .Where(x => x.CheckingItemId == a.Id)
-                     .Select(w => w.CorrectiveActionFlag).FirstOrDefault(),
-        }).ToList();
+
+            var reportItem = SiteReportDb.checkingItemReport.Where(x => x.CheckingItemId==a.Id).FirstOrDefault();
+
+
+            return new CheckingItemsDto
+            {
+                Item=a.Item ,
+                fault=reportItem?.fault ,
+                CorrectiveAction=reportItem?.CorrectiveAction ,
+                faultFlag=reportItem?.faultFlag??false ,
+                CorrectiveActionFlag=reportItem?.CorrectiveActionFlag??false ,
+                Review=!(reportItem?.faultFlag??false)&&!(reportItem?.CorrectiveActionFlag??false)
+            };
+        }).ToList() ;
+       
 
 
 
@@ -1947,7 +1954,7 @@ public class EquipmentReportController : ControllerBase
 
 
 
-        var document = Document.Create(container =>
+    var document = Document.Create(container =>
         {
             container.Page(page =>
             {
@@ -2012,16 +2019,18 @@ public class EquipmentReportController : ControllerBase
                             table.ColumnsDefinition(columns =>
                             {
                                 columns.RelativeColumn(60);
-                                columns.RelativeColumn(10);
-                                columns.RelativeColumn(10);
-                                columns.RelativeColumn(10);
-                                columns.RelativeColumn(10);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
                             });
 
                             // ===== هيدر الجدول =====
                             table.Header(header =>
                             {
                                 header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Items").FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Review").FontFamily("Cairo").Bold();
                                 header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault").FontFamily("Cairo").Bold();
                                 header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective").FontFamily("Cairo").Bold();
                                 header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault").FontFamily("Cairo").Bold();
@@ -2033,16 +2042,22 @@ public class EquipmentReportController : ControllerBase
                              .Text(item.Item ).FontFamily("Cairo").FontSize(9);
 
                                 table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                             .Text(item.Review == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                             .Text(item.faultFlag == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                             .Text(item.CorrectiveActionFlag == true ? "✔" : "  ").FontFamily("Cairo").FontSize(9);
+
+
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
                              .Text(item.fault ?? "-").FontFamily("Cairo").FontSize(9);
                                 table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
                              .Text(item.CorrectiveAction ?? "-").FontFamily("Cairo").FontSize(9);
 
-                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
-                             .Text(item.faultFlag == true ? "✔" : "✖").FontFamily("Cairo").FontSize(10);
-
-                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
-                             .Text(item.CorrectiveActionFlag == true ? "✔" : "✖").FontFamily("Cairo").FontSize(9);
-
+                             
 
                             }
 
@@ -2188,7 +2203,7 @@ public class EquipmentReportController : ControllerBase
             return NotFound();
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
-      var DeliveryReport = new DeliveryReportDetailDto
+        var DeliveryReport = new DeliveryReportDetailDto
         {
             CompanyName=DeliveryReportDb.CompanyName ,
             ReportNumber=DeliveryReportDb.ReportNumber ,
@@ -2236,7 +2251,7 @@ public class EquipmentReportController : ControllerBase
             clientImage=System.IO.File.ReadAllBytes(clientImagePath);
         }
 
-       
+
 
         var document = Document.Create(container =>
         {
@@ -2329,7 +2344,7 @@ public class EquipmentReportController : ControllerBase
                                 table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
                              .Text(item.Unit ).FontFamily("Cairo").FontSize(10);
 
-                                
+
 
                             }
 
