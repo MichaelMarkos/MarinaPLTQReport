@@ -12,5 +12,7 @@
         public int DelveryNoteCount { get; set; }
         public string? PhoneNum { get; set; }
         public string Notes { get; set; }
+        public string? ReportNumber { get; set; }
+
     }
 }
