@@ -45,4 +45,11 @@ namespace maria.Dto
         public string? TechSignaturePath { get; set; }
     }
 
+
+    public class SafteyItemDto
+    {
+        public int SafetyItemId { get; set; }
+        public string? CorrectiveAction { get; set; }
+        public bool faultFlag { get; set; }
+    }
 }

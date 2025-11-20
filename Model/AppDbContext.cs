@@ -16,6 +16,13 @@ namespace maria.Model
         public DbSet<DeliveryReport> DeliveryReport { get; set; }
         public DbSet<DeliveryNoteReport> DeliveryNoteReport { get; set; }
         public DbSet<DelivryReportImage> DelivryReportImages { get; set; }
+        public DbSet<Elevator> Elevator { get; set; }
+        public DbSet<ElevatorImage> ElevatorImage { get; set; }
+
+        public DbSet<SafetyItems> SafetyItems { get; set; }
+        public DbSet<SafetyReport> SafetyReport { get; set; }
+        public DbSet<SafetyItemsReport> SafetyItemsReport { get; set; }
+        public DbSet<SafetyReportImage> SafetyReportImage { get; set; }
 
     }
 }

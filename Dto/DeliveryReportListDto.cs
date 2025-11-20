@@ -13,6 +13,7 @@
         public string? PhoneNum { get; set; }
         public string Notes { get; set; }
         public string? ReportNumber { get; set; }
+        public List<string>? Images { get; set; }
 
     }
 }

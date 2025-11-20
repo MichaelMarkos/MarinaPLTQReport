@@ -7,11 +7,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using QuestPDF.Drawing;
 using QuestPDF.Fluent;
+using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using System.Net.Http;
+
+using Svg.FilterEffects;
+using System;
 using System.IO;
 using static maria.Dto.DeliveryReportDetailDto;
-using QuestPDF.Fluent;
+using static System.Net.Mime.MediaTypeNames;
+using System.Threading.Tasks;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -166,6 +172,127 @@ public class EquipmentReportController : ControllerBase
         return Ok(new { success = true , report.Id , message = "Report saved successfully." });
     }
 
+    [HttpPost("PostElevatorReport")]
+    [RequestSizeLimit(20_000_000)] // 20 MB
+    public async Task<IActionResult> PostElevatorReport()
+    {
+        var form = await Request.ReadFormAsync();
+        var currentYear = DateTime.Now.Year.ToString().Substring(2);
+
+        // ابحث عن آخر تقرير في نفس السنة
+        var lastReport = _db.Elevator
+            .Where(r => r.ReportNumber.StartsWith(currentYear + "/"))
+            .OrderByDescending(r => r.ReportNumber)
+            .FirstOrDefault();
+        int nextNumber = 1;
+        if(lastReport!=null)
+        {
+            var parts = lastReport.ReportNumber.Split('/');
+            if(parts.Length==2&&int.TryParse(parts [1] , out int lastNum))
+            {
+                nextNumber=lastNum+1;
+            }
+        }
+        var newReportNumber = $"{currentYear}/{nextNumber:D3}";
+
+        var report = new Elevator
+        {
+            // Basic Info
+            Date = DateTime.TryParse(form["date"], out var parsedDate) ? parsedDate : DateTime.UtcNow,
+            ReportNumber = newReportNumber,            //InvoiceNumber = form["invoiceNumber"],
+            CompanyName = form["companyName"],
+            ProjectAddress = GetFormValueOrDefault(form, "projectAddress"),
+            widthShape = int.TryParse(form["width"], out var width) ? width : 0,
+            heightShape = int.TryParse(form["height"], out var height) ? height : 0,
+            radiusShape = int.TryParse(form["radius"], out var radius) ? radius : 0,
+            directionShape = int.TryParse(form["direction"], out var direction) ? direction : 0,
+            floors = int.TryParse(form["floors"], out var floors) ? floors : 0,
+            foundationHeight = int.TryParse(form["foundationHeight"], out var foundationHeight) ? foundationHeight : 0,
+            resizableSquarewidth = int.TryParse(form["resizableSquarewidth"], out var resizableSquarewidth) ? resizableSquarewidth : 0,
+            resizableSquareHeight = int.TryParse(form["resizableSquareHeight"], out var resizableSquareHeight) ? resizableSquareHeight : 0,
+
+            floorHeights = form["floorHeights"],
+            shapeType = form["shapeType"],
+            typeElevator = form["typeElevator"],
+            workRequied = form["workRequied"],
+            doorDirections = form["doorDirections"],
+            Notes = form["notes"],
+            PhoneNum = form["phoneNum"],
+            // Signatures (paths to be saved after upload)
+            ClientSignaturePath = form["clientSignaturePath"],
+            TechSignaturePath = form["techSignaturePath"],
+            ClientName = form["clientName"],
+            TechName = form["techName"],
+            UserId = long.Parse(form["userId"]),
+
+
+            CreatedAt = DateTime.UtcNow
+        };
+
+
+        // حفظ التوقيعات والصور في مجلد
+        string uploadRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "elevator");
+
+        if(!Directory.Exists(uploadRoot))
+            Directory.CreateDirectory(uploadRoot);
+
+        foreach(var file in form.Files)
+        {
+            if(file.Length==0)
+                continue;
+
+            // اسم فريد للملف
+            string fileName = $"{Guid.NewGuid()}_{file.FileName}";
+            string savePath = Path.Combine(uploadRoot, fileName);
+
+            using(var stream = new FileStream(savePath , FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            string relativePath = $"/elevator/{fileName}";
+
+            switch(file.Name)
+            {
+                case "clientSignature":
+                    report.ClientSignaturePath=relativePath;
+                    break;
+
+                case "techSignature":
+                    report.TechSignaturePath=relativePath;
+                    break;
+
+                case "images":
+                    _db.ElevatorImage.Add(new ElevatorImage
+                    {
+                        FilePath=relativePath ,
+                        FileName=file.FileName ,
+                        Elevator=report
+                    });
+                    break;
+
+
+                    //case "pdfFile":
+                    //    report.PdfFilePath = relativePath;
+                    //    break;
+            }
+        }
+        if(report.shapeType=="square")
+        {
+            report.radiusShape=null;
+        }
+        else if(report.shapeType=="circle")
+        {
+            report.heightShape=null;
+            report.widthShape=null;
+        }
+
+        _db.Elevator.Add(report);
+        await _db.SaveChangesAsync();
+
+        return Ok(new { success = true , report.Id , message = "Report saved successfully." });
+    }
+
     // Endpoint لاسترجاع الملفات (مثلاً الصور)
     [HttpGet("{id}")]
     public async Task<IActionResult> GetReport(int id)
@@ -185,6 +312,17 @@ public class EquipmentReportController : ControllerBase
     public IActionResult CheckingItem()
     {
         var report =  _db.CheckingItems.ToList();
+
+
+        if(report==null)
+            return NotFound();
+
+        return Ok(report);
+    }
+    [HttpGet("safetyItem")]
+    public IActionResult safetyItem()
+    {
+        var report = _db.SafetyItems.ToList();
 
 
         if(report==null)
@@ -275,7 +413,87 @@ public class EquipmentReportController : ControllerBase
             reports = pagedReports
         });
     }
+    //[HttpGet("GetPagedElevatorReport")]
+    //public async Task<IActionResult> GetPagedElevatorReport(long userId , int pageNumber = 1 , int pageSize = 10)
+    //{
+    //    if(pageNumber<1)
+    //        pageNumber=1;
+    //    if(pageSize<1)
+    //        pageSize=10;
 
+
+    //    var totalReports = await _db.Elevator.CountAsync();
+
+    //    var reports = new List<Elevator>();
+
+    //    if(userId>0)
+    //    {
+    //        reports=await _db.Elevator
+    //           .Where(x => x.UserId==userId)
+    //           .OrderByDescending(r => r.CreatedAt)
+    //           .Skip((pageNumber-1)*pageSize)
+    //           .Take(pageSize)
+    //           .ToListAsync();
+    //    }
+    //    else
+    //    {
+    //        reports=await _db.Elevator
+    //       .OrderByDescending(r => r.CreatedAt)
+    //       .Skip((pageNumber-1)*pageSize)
+    //       .Take(pageSize)
+    //       .ToListAsync();
+    //    }
+
+    //    var imagesDb = await _db.ElevatorImage.Where(x=> reports.Select(y=>y.Id).Contains(x.ElevatorId) ).ToListAsync();
+
+    //    var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+    //    var pagedReports = reports.Select(x => new GetAllElevatorDto
+    //    {
+    //        Id = x.Id,
+    //        Date = x.Date,
+    //        ReportNumber = x.ReportNumber,
+    //        typeElevator= x.typeElevator,
+    //        InvoiceNumber = x.InvoiceNumber,
+    //        CompanyName = x.CompanyName,
+    //        ProjectAddress = x.ProjectAddress,
+    //        shapeType = x.shapeType,
+    //        widthShape = x.widthShape,
+    //        heightShape = x.heightShape,
+    //        radiusShape = x.radiusShape,
+    //        directionShape = x.directionShape,
+    //        floors = x.floors,
+    //        foundationHeight = x.foundationHeight,
+    //        // floors = x.floors,
+
+    //        floorHeights = !string.IsNullOrEmpty(x.floorHeights)
+    //? x.floorHeights.Trim('"', '[', ']').Replace("\",\"", ",")
+    //: string.Empty ,
+    //        workRequied = !string.IsNullOrEmpty(x.workRequied)
+    //? x.workRequied.Trim('"', '[', ']').Replace("\",\"", ",")
+    //: string.Empty ,
+    //        Notes = x.Notes,
+    //        CreatedAt = x.CreatedAt,
+    //        ClientName = x.ClientName,
+    //        TechName = x.TechName,
+    //        PhoneNum = x.PhoneNum,
+    //        ClientSignaturePath = baseUrl + x.ClientSignaturePath,
+    //        TechSignaturePath = baseUrl + x.TechSignaturePath,
+    //        Images = imagesDb
+    //            .Where(y => y.ElevatorId == x.Id)
+    //            .Select(p => baseUrl + p.FilePath)
+    //            .ToList()
+    //    }).ToList();
+
+    //    return Ok(new
+    //    {
+    //        totalCount = totalReports ,
+    //        pageNumber ,
+    //        pageSize ,
+    //        totalPages = (int)Math.Ceiling(totalReports/(double)pageSize) ,
+    //        reports = pagedReports
+    //    });
+    //}
     [HttpGet("GetPagedSiteReports")]
     public async Task<IActionResult> GetPagedSiteReports(long userId , int page = 1 , int pageSize = 5)
     {
@@ -293,13 +511,21 @@ public class EquipmentReportController : ControllerBase
           .OrderByDescending(x => x.Date);
         }
 
+        var reportlist =  await query
+        .Skip((page-1)*pageSize)
+        .Take(pageSize).ToListAsync();
+
+
+        var imagesDb = await _db.SiteReportImages
+        .Where(i => reportlist.Select(x=>x.Id).Contains(i.siteReportId))
+        .ToListAsync();
+
 
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
+
         int totalCount = await query.CountAsync();
-        var reports = await query
-        .Skip((page - 1) * pageSize)
-        .Take(pageSize)
+        var reports =  reportlist
         .Select(x => new SiteReportDto
         {
             Id = x.Id,
@@ -308,10 +534,89 @@ public class EquipmentReportController : ControllerBase
             ClientSignaturePath = baseUrl + x.ClientSignaturePath,
             TechSignaturePath = baseUrl + x.TechSignaturePath,
             CheckingItemsCount = x.checkingItemReport.Count,
-            ReportNumber = x.ReportNumber
+            ReportNumber = x.ReportNumber,
+            ClientName = x.ClientName,
+            TechName = x.TechName,
+            Images = imagesDb !=null ? imagesDb
+                .Where(y => y.siteReportId == x.Id)
+                .Select(p => baseUrl + p.FilePath)
+                .ToList():null
 
         })
+        .ToList();
+
+        return Ok(new
+        {
+            totalCount ,
+            page ,
+            pageSize ,
+            totalPages = (int)Math.Ceiling(totalCount/(double)pageSize) ,
+            reports
+        });
+    }
+
+    [HttpGet("GetPagedSafetyReports")]
+    public async Task<IActionResult> GetPagedSafetyReports(long userId , int page = 1 , int pageSize = 5)
+    {
+        var query = _db.SafetyReport.AsQueryable();
+        if(userId>0)
+        {
+            query=_db.SafetyReport
+         .Include(x => x.safetyItemsReport).Where(x => x.UserId==userId)
+         .OrderByDescending(x => x.Date);
+        }
+        else
+        {
+            query=_db.SafetyReport
+          .Include(x => x.safetyItemsReport)
+          .OrderByDescending(x => x.Date);
+        }
+
+
+        var reportlist =  await query
+        .Skip((page-1)*pageSize)
+        .Take(pageSize).ToListAsync();
+
+
+        var imagesDb = await _db.SafetyReportImage
+        .Where(i => reportlist.Select(x=>x.Id).Contains(i.safetyReportId))
         .ToListAsync();
+
+
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+
+        int totalCount = await query.CountAsync();
+        var reports =  reportlist
+        .Select(x => new SafetyReportDto
+        {
+            Id = x.Id,
+            CompanyName = x.CompanyName,
+            Date = x.Date,
+            CreatedAt = x.CreatedAt,
+            ClientSignaturePath = baseUrl + x.ClientSignaturePath,
+            TechSignaturePath = baseUrl + x.TechSignaturePath,
+            safetyItemsCount = x.safetyItemsReport.Count,
+            ReportNumber = x.ReportNumber,
+            ClientName = x.ClientName,
+            TechName = x.TechName,
+            PhoneNum = x.PhoneNum,
+            ProjectName = x.ProjectName,
+            ProjectDescription = x.ProjectDescription,
+            Projectlocation = x.Projectlocation,
+            TeamNum= x.TeamNum,
+            TeamLeaderName = x.TeamLeaderName,
+            TeamLeaderNum = x.TeamLeaderNum,
+            TeamMembers = x.TeamMembers,
+            Notes = x.Notes,
+            SiteName= x.SiteName,
+            Images = imagesDb !=null ? imagesDb
+                .Where(y => y.safetyReportId == x.Id)
+                .Select(p => baseUrl + p.FilePath)
+                .ToList():null
+
+        })
+        .ToList();
 
         return Ok(new
         {
@@ -363,6 +668,44 @@ public class EquipmentReportController : ControllerBase
 
     }
 
+
+    [HttpGet("GetSafetyReportDetails/{id}")]
+    public async Task<IActionResult> GetSafetyReportDetails(int id)
+    {
+        var report = await _db.SafetyReport
+        .Include(x => x.safetyItemsReport)
+        .FirstOrDefaultAsync(x => x.Id == id);
+
+        var checkItemDb = await _db.SafetyItems.ToListAsync();
+
+        if(report==null)
+            return NotFound();
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+        var result = new SafetyReportDetailDto
+        {
+            CompanyName=report.CompanyName ,
+            Date=report.Date ,
+            ClientSignaturePath=report.ClientSignaturePath!=null ? baseUrl+report.ClientSignaturePath : null ,
+            TechSignaturePath=baseUrl+report.TechSignaturePath!=null ? baseUrl+report.TechSignaturePath : null ,
+            checkingItems=checkItemDb.Select(a =>
+            {
+
+                var reportItem = report.safetyItemsReport.Where(x => x.SafetyItemsId==a.Id).FirstOrDefault();
+
+
+                return new CheckingSafetyItemsDto
+                {
+                    Item=a.Item ,
+                    CorrectiveAction=reportItem?.CorrectiveAction ,
+                    faultFlag=reportItem?.faultFlag??false ,
+                    Review=!(reportItem?.faultFlag??false),
+                };
+            }).ToList()
+        };
+        return Ok(result);
+
+    }
 
     [HttpGet("GetDeliveryReportDetails/{id}")]
     public async Task<IActionResult> GetDeliveryReportDetails(int id)
@@ -544,12 +887,13 @@ public class EquipmentReportController : ControllerBase
                 string fullPath = Path.Combine(uploadRoot, fileName);
                 using(var stream = new FileStream(fullPath , FileMode.Create))
                     await file.CopyToAsync(stream);
+
                 imagePaths.Add($"/UploadSiteReport/{fileName}");
                 _db.SiteReportImages.Add(new SiteReportImage
                 {
                     siteReportId=sitereport.Id ,
                     FileName=fileName ,
-                    FilePath=fullPath
+                    FilePath=$"/UploadSiteReport/{fileName}"
 
                 });
                 await _db.SaveChangesAsync();
@@ -562,20 +906,187 @@ public class EquipmentReportController : ControllerBase
             // تحويل العناصر القادمة من JSON إلى كائنات
             foreach(var item in Items)
             {
-                var report = new CheckingItemReport
+                if(item.faultFlag==true||item.CorrectiveActionFlag==true)
                 {
-                    CheckingItemId = item.CheckingItemId,
-                    fault = item.Fault,
-                    CorrectiveAction = item.CorrectiveAction,
-                    faultFlag = item.faultFlag,
-                    CorrectiveActionFlag = item.CorrectiveActionFlag,
-                    //CreatedAt = DateTime.Now,
-                    SiteReportId = sitereport.Id
-                };
-                //if(string.IsNullOrEmpty(item.Fault)&&string.IsNullOrEmpty(item.CorrectiveAction)&&item.faultFlag==true&&item.CorrectiveActionFlag==item.faultFlag==true)
-                //    continue;
+                    var report = new CheckingItemReport
+                    {
 
-                _db.CheckingItemReports.Add(report);
+                        CheckingItemId = item.CheckingItemId,
+                        fault = item.Fault,
+                        CorrectiveAction = item.CorrectiveAction,
+                        faultFlag = item.faultFlag,
+                        CorrectiveActionFlag = item.CorrectiveActionFlag,
+                        //CreatedAt = DateTime.Now,
+                        SiteReportId = sitereport.Id
+                    };
+                    //if(string.IsNullOrEmpty(item.Fault)&&string.IsNullOrEmpty(item.CorrectiveAction)&&item.faultFlag==true&&item.CorrectiveActionFlag==item.faultFlag==true)
+                    //    continue;
+
+                    _db.CheckingItemReports.Add(report);
+                }
+
+            }
+
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "✅ تم حفظ البيانات والتواقيع بنجاح" ,
+                imagePaths
+            });
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(500 , ex.Message);
+        }
+    }
+
+    [HttpPost("addsafetyReport")]
+    public async Task<IActionResult> addsafetyReport([FromForm] IFormCollection request)
+    {
+        try
+        {
+
+            var itemsJson = request["items"];
+            if(string.IsNullOrEmpty(itemsJson))
+                return BadRequest("No items data received.");
+
+
+            // var Items = System.Text.Json.JsonSerializer.Deserialize<List<CheckingItemDto>>(itemsJson)!;
+
+
+            var Items = System.Text.Json.JsonSerializer.Deserialize<List<SafteyItemDto>>(
+    itemsJson,
+    new System.Text.Json.JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true
+    }
+)!;
+
+            string uploadRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "Safety");
+
+            if(!Directory.Exists(uploadRoot))
+                Directory.CreateDirectory(uploadRoot);
+
+            // حفظ الصور
+
+            // ✅ حفظ الصور
+
+
+
+
+
+            // حفظ التواقيع
+            string? clientSignaturePath = null;
+            string? techSignaturePath = null;
+            var clientSig = request.Files.FirstOrDefault(f => f.Name == "clientSignature");
+            var techSig = request.Files.FirstOrDefault(f => f.Name == "techSignature");
+
+
+
+            var currentYear = DateTime.Now.Year.ToString().Substring(2);
+
+            // ابحث عن آخر تقرير في نفس السنة
+            var lastReport = _db.SafetyReport
+            .Where(r => r.ReportNumber.StartsWith(currentYear + "/"))
+            .OrderByDescending(r => r.ReportNumber)
+            .FirstOrDefault();
+            int nextNumber = 1;
+            if(lastReport!=null)
+            {
+                var parts = lastReport.ReportNumber.Split('/');
+                if(parts.Length==2&&int.TryParse(parts [1] , out int lastNum))
+                {
+                    nextNumber=lastNum+1;
+                }
+            }
+            var newReportNumber = $"{currentYear}/{nextNumber:D3}";
+
+            var saftyreport = new SafetyReport
+            {
+                CompanyName = request["companyName"],
+                ReportNumber = newReportNumber,
+                TechName = request["techName"],
+                ClientName = request["clientName"],
+                UserId = long.Parse(request["userId"]),
+                Date = DateTime.TryParse(request["date"], out var parsedDate) ? parsedDate : DateTime.Now,
+                PhoneNum = request["phoneNum"],
+                CreatedAt = DateTime.Now,
+                SiteName = request["siteName"],
+                TeamNum = int.Parse(request["teamNum"]),
+                TeamLeaderName = request["teamLeaderName"],
+                TeamLeaderNum = int.Parse(request["teamLeaderNum"]),
+                ProjectDescription = request["projectDescription"],
+                Projectlocation = request["projectlocation"],
+                ProjectName = request["projectName"],
+                TeamMembers = request["teamMembers"],
+                Notes = request["notes"],
+            };
+
+            if(clientSig!=null)
+            {
+                string fileName = $"client_{Guid.NewGuid()}.png";
+                string fullPath = Path.Combine(uploadRoot, fileName);
+                using(var stream = new FileStream(fullPath , FileMode.Create))
+                    await clientSig.CopyToAsync(stream);
+                clientSignaturePath=$"/Safety/{fileName}";
+                saftyreport.ClientSignaturePath=clientSignaturePath;
+            }
+
+            if(techSig!=null)
+            {
+                string fileName = $"tech_{Guid.NewGuid()}.png";
+                string fullPath = Path.Combine(uploadRoot, fileName);
+                using(var stream = new FileStream(fullPath , FileMode.Create))
+                    await techSig.CopyToAsync(stream);
+                techSignaturePath=$"/Safety/{fileName}";
+                saftyreport.TechSignaturePath=techSignaturePath;
+            }
+
+
+            _db.SafetyReport.Add(saftyreport);
+            await _db.SaveChangesAsync();
+
+            List<string> imagePaths = new List<string>();
+            foreach(var file in request.Files.Where(f => f.Name=="images"))
+            {
+                string fileName = $"{Guid.NewGuid()}_{file.FileName}";
+                string fullPath = Path.Combine(uploadRoot, fileName);
+                using(var stream = new FileStream(fullPath , FileMode.Create))
+                    await file.CopyToAsync(stream);
+                imagePaths.Add($"/Safety/{fileName}");
+                _db.SafetyReportImage.Add(new SafetyReportImage
+                {
+                    safetyReportId=saftyreport.Id ,
+                    FileName=fileName ,
+                    FilePath=$"/Safety/{fileName}"
+
+                });
+                await _db.SaveChangesAsync();
+
+            }
+
+
+
+
+            // تحويل العناصر القادمة من JSON إلى كائنات
+            foreach(var item in Items)
+            {
+                if(item.faultFlag==true||!string.IsNullOrEmpty(item.CorrectiveAction))
+                {
+                    var report = new SafetyItemsReport
+                    {
+                        SafetyItemsId = item.SafetyItemId,
+                        CorrectiveAction = item.CorrectiveAction,
+                        faultFlag = item.faultFlag,
+                        SafetyReportId = saftyreport.Id
+                    };
+                    //if(string.IsNullOrEmpty(item.Fault)&&string.IsNullOrEmpty(item.CorrectiveAction)&&item.faultFlag==true&&item.CorrectiveActionFlag==item.faultFlag==true)
+                    //    continue;
+
+                    _db.SafetyItemsReport.Add(report);
+                }
+
             }
 
             await _db.SaveChangesAsync();
@@ -749,7 +1260,7 @@ public class EquipmentReportController : ControllerBase
                 {
                     deliveryReportId=deliveryreport.Id ,
                     FileName=fileName ,
-                    FilePath=fullPath
+                    FilePath=$"/UploadSiteReport/{fileName}"
 
                 });
                 await _db.SaveChangesAsync();
@@ -991,25 +1502,39 @@ public class EquipmentReportController : ControllerBase
         }
 
 
+        var reportlist =  await query
+        .Skip((page-1)*pageSize)
+        .Take(pageSize).ToListAsync();
+
+
+        var imagesDb = await _db.DelivryReportImages
+        .Where(i => reportlist.Select(x=>x.Id).Contains(i.deliveryReportId))
+        .ToListAsync();
+
+
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
+
         int totalCount = await query.CountAsync();
-        var reports = await query
-        .Skip((page - 1) * pageSize)
-        .Take(pageSize)
-        .Select(x => new DeliveryReportListDto
+        var reports =  reportlist
+        .Select(x => new SiteReportDto
         {
             Id = x.Id,
             CompanyName = x.CompanyName,
             Date = x.Date,
             ClientSignaturePath = baseUrl + x.ClientSignaturePath,
             TechSignaturePath = baseUrl + x.TechSignaturePath,
-            DelveryNoteCount = x.checkingItemReport.Count,
-            PhoneNum = x.PhoneNum,
-            Notes = x.Notes,
-            ReportNumber = x.ReportNumber
+            CheckingItemsCount = x.checkingItemReport.Count,
+            ReportNumber = x.ReportNumber,
+            ClientName = x.ClientName,
+            TechName = x.TechName,
+            Images = imagesDb !=null ? imagesDb
+                .Where(y => y.deliveryReportId == x.Id)
+                .Select(p => baseUrl + p.FilePath)
+                .ToList():null
+
         })
-        .ToListAsync();
+        .ToList();
 
         return Ok(new
         {
@@ -1176,17 +1701,17 @@ public class EquipmentReportController : ControllerBase
                             });
                               col.Item().LineHorizontal(1)
     .LineColor(Colors.Grey.Lighten2);
-                        // 📝 العنوان أسفل الصورة
-                        col.Item()
+                              // 📝 العنوان أسفل الصورة
+                              col.Item()
                             .AlignCenter()
                             .PaddingTop(5)
                             .Text($"{reportDb.ReportType}")
                             .FontFamily("Cairo")
                             .FontSize(20)
                             .Bold();
-                        col.Item().LineHorizontal(1)
+                              col.Item().LineHorizontal(1)
     .LineColor(Colors.Grey.Lighten2);
-                    });
+                          });
 
                 // ===== المحتوى =====
                 page.Content()
@@ -1316,8 +1841,8 @@ public class EquipmentReportController : ControllerBase
                                 // الصورة الأولى (توقيع الفني)
                                 row.RelativeItem().Element(e =>
                                 {
-                                   
-             e.Padding(5)
+
+                                    e.Padding(5)
              .Width(150)
              .Height(100)
              .Image(techImage)
@@ -1327,8 +1852,8 @@ public class EquipmentReportController : ControllerBase
                                 // الصورة الثانية (توقيع العميل)
                                 row.RelativeItem().Element(e =>
                                 {
-                                   
-            e .Padding(5)
+
+                                    e .Padding(5)
              .Width(150)
              .Height(100)
              .Image(clientImage)
@@ -1603,8 +2128,8 @@ public class EquipmentReportController : ControllerBase
                                 // الصورة الأولى (توقيع الفني)
                                 row.RelativeItem().Element(e =>
                                 {
-                                    
-             e.Padding(5)
+
+                                    e.Padding(5)
              .Width(150)
              .Height(100)
              .Image(techImage)
@@ -1614,8 +2139,8 @@ public class EquipmentReportController : ControllerBase
                                 // الصورة الثانية (توقيع العميل)
                                 row.RelativeItem().Element(e =>
                                 {
-                                  
-           e.Padding(5)
+
+                                    e.Padding(5)
              .Width(150)
              .Height(100)
              .Image(clientImage)
@@ -2215,6 +2740,357 @@ public class EquipmentReportController : ControllerBase
         var pdf = document.GeneratePdf();
         return File(pdf , "application/pdf" , "report.pdf");
     }
+
+    [HttpGet("GetSafetyReportPdf")]
+    public IActionResult GetSafetyReportPdf(int Id , string InvoiceNum = " ")
+    {
+        QuestPDF.Settings.License=LicenseType.Community;
+
+        var fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fonts", "Cairo-Regular.ttf");
+        FontManager.RegisterFont(System.IO.File.OpenRead(fontPath));
+
+        var SiteReportDb = _db.SafetyReport.Where(x=>x.Id == Id).Include(y=>y.safetyItemsReport).FirstOrDefault();
+
+
+
+        var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "Picture1.jpg");
+        var logoBytes = System.IO.File.ReadAllBytes(logoPath);
+
+        var sealPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "seal.png");
+        var sealBytes = System.IO.File.ReadAllBytes(sealPath);
+
+        var logoPathFooter = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "Picture1.jpg");
+        var logoBytesFooter = System.IO.File.ReadAllBytes(logoPathFooter);
+
+        var techPath = SiteReportDb.TechSignaturePath?.TrimStart('/');
+        var techImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", techPath);
+
+        byte[] techImage = Array.Empty<byte>();
+        if(System.IO.File.Exists(techImagePath))
+        {
+            techImage=System.IO.File.ReadAllBytes(techImagePath);
+        }
+
+        var clientPath = SiteReportDb.ClientSignaturePath?.TrimStart('/');
+        var clientImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", clientPath);
+
+        byte[] clientImage = Array.Empty<byte>();
+        if(System.IO.File.Exists(clientImagePath))
+        {
+            clientImage=System.IO.File.ReadAllBytes(clientImagePath);
+        }
+
+
+
+        var checkItemDb =  _db.CheckingItems.ToList();
+        var  checkingItems=checkItemDb.Select(a =>
+        {
+
+            var reportItem = SiteReportDb.safetyItemsReport.Where(x => x.SafetyItemsId==a.Id).FirstOrDefault();
+
+
+            return new CheckingSafetyItemsDto
+            {
+                Item=a.Item ,
+                CorrectiveAction=reportItem?.CorrectiveAction ,
+                faultFlag=reportItem?.faultFlag??false ,
+                Review=!(reportItem?.faultFlag??false)
+            };
+        }).ToList() ;
+
+
+
+
+        var members = !string.IsNullOrEmpty(SiteReportDb.TeamMembers)
+                    ?SiteReportDb.TeamMembers.Trim('"', '[', ']').Replace("\",\"", ",")
+                    : string.Empty;
+
+
+
+        var document = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Margin(10);
+                page.Size(PageSizes.A4);
+
+                // ===== رأس الصفحة =====
+                page.Header()
+                    .Column(col =>
+                    {
+                        // 🖼️ الصورة بعرض الصفحة
+                        col.Item()
+                            .AlignCenter()
+                            .Element(e =>
+                            {
+
+                                e. Width(100)
+                                 .Height(50)
+                                .Image(logoBytes)
+                                 .FitWidth()
+                                 ;  // يجعل الصورة تمتد بعرض الصفحة تلقائيًا
+                            });
+                        col.Item().LineHorizontal(1)
+    .LineColor(Colors.Grey.Lighten2);
+                        // 📝 العنوان أسفل الصورة
+                        col.Item()
+                            .AlignCenter()
+                            .PaddingTop(5)
+                            .Text("Safety Report")
+                            .FontFamily("Cairo")
+                            .FontSize(20)
+                            .Bold();
+                        col.Item().LineHorizontal(1)
+    .LineColor(Colors.Grey.Lighten2);
+                    });
+
+                // ===== المحتوى =====
+                page.Content()
+                    .Column(col =>
+                    {
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(10); // المسافة بين العناصر
+                            row.RelativeItem().Text($"Date : {SiteReportDb.Date.ToShortDateString()}").FontFamily("Cairo").FontSize(10);
+                            row.Spacing(20);
+                            row.RelativeItem().Text($"Report # : {SiteReportDb.ReportNumber}").FontFamily("Cairo").FontSize(10);
+                            row.RelativeItem().Text($"Invoice # {InvoiceNum}:").FontFamily("Cairo").FontSize(10);
+                        });
+
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(10); // المسافة بين العناصر
+                            row.RelativeItem().Text($"Company Name : {SiteReportDb.CompanyName}").FontFamily("Cairo").FontSize(10);
+
+                            row.Spacing(20);
+                            row.RelativeItem().Text($"Site Name # : {SiteReportDb.SiteName}").FontFamily("Cairo").FontSize(10);
+                        });
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(10); // المسافة بين العناصر
+                            row.RelativeItem().Text($"Project Name : {SiteReportDb.ProjectName}").FontFamily("Cairo").FontSize(10);
+                            row.Spacing(20);
+                            row.RelativeItem().Text($"location  : {SiteReportDb.Projectlocation}").FontFamily("Cairo").FontSize(10);
+                            row.RelativeItem().Text($" Description : {SiteReportDb.ProjectDescription}").FontFamily("Cairo").FontSize(10);
+                        });
+
+
+                        //col.Item().Row(row =>
+                        //{
+                        //    row.Spacing(20); // المسافة بين العناصر
+                        //    row.RelativeItem().Text($"Report : {reportDb.Notes} ").FontFamily("Cairo").FontSize(12);
+
+                        //});
+                        col.Item().Width(PageSizes.A4.Width - 40)   // عرض A4 ناقص الهوامش
+    .Element(e =>
+    {
+        e.Scale(0.85f)   // تصغير 15% ليظهر بشكل ممتاز داخل A4
+         .Table(table =>
+         {
+             table.ColumnsDefinition(columns =>
+             {
+                 columns.RelativeColumn(60);
+                 columns.RelativeColumn(10);
+                 columns.RelativeColumn(10);
+                 columns.RelativeColumn(20);
+             });
+
+             table.Header(header =>
+             {
+                 header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
+                       .Text("Items").Bold();
+
+                 header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
+                       .Text("Review").Bold();
+
+                 header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
+                       .Text("Fault").Bold();
+
+                 header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
+                       .Text("Corrective").Bold();
+             });
+
+             foreach (var item in checkingItems)
+             {
+                 table.Cell().Border(1).Padding(1).AlignCenter()
+                      .Text(item.Item).FontSize(9);
+
+                 table.Cell().Border(1).Padding(1).AlignCenter()
+                      .Text(item.Review ? "✔" : " ").FontSize(10);
+
+                 table.Cell().Border(1).Padding(1).AlignCenter()
+                      .Text(item.faultFlag ? "✔" : " ").FontSize(10);
+
+                 table.Cell().Border(1).Padding(1).AlignCenter()
+                      .Text(item.CorrectiveAction ?? "-").FontSize(9);
+             }
+         });
+    });
+
+
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(10); // المسافة بين العناصر
+                            row.RelativeItem().Text($"Team Num. : {SiteReportDb.TeamNum}").FontFamily("Cairo").FontSize(10);
+                            row.Spacing(20);
+                            row.RelativeItem().Text($"Leader Name  : {SiteReportDb.TeamLeaderName}").FontFamily("Cairo").FontSize(10);
+                            row.RelativeItem().Text($"Leader Num. {SiteReportDb.TeamLeaderNum}").FontFamily("Cairo").FontSize(10);
+                        });
+
+
+
+
+                        col.Item().Width(PageSizes.A4.Width - 40)   // عرض A4 ناقص الهوامش
+    .Element(e =>
+    {
+        e.Scale(0.85f)   // تصغير 15% ليظهر بشكل ممتاز داخل A4
+         .Table(table =>
+         {
+             table.ColumnsDefinition(columns =>
+             {
+                 columns.RelativeColumn(20);
+                 columns.RelativeColumn(80);
+               
+             });
+
+             table.Header(header =>
+             {
+                 header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
+                       .Text("Index").Bold();
+
+                 header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
+                       .Text("Name").Bold();
+
+             });
+
+             var i = 1;
+             foreach (var item in members.Split(","))
+             {
+                 table.Cell().Border(1).Padding(1).AlignCenter()
+                      .Text(i).FontSize(9);
+
+                 table.Cell().Border(1).Padding(1).AlignCenter()
+                      .Text(item).FontSize(10);
+
+                 i++;
+             }
+         });
+    });
+
+
+                        //  col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+
+
+
+
+
+
+
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(20); // المسافة بين العناصر
+                            row.RelativeItem().Text($"PhoneNum. : {SiteReportDb.PhoneNum} ").FontFamily("Cairo").FontSize(12);
+
+                        });
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(20); // المسافة بين العناصر
+                            row.RelativeItem().Text($"Notes : {SiteReportDb.Notes} ").FontFamily("Cairo").FontSize(12);
+
+                        });
+
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(50); // المسافة بين العناصر
+                            row.RelativeItem().Text($"Marina REP. : {SiteReportDb.TechName} ").FontFamily("Cairo").FontSize(12);
+                            //row.RelativeItem().Text($"PhoneNum. : {reportDb.PhoneNum} ").FontFamily("Cairo").FontSize(12);
+                            row.RelativeItem().Text($"Site REP. : {SiteReportDb.ClientName} ").FontFamily("Cairo").FontSize(12);
+
+                        });
+                        // صورة داخل المحتوى كمثال إضافي
+                        col.Item().Layers(layers =>
+                        {
+                            // ✅ الطبقة الأساسية (التواقيع)
+                            layers.PrimaryLayer().Row(row =>
+                            {
+                                row.Spacing(15);
+
+                                // الصورة الأولى (توقيع الفني)
+                                row.RelativeItem().Element(e =>
+                                {
+
+                                    e.Padding(5)
+             .Width(150)
+             .Height(100)
+             .Image(techImage)
+             .FitWidth();
+                                });
+
+                                // الصورة الثانية (توقيع العميل)
+                                row.RelativeItem().Element(e =>
+                                {
+                                    e.Padding(5)
+             .Width(150)
+             .Height(100)
+             .Image(clientImage)
+             .FitWidth();
+                                });
+                            });
+
+                            // ✅ الطبقة الثانية (الختم فوق الصورتين)
+                            layers.Layer()
+        .AlignCenter()
+        .AlignMiddle()
+        .Element(e =>
+        {
+            e.Width(100)         // ← الحجم يوضع هنا (على الـ container)
+             .Image(sealBytes)   // ← وأخيرًا الصورة
+             .FitWidth();
+        });
+                        });
+
+
+
+                    });
+
+
+                // ===== ذيل الصفحة =====
+                page.Footer()
+                    .BorderBottom(1)
+    .PaddingVertical(2)
+    .Row(row =>
+    {
+        row.Spacing(10);
+
+        // ✅ الشعار على اليسار
+        row.ConstantItem(150).Image(logoBytesFooter).FitWidth();
+
+        // ✅ معلومات الاتصال في المنتصف
+        row.RelativeItem().Column(col =>
+        {
+            col.Spacing(6);
+
+            col.Item().Row(r =>
+            {
+                r.Spacing(6);
+                r.RelativeItem().Background("#B91C1C").Padding(5).Text("qatar@marinaplt.com").FontColor(Colors.White).FontFamily("Cairo").FontSize(12);
+                r.RelativeItem().Background("#1E3A8A").Padding(5).Text("www.marinaplt.com").FontColor(Colors.White).FontFamily("Cairo").FontSize(12);
+            });
+
+            col.Item().Row(r =>
+            {
+                r.Spacing(6);
+                r.RelativeItem().Background("#1E3A8A").Padding(5).Text("Tel.: 44 32 32 46").FontColor(Colors.White).FontFamily("Cairo").FontSize(12);
+                r.RelativeItem().Background("#B91C1C").Padding(5).Text("Fax: 44 27 70 76").FontColor(Colors.White).FontFamily("Cairo").FontSize(12);
+            });
+        });
+    });
+            });
+        });
+
+        var pdf = document.GeneratePdf();
+        return File(pdf , "application/pdf" , "report.pdf");
+    }
     private static string ConvertSparePartsToString(string? json)
     {
         if(string.IsNullOrWhiteSpace(json))
@@ -2448,8 +3324,8 @@ public class EquipmentReportController : ControllerBase
                                 // الصورة الأولى (توقيع الفني)
                                 row.RelativeItem().Element(e =>
                                 {
-                                   
-             e.Padding(5)
+
+                                    e.Padding(5)
              .Width(150)
              .Height(100)
              .Image(techImage)
@@ -2522,6 +3398,874 @@ public class EquipmentReportController : ControllerBase
         return File(pdf , "application/pdf" , "report.pdf");
     }
 
+  
+
+
+
+    [HttpGet("GetPagedElevatorReport")]
+    public async Task<IActionResult> GetPagedElevatorReport(long userId , int pageNumber = 1 , int pageSize = 10)
+    {
+        if(pageNumber<1)
+            pageNumber=1;
+        if(pageSize<1)
+            pageSize=10;
+
+        var totalReports = await _db.Elevator.CountAsync();
+        var reports = new List<Elevator>();
+
+        if(userId>0)
+        {
+            reports=await _db.Elevator
+                .Where(x => x.UserId==userId)
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip((pageNumber-1)*pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+        else
+        {
+            reports=await _db.Elevator
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip((pageNumber-1)*pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        var imagesDb = await _db.ElevatorImage.Where(x => reports.Select(y => y.Id).Contains(x.ElevatorId)).ToListAsync();
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+
+        var svgFolder = Path.Combine(_env.WebRootPath, "elevatorsvg");
+
+        // إنشاء المجلد إذا لم يكن موجودًا
+        if(!Directory.Exists(svgFolder))
+        {
+            Directory.CreateDirectory(svgFolder);
+        }
+        else
+        {
+            // تنظيف الملفات القديمة
+            var oldFiles = Directory.GetFiles(svgFolder, "*.svg");
+            foreach(var file in oldFiles)
+                System.IO.File.Delete(file);
+        }
+
+
+
+
+
+        var pagedReports = reports.Select(x =>
+        {
+            var svgRequest = new SvgRequest
+            {
+                Width = x.resizableSquarewidth,
+                Height = x.resizableSquareHeight,
+                InnerWidth = x.widthShape,
+                InnerHeight = x.heightShape,
+                TopRadius = x.radiusShape
+            };
+
+            string svgString = "";
+            if (x.shapeType == "square-semicircle")
+            {
+                svgString = GenerateSvgStringCorrected(svgRequest);
+
+            }
+            else if (x.shapeType == "square")
+            {
+                svgString = GenerateSvgString(svgRequest);
+
+            }
+            else if (x.shapeType == "circle")
+            {
+                svgString = GenerateSvgCircle(svgRequest);
+
+            }
+
+            // اسم ملف فريد لكل تقرير
+            var svgFileName = $"elevator_{x.Id}.svg";
+            var svgFilePath = Path.Combine(svgFolder, svgFileName);
+
+            // حفظ الملف قبل استخدامه
+            System.IO.File.WriteAllText(svgFilePath, svgString);
+
+            var svgUrl = $"{Request.Scheme}://{Request.Host}/elevatorsvg/{svgFileName}";
+
+
+
+
+            return new GetAllElevatorDto
+            {
+                Id = x.Id,
+                Date = x.Date,
+                ReportNumber = x.ReportNumber,
+                typeElevator = x.typeElevator,
+                InvoiceNumber = x.InvoiceNumber,
+                CompanyName = x.CompanyName,
+                ProjectAddress = x.ProjectAddress,
+                resizableSquarewidth = x.resizableSquarewidth,
+                resizableSquareHeight = x.resizableSquareHeight,
+                shapeType = x.shapeType,
+                widthShape = x.widthShape,
+                heightShape = x.heightShape,
+                radiusShape = x.radiusShape,
+                directionShape = x.directionShape,
+                floors = x.floors,
+                foundationHeight = x.foundationHeight,
+                floorHeights = !string.IsNullOrEmpty(x.floorHeights)
+                    ? x.floorHeights.Trim('"', '[', ']').Replace("\",\"", ",")
+                    : string.Empty,
+                workRequied = !string.IsNullOrEmpty(x.workRequied)
+                    ? x.workRequied.Trim('"', '[', ']').Replace("\",\"", ",")
+                    : string.Empty,
+                Notes = x.Notes,
+                CreatedAt = x.CreatedAt,
+                ClientName = x.ClientName,
+                TechName = x.TechName,
+                PhoneNum = x.PhoneNum,
+                ClientSignaturePath = baseUrl + x.ClientSignaturePath,
+                TechSignaturePath = baseUrl + x.TechSignaturePath,
+                Images = imagesDb
+                    .Where(y => y.ElevatorId == x.Id)
+                    .Select(p => baseUrl + p.FilePath)
+                    .ToList(),
+                ImageSva = svgUrl,
+
+                doorDirections =  !string.IsNullOrEmpty(x.doorDirections)
+                    ? x.doorDirections.Trim('"', '[', ']').Replace("\",\"", ",")
+                    : string.Empty,
+
+            };
+        }).ToList();
+
+        return Ok(new
+        {
+            totalCount = totalReports ,
+            pageNumber ,
+            pageSize ,
+            totalPages = (int)Math.Ceiling(totalReports/(double)pageSize) ,
+            reports = pagedReports
+        });
+    }
+
+
+
+
+    [HttpGet("GetElevatorReportPdf")]
+    public async Task<IActionResult> GetElevatorReportPdf(int Id , string InvoiceNum = " ")
+    {
+        QuestPDF.Settings.License=LicenseType.Community;
+
+        var fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fonts", "Cairo-Regular.ttf");
+        FontManager.RegisterFont(System.IO.File.OpenRead(fontPath));
+
+        var ElevatorReportDb =  _db.Elevator .FirstOrDefault(x => x.Id == Id);
+
+        // var deliveryNoteDb = await _db.DeliveryNotes.ToListAsync();
+
+        if(ElevatorReportDb==null)
+            return NotFound();
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+        var svgFolder = Path.Combine(_env.WebRootPath, "elevatorsvg");
+        if(!Directory.Exists(svgFolder))
+        {
+            Directory.CreateDirectory(svgFolder);
+        }
+        else
+        {
+            // تنظيف الملفات القديمة
+            var oldFiles = Directory.GetFiles(svgFolder, "*.svg");
+            foreach(var file in oldFiles)
+                System.IO.File.Delete(file);
+        }
+
+
+        var svgRequest = new SvgRequest
+        {
+            Width = ElevatorReportDb.resizableSquarewidth,
+            Height = ElevatorReportDb.resizableSquareHeight,
+            InnerWidth = ElevatorReportDb.widthShape,
+            InnerHeight = ElevatorReportDb.heightShape,
+            TopRadius = ElevatorReportDb.radiusShape
+        };
+
+        string svgString = "";
+        if(ElevatorReportDb.shapeType=="square-semicircle")
+        {
+            svgString=GenerateSvgStringCorrected(svgRequest);
+
+        }
+        else if(ElevatorReportDb.shapeType=="square")
+        {
+            svgString=GenerateSvgString(svgRequest);
+
+        }
+        else if(ElevatorReportDb.shapeType=="circle")
+        {
+            svgString=GenerateSvgCircle(svgRequest);
+
+        }
+
+        // اسم ملف فريد لكل تقرير
+        var svgFileName = $"elevator_{ElevatorReportDb.Id}.svg";
+        var svgFilePath = Path.Combine(svgFolder, svgFileName);
+
+        // حفظ الملف قبل استخدامه
+        System.IO.File.WriteAllText(svgFilePath , svgString);
+
+        var svgUrl = $"{Request.Scheme}://{Request.Host}/elevatorsvg/{svgFileName}";
+
+
+
+
+
+        var DeliveryReport = new GetAllElevatorDto
+        {
+            CompanyName=ElevatorReportDb.CompanyName ,
+            ReportNumber=ElevatorReportDb.ReportNumber ,
+            Date=ElevatorReportDb.Date ,
+            ClientSignaturePath=ElevatorReportDb.ClientSignaturePath!=null ? baseUrl+ElevatorReportDb.ClientSignaturePath : null ,
+            TechSignaturePath=baseUrl+ElevatorReportDb.TechSignaturePath!=null ? baseUrl+ElevatorReportDb.TechSignaturePath : null ,
+            typeElevator = ElevatorReportDb.typeElevator,
+            shapeType = ElevatorReportDb.shapeType ,
+            resizableSquarewidth = ElevatorReportDb.resizableSquarewidth ,
+            resizableSquareHeight = ElevatorReportDb.resizableSquareHeight,
+            widthShape = ElevatorReportDb.widthShape ,
+            heightShape = ElevatorReportDb.heightShape ,
+            radiusShape =ElevatorReportDb.radiusShape,
+            directionShape = ElevatorReportDb.directionShape ,
+            foundationHeight = ElevatorReportDb.foundationHeight,
+            floorHeights = !string.IsNullOrEmpty(ElevatorReportDb.floorHeights)
+ ? ElevatorReportDb.floorHeights.Trim('"', '[', ']').Replace("\",\"", ",")
+ : string.Empty,
+            workRequied = !string.IsNullOrEmpty(ElevatorReportDb.workRequied)
+ ? ElevatorReportDb.workRequied.Trim('"', '[', ']').Replace("\",\"", ",")
+ : string.Empty,
+            doorDirections =  !string.IsNullOrEmpty(ElevatorReportDb.doorDirections)
+ ? ElevatorReportDb.doorDirections.Trim('"', '[', ']').Replace("\",\"", ",")
+ : string.Empty,
+        };
+
+
+
+
+
+
+
+
+
+        var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "Picture1.jpg");
+        var logoBytes = System.IO.File.ReadAllBytes(logoPath);
+
+        var sealPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "seal.png");
+        var sealBytes = System.IO.File.ReadAllBytes(sealPath);
+
+        var logoPathFooter = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "Picture1.jpg");
+        var logoBytesFooter = System.IO.File.ReadAllBytes(logoPathFooter);
+
+        var techPath = ElevatorReportDb.TechSignaturePath?.TrimStart('/');
+        var techImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", techPath);
+
+        byte[] techImage = Array.Empty<byte>();
+        if(System.IO.File.Exists(techImagePath))
+        {
+            techImage=System.IO.File.ReadAllBytes(techImagePath);
+        }
+
+        var clientPath = ElevatorReportDb.ClientSignaturePath?.TrimStart('/');
+        var clientImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", clientPath);
+
+        byte[] clientImage = Array.Empty<byte>();
+        if(System.IO.File.Exists(clientImagePath))
+        {
+            clientImage=System.IO.File.ReadAllBytes(clientImagePath);
+        }
+
+
+        var ShapeImagePath =Path.Combine(Directory.GetCurrentDirectory() , "wwwroot" , "elevatorsvg" , svgFileName);
+
+        byte[] ShapeImage = Array.Empty<byte>();
+        if(System.IO.File.Exists(ShapeImagePath))
+        {
+            ShapeImage=System.IO.File.ReadAllBytes(ShapeImagePath);
+        }
+
+
+
+        var httpClient = new HttpClient();
+        string svgContent = await  httpClient.GetStringAsync(svgUrl);
+
+
+
+
+
+        var document = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Margin(20);
+                page.Size(PageSizes.A4);
+
+                // ===== رأس الصفحة =====
+                page.Header()
+                .Column(col =>
+                {
+                    // 🖼️ الصورة بعرض الصفحة
+                    col.Item()
+                        .AlignCenter()
+                        .Element(e =>
+                        {
+
+                            e. Width(150)
+                             .Height(75)
+                            .Image(logoBytes)
+                             .FitWidth()
+                             ;  // يجعل الصورة تمتد بعرض الصفحة تلقائيًا
+                        });
+                    col.Item().LineHorizontal(1)
+.LineColor(Colors.Grey.Lighten2);
+                    // 📝 العنوان أسفل الصورة
+                    col.Item()
+                        .AlignCenter()
+                        .PaddingTop(5)
+                        .Text("Elevator preview")
+                        .FontFamily("Cairo")
+                        .FontSize(20)
+                        .Bold();
+                    col.Item().LineHorizontal(1)
+.LineColor(Colors.Grey.Lighten2);
+                });
+
+                // ===== المحتوى =====
+                page.Content()
+                .Column(col =>
+                {
+                    col.Item().Row(row =>
+                    {
+                        row.Spacing(20); // المسافة بين العناصر
+                        row.RelativeItem().Text($"Date : {ElevatorReportDb.Date.ToShortDateString()}").FontFamily("Cairo").FontSize(12);
+                        row.Spacing(60);
+                        row.RelativeItem().Text($"Report # : {ElevatorReportDb.ReportNumber}").FontFamily("Cairo").FontSize(12);
+                        row.RelativeItem().Text($"Invoice # : {InvoiceNum}").FontFamily("Cairo").FontSize(12);
+                    });
+
+                    col.Item().Row(row =>
+                    {
+                        row.Spacing(20); // المسافة بين العناصر
+                        row.RelativeItem().Text($"Company Name : {ElevatorReportDb.CompanyName}").FontFamily("Cairo").FontSize(12);
+                    });
+                    col.Item().Row(row =>
+                    {
+                        row.Spacing(20); // المسافة بين العناصر
+                        row.RelativeItem().Text($"Well dimensions  :   Width  {ElevatorReportDb.resizableSquarewidth}   Heihgt  {ElevatorReportDb.resizableSquareHeight} ").FontFamily("Cairo").FontSize(12);
+                    });
+
+
+                    col.Item().Row(row =>
+                    {
+                        row.Spacing(20);
+
+                        // ===== أبعاد الشكل =====
+                        var parts = new List<string>();
+                        if (ElevatorReportDb.widthShape != null && ElevatorReportDb.widthShape != 0)
+                            parts.Add($"Width {ElevatorReportDb.widthShape}");
+                        if (ElevatorReportDb.heightShape != null && ElevatorReportDb.heightShape != 0)
+                            parts.Add($"Height {ElevatorReportDb.heightShape}");
+                        if (ElevatorReportDb.radiusShape != null && ElevatorReportDb.radiusShape != 0)
+                            parts.Add($"Radius {ElevatorReportDb.radiusShape}");
+
+                        string finalText = "Shape dimensions: " + string.Join("   ", parts);
+
+                        row.RelativeItem()
+                           .Text(finalText)
+                           .FontFamily("Cairo")
+                           .FontSize(12);
+
+                        // ===== السهم والرقم =====
+                        string directionSymbol = ElevatorReportDb.directionShape switch
+                        {
+                            9 => "←",
+                            3 => "→",
+                            12 => "↑",
+                            6 => "↓",
+                            _ => ""
+                        };
+
+                        // دمج السهم والرقم في نص واحد
+                        string directionText = $"{directionSymbol}  {ElevatorReportDb.directionShape}";
+
+                        row.ConstantItem(80) // تحديد عرض العنصر
+                           .Text(directionText)
+                           .FontFamily("Cairo")
+                           .FontSize(15); // حجم السهم الكبير
+                    });
+
+
+
+                    col.Item()
+                        .AlignCenter()
+                        .Element(e =>
+                        {
+
+                            e.Width(300)
+                             .Height(150)
+                            .Svg(svgContent)
+                             ;  // يجعل الصورة تمتد بعرض الصفحة تلقائيًا
+                        });
+
+
+                    //                     col.Item()
+                    //.AlignCenter()
+                    //.Element(e =>
+                    //{
+                    //    e.Svg(svgContent)
+                    //     .FitArea();  // يملأ الحيز المتاح تلقائيًا بدون تعارض قيود الحجم
+                    //});
+
+                    col.Item().Row(row =>
+                    {
+                        row.Spacing(20); // المسافة بين العناصر
+                        row.RelativeItem().Text($"Elevator Type : {ElevatorReportDb.typeElevator}").FontFamily("Cairo").FontSize(12);
+                    });
+
+
+                    //col.Item().Row(row =>
+                    //{
+                    //    row.Spacing(20); // المسافة بين العناصر
+                    //    row.RelativeItem().Text($"Report : {reportDb.Notes} ").FontFamily("Cairo").FontSize(12);
+
+                    //});
+                    col.Item().Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn(50);
+                            columns.RelativeColumn(25);
+                            columns.RelativeColumn(25);
+                        });
+
+                        // ===== هيدر =====
+                        table.Header(header =>
+                        {
+                            header.Cell().Border(1).Background("#f0f0f0").Padding(2)
+                                .AlignCenter()
+                                .Text("Floors").FontFamily("Cairo").Bold();
+
+                            header.Cell().Border(1).Background("#f0f0f0").Padding(2)
+                                .AlignCenter()
+                                .Text("Heidht").FontFamily("Cairo").Bold();
+
+                            header.Cell().Border(1).Background("#f0f0f0").Padding(2)
+                                .AlignCenter()
+                                .Text("Direction").FontFamily("Cairo").Bold();
+                        });
+
+                        // ===== Row: Floor Well =====
+                        table.Cell().Border(1).Padding(4)
+                            .AlignCenter()
+                            .Text("Elevator Well").FontFamily("Cairo").FontSize(9);
+
+                        table.Cell().Border(1).Padding(4)
+                            .AlignCenter()
+                            .Text(ElevatorReportDb.foundationHeight).FontFamily("Cairo").FontSize(9);
+
+                        table.Cell().Border(1).Padding(4)
+                            .AlignCenter()
+                            .Text(" ").FontFamily("Cairo").FontSize(9);
+
+                        // ===== Lists =====
+                        var heightList = ElevatorReportDb.floorHeights
+                            .Replace("[", "")
+                            .Replace("]", "")
+                            .Replace("\"", "")
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(int.Parse)
+                            .ToList();
+
+                        var DirectionList = ElevatorReportDb.doorDirections
+                            .Replace("[", "")
+                            .Replace("]", "")
+                            .Replace("\"", "")
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(int.Parse)
+                            .ToList();
+
+                        // ===== G Floor =====
+                        table.Cell().Border(1).Padding(4)
+                            .AlignCenter()
+                            .Text("G").FontFamily("Cairo").FontSize(9);
+
+                        table.Cell().Border(1).Padding(4)
+                            .AlignCenter()
+                            .Text(heightList[0]).FontFamily("Cairo").FontSize(9);
+
+                        table.Cell().Border(1).Padding(4)
+                            .AlignCenter()
+                            .Text(DirectionList[0]).FontFamily("Cairo").FontSize(9);
+
+                        // ===== باقي الأدوار =====
+                        for (int i = 1; i < heightList.Count; i++)
+                        {
+                            table.Cell().Border(1).Padding(4)
+                                .AlignCenter()
+                                .Text($"Floor {i}").FontFamily("Cairo").FontSize(9);
+
+                            table.Cell().Border(1).Padding(4)
+                                .AlignCenter()
+                                .Text(heightList[i]).FontFamily("Cairo").FontSize(9);
+
+                            table.Cell().Border(1).Padding(4)
+                                .AlignCenter()
+                                .Text(DirectionList[i]).FontFamily("Cairo").FontSize(9);
+                        }
+                    });
+
+
+                    //  col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+
+
+
+                    col.Item().Row(row =>
+                    {
+                        row.Spacing(20); // المسافة بين العناصر
+                        row.RelativeItem().Text($"Notes : {ElevatorReportDb.Notes}").FontFamily("Cairo").FontSize(12);
+                    });
+
+
+
+                    col.Item().Row(row =>
+                    {
+                        row.Spacing(20); // المسافة بين العناصر
+                        row.RelativeItem().Text($"PhoneNum. : {ElevatorReportDb.PhoneNum} ").FontFamily("Cairo").FontSize(12);
+
+                    });
+
+                    col.Item().Row(row =>
+                    {
+                        row.Spacing(50); // المسافة بين العناصر
+                        row.RelativeItem().Text($"Marina REP. : {ElevatorReportDb.TechName} ").FontFamily("Cairo").FontSize(12);
+                        //row.RelativeItem().Text($"PhoneNum. : {reportDb.PhoneNum} ").FontFamily("Cairo").FontSize(12);
+                        row.RelativeItem().Text($"Site REP. : {ElevatorReportDb.ClientName} ").FontFamily("Cairo").FontSize(12);
+
+                    });
+                    // صورة داخل المحتوى كمثال إضافي
+                    col.Item().Layers(layers =>
+                    {
+                        // ✅ الطبقة الأساسية (التواقيع)
+                        layers.PrimaryLayer().Row(row =>
+                        {
+                            row.Spacing(15);
+
+                            // الصورة الأولى (توقيع الفني)
+                            row.RelativeItem().Element(e =>
+                            {
+
+                                e.Padding(5)
+         .Width(150)
+         .Height(100)
+         .Image(techImage)
+         .FitWidth();
+                            });
+
+                            // الصورة الثانية (توقيع العميل)
+                            row.RelativeItem().Element(e =>
+                            {
+                                e.Padding(5)
+         .Width(150)
+         .Height(100)
+         .Image(clientImage)
+         .FitWidth();
+                            });
+                        });
+
+                        // ✅ الطبقة الثانية (الختم فوق الصورتين)
+                        layers.Layer()
+    .AlignCenter()
+    .AlignMiddle()
+    .Element(e =>
+    {
+        e.Width(100)         // ← الحجم يوضع هنا (على الـ container)
+         .Image(sealBytes)   // ← وأخيرًا الصورة
+         .FitWidth();
+    });
+                    });
+
+
+
+                });
+
+
+                // ===== ذيل الصفحة =====
+                page.Footer()
+                .BorderBottom(1)
+.PaddingVertical(2)
+.Row(row =>
+{
+    row.Spacing(10);
+
+    // ✅ الشعار على اليسار
+    row.ConstantItem(150).Image(logoBytesFooter).FitWidth();
+
+    // ✅ معلومات الاتصال في المنتصف
+    row.RelativeItem().Column(col =>
+    {
+        col.Spacing(6);
+
+        col.Item().Row(r =>
+        {
+            r.Spacing(6);
+            r.RelativeItem().Background("#B91C1C").Padding(5).Text("qatar@marinaplt.com").FontColor(Colors.White).FontFamily("Cairo").FontSize(12);
+            r.RelativeItem().Background("#1E3A8A").Padding(5).Text("www.marinaplt.com").FontColor(Colors.White).FontFamily("Cairo").FontSize(12);
+        });
+
+        col.Item().Row(r =>
+        {
+            r.Spacing(6);
+            r.RelativeItem().Background("#1E3A8A").Padding(5).Text("Tel.: 44 32 32 46").FontColor(Colors.White).FontFamily("Cairo").FontSize(12);
+            r.RelativeItem().Background("#B91C1C").Padding(5).Text("Fax: 44 27 70 76").FontColor(Colors.White).FontFamily("Cairo").FontSize(12);
+        });
+    });
+});
+            });
+        });
+
+        var pdf = document.GeneratePdf();
+        return File(pdf , "application/pdf" , "report.pdf");
+    }
+
+    private string GenerateSvgStringCorrected(SvgRequest dto)
+    {
+        int w = dto.Width;
+        int h = dto.Height;
+        int iw = (int)dto.InnerWidth;
+        int ih = (int)dto.InnerHeight;
+        double radius = (double)dto.TopRadius;
+
+        // مساحة إضافية أعلى لنصف الدائرة وخطوط الأبعاد
+        int topMargin = (int)Math.Ceiling(radius + 50);
+
+        // مركز المربع الداخلي مع مراعاة topMargin
+        int innerX = (w - iw) / 2;
+        int innerY = topMargin + (h - ih - topMargin) / 2;
+
+        return $@"
+<svg xmlns=""http://www.w3.org/2000/svg"" width=""{w+200}"" height=""{h+120}"" viewBox=""{-60} {-60} {w+120} {h+120}"">
+
+    <!-- ======================= FRAME ======================= -->
+    <rect x=""0"" y=""0"" width=""{w}"" height=""{h}""
+          fill=""white"" stroke=""black"" stroke-width=""5"" />
+
+    <!-- ======================= INNER SHAPE: Square + Top Half Circle ======================= -->
+    <rect x=""{innerX}"" y=""{innerY}"" width=""{iw}"" height=""{ih}""
+          fill=""none"" stroke=""red"" stroke-width=""3"" />
+
+    <path d=""M {innerX} {innerY} A {radius} {radius} 0 0 1 {innerX+iw} {innerY}""
+          fill=""none"" stroke=""red"" stroke-width=""3"" />
+
+    <!-- ======================= DIMENSIONS: INNER ======================= -->
+
+    <!-- Inner Width -->
+    <line x1=""{innerX}"" y1=""{innerY-40}"" x2=""{innerX+iw}"" y2=""{innerY-40}"" stroke=""red"" stroke-width=""2"" />
+    <polyline points=""{innerX},{innerY-40} {innerX+15},{innerY-45} {innerX+15},{innerY-35}"" fill=""red"" />
+    <polyline points=""{innerX+iw},{innerY-40} {innerX+iw-15},{innerY-45} {innerX+iw-15},{innerY-35}"" fill=""red"" />
+    <text x=""{innerX+iw/2}"" y=""{innerY-50}"" font-size=""22"" text-anchor=""middle"" fill=""red"">
+        {iw} mm
+    </text>
+
+    <!-- Inner Height -->
+    <line x1=""{innerX+iw+40}"" y1=""{innerY}"" x2=""{innerX+iw+40}"" y2=""{innerY+ih}"" stroke=""red"" stroke-width=""2"" />
+    <polyline points=""{innerX+iw+40},{innerY} {innerX+iw+35},{innerY+15} {innerX+iw+45},{innerY+15}"" fill=""red"" />
+    <polyline points=""{innerX+iw+40},{innerY+ih} {innerX+iw+35},{innerY+ih-15} {innerX+iw+45},{innerY+ih-15}"" fill=""red"" />
+    <text x=""{innerX+iw+55}"" y=""{innerY+ih/2}"" font-size=""22"" text-anchor=""start"" dominant-baseline=""middle"" fill=""red"" transform=""rotate(90,{innerX+iw+55},{innerY+ih/2})"">
+        {ih} mm
+    </text>
+
+    <!-- Half Circle Height -->
+    <line x1=""{innerX-40}"" y1=""{innerY}"" x2=""{innerX-40}"" y2=""{innerY-radius}"" stroke=""red"" stroke-width=""2"" />
+    <polyline points=""{innerX-40},{innerY} {innerX-45},{innerY-15} {innerX-35},{innerY-15}"" fill=""red"" />
+    <polyline points=""{innerX-40},{innerY-radius} {innerX-45},{innerY-radius+15} {innerX-35},{innerY-radius+15}"" fill=""red"" />
+    <text x=""{innerX-55}"" y=""{innerY-radius/2}"" font-size=""22"" text-anchor=""middle"" fill=""red"">
+        {radius} mm
+    </text>
+
+    <!-- ======================= DIMENSIONS: OUTER ======================= -->
+
+    <!-- Horizontal (Outer Width) -->
+    <line x1=""0"" y1=""{h+40}"" x2=""{w}"" y2=""{h+40}"" stroke=""black"" stroke-width=""2"" />
+    <polyline points=""0,{h+40} 15,{h+35} 15,{h+45}"" fill=""black"" />
+    <polyline points=""{w},{h+40} {w-15},{h+35} {w-15},{h+45}"" fill=""black"" />
+    <text x=""{w/2}"" y=""{h+30}"" font-size=""26"" text-anchor=""middle"">{w} mm</text>
+
+    <!-- Vertical (Outer Height) -->
+    <line x1=""{w+40}"" y1=""0"" x2=""{w+40}"" y2=""{h}"" stroke=""black"" stroke-width=""2"" />
+    <polyline points=""{w+40},0 {w+35},15 {w+45},15"" fill=""black"" />
+    <polyline points=""{w+40},{h} {w+35},{h-15} {w+45},{h-15}"" fill=""black"" />
+    <text x=""{w+50}"" y=""{h/2}"" font-size=""26"" text-anchor=""start"" dominant-baseline=""middle"" transform=""rotate(90,{w+50},{h/2})"">{h} mm</text>
+
+</svg>";
+    }
+    private string GenerateSvgString(SvgRequest dto)
+    {
+        int w = dto.Width;
+        int h = dto.Height;
+        int iw = (int)dto.InnerWidth;
+        int ih = (int)dto.InnerHeight;
+
+        int margin = 80; // مساحة كافية للأبعاد
+
+        int svgWidth = w + margin * 2;
+        int svgHeight = h + margin * 2;
+
+        // center the main box including margin
+        int offsetX = margin;
+        int offsetY = margin;
+
+        int innerX = offsetX + (w - iw) / 2;
+        int innerY = offsetY + (h - ih) / 2;
+
+        return $@"
+<svg xmlns=""http://www.w3.org/2000/svg"" 
+     width=""{svgWidth}"" height=""{svgHeight}"" 
+     viewBox=""0 0 {svgWidth} {svgHeight}"">
+
+    <!-- ======================= FRAME ======================= -->
+    <rect x=""{offsetX}"" y=""{offsetY}"" width=""{w}"" height=""{h}""
+          fill=""white"" stroke=""black"" stroke-width=""5"" />
+
+    <!-- ======================= INNER BOX ======================= -->
+    <rect x=""{innerX}"" y=""{innerY}"" width=""{iw}"" height=""{ih}""
+          fill=""none"" stroke=""red"" stroke-width=""3"" />
+
+    <!-- ======================= OUTER DIMENSIONS ======================= -->
+
+    <!-- Horizontal (Outer Width) -->
+    <line x1=""{offsetX}"" y1=""{offsetY+h+40}"" 
+          x2=""{offsetX+w}"" y2=""{offsetY+h+40}""
+          stroke=""black"" stroke-width=""2"" />
+
+    <polyline points=""{offsetX},{offsetY+h+40} {offsetX+15},{offsetY+h+35} {offsetX+15},{offsetY+h+45}"" fill=""black"" />
+    <polyline points=""{offsetX+w},{offsetY+h+40} {offsetX+w-15},{offsetY+h+35} {offsetX+w-15},{offsetY+h+45}"" fill=""black"" />
+
+    <text x=""{offsetX+w/2}"" y=""{offsetY+h+30}"" 
+          font-size=""26"" text-anchor=""middle"">
+        {w} mm
+    </text>
+
+    <!-- Vertical (Outer Height) -->
+    <line x1=""{offsetX+w+40}"" y1=""{offsetY}"" 
+          x2=""{offsetX+w+40}"" y2=""{offsetY+h}""
+          stroke=""black"" stroke-width=""2"" />
+
+    <polyline points=""{offsetX+w+40},{offsetY} {offsetX+w+35},{offsetY+15} {offsetX+w+45},{offsetY+15}"" fill=""black"" />
+    <polyline points=""{offsetX+w+40},{offsetY+h} {offsetX+w+35},{offsetY+h-15} {offsetX+w+45},{offsetY+h-15}"" fill=""black"" />
+
+    <text x=""{offsetX+w+55}"" y=""{offsetY+h/2}"" 
+          font-size=""26"" text-anchor=""start"" dominant-baseline=""middle""
+          transform=""rotate(90,{offsetX+w+55},{offsetY+h/2})"">
+        {h} mm
+    </text>
+
+
+    <!-- ======================= INNER DIMENSIONS ======================= -->
+
+    <!-- Horizontal (Inner Width) -->
+    <line x1=""{innerX}"" y1=""{innerY-30}"" 
+          x2=""{innerX+iw}"" y2=""{innerY-30}""
+          stroke=""red"" stroke-width=""2"" />
+
+    <polyline points=""{innerX},{innerY-30} {innerX+15},{innerY-35} {innerX+15},{innerY-25}"" fill=""red"" />
+    <polyline points=""{innerX+iw},{innerY-30} {innerX+iw-15},{innerY-35} {innerX+iw-15},{innerY-25}"" fill=""red"" />
+
+    <text x=""{innerX+iw/2}"" y=""{innerY-40}"" 
+          font-size=""22"" text-anchor=""middle"" fill=""red"">
+        {iw} mm
+    </text>
+
+    <!-- Vertical (Inner Height) -->
+    <line x1=""{innerX+iw+30}"" y1=""{innerY}"" 
+          x2=""{innerX+iw+30}"" y2=""{innerY+ih}""
+          stroke=""red"" stroke-width=""2"" />
+
+    <polyline points=""{innerX+iw+30},{innerY} {innerX+iw+25},{innerY+15} {innerX+iw+35},{innerY+15}"" fill=""red"" />
+    <polyline points=""{innerX+iw+30},{innerY+ih} {innerX+iw+25},{innerY+ih-15} {innerX+iw+35},{innerY+ih-15}"" fill=""red"" />
+
+    <text x=""{innerX+iw+45}"" y=""{innerY+ih/2}"" 
+          font-size=""22"" fill=""red"" 
+          text-anchor=""start"" dominant-baseline=""middle""
+          transform=""rotate(90,{innerX+iw+45},{innerY+ih/2})"">
+        {ih} mm
+    </text>
+
+</svg>";
+    }
+    private string GenerateSvgCircle(SvgRequest dto)
+    {
+        int w = dto.Width;
+        int h = dto.Height;
+        int margin = 80; // مساحة كافية للأبعاد
+
+        int svgWidth = w + margin * 2;
+        int svgHeight = h + margin * 2;
+
+        // center the main box including margin
+        int offsetX = margin;
+        int offsetY = margin;
+
+        // مركز الدائرة
+        int cx = offsetX + w / 2;
+        int cy = offsetY + h / 2;
+        double r =(double) dto.TopRadius; // نصف القطر للدائرة
+
+        return $@"
+<svg xmlns=""http://www.w3.org/2000/svg"" 
+     width=""{svgWidth}"" height=""{svgHeight}"" 
+     viewBox=""0 0 {svgWidth} {svgHeight}"">
+
+    <!-- ======================= FRAME ======================= -->
+    <rect x=""{offsetX}"" y=""{offsetY}"" width=""{w}"" height=""{h}""
+          fill=""white"" stroke=""black"" stroke-width=""5"" />
+
+    <!-- ======================= INNER SHAPE: Circle ======================= -->
+    <circle cx=""{cx}"" cy=""{cy}"" r=""{r}""
+            fill=""none"" stroke=""red"" stroke-width=""3"" />
+
+    <!-- ======================= OUTER DIMENSIONS ======================= -->
+    <line x1=""{offsetX}"" y1=""{offsetY+h+40}"" 
+          x2=""{offsetX+w}"" y2=""{offsetY+h+40}""
+          stroke=""black"" stroke-width=""2"" />
+
+    <polyline points=""{offsetX},{offsetY+h+40} {offsetX+15},{offsetY+h+35} {offsetX+15},{offsetY+h+45}"" fill=""black"" />
+    <polyline points=""{offsetX+w},{offsetY+h+40} {offsetX+w-15},{offsetY+h+35} {offsetX+w-15},{offsetY+h+45}"" fill=""black"" />
+
+    <text x=""{offsetX+w/2}"" y=""{offsetY+h+30}"" 
+          font-size=""26"" text-anchor=""middle"">
+        {w} mm
+    </text>
+
+    <line x1=""{offsetX+w+40}"" y1=""{offsetY}"" 
+          x2=""{offsetX+w+40}"" y2=""{offsetY+h}""
+          stroke=""black"" stroke-width=""2"" />
+
+    <polyline points=""{offsetX+w+40},{offsetY} {offsetX+w+35},{offsetY+15} {offsetX+w+45},{offsetY+15}"" fill=""black"" />
+    <polyline points=""{offsetX+w+40},{offsetY+h} {offsetX+w+35},{offsetY+h-15} {offsetX+w+45},{offsetY+h-15}"" fill=""black"" />
+
+    <text x=""{offsetX+w+55}"" y=""{offsetY+h/2}"" 
+          font-size=""26"" text-anchor=""start"" dominant-baseline=""middle"" 
+          transform=""rotate(90,{offsetX+w+55},{offsetY+h/2})"">
+        {h} mm
+    </text>
+
+    <!-- ======================= INNER DIMENSION: Radius ======================= -->
+    <line x1=""{cx-r-40}"" y1=""{cy}"" x2=""{cx+r+40}"" y2=""{cy}""
+          stroke=""red"" stroke-width=""2"" />
+
+    <text x=""{cx}"" y=""{cy-r-20}"" font-size=""22"" text-anchor=""middle"" fill=""red"">
+        r = {r} mm
+    </text>
+
+</svg>";
+    }
     private string? GetFormValueOrDefault(IFormCollection form , string key)
     {
         if(form.TryGetValue(key , out var value)&&value.Count>0)
@@ -2533,3 +4277,6 @@ public class EquipmentReportController : ControllerBase
     }
 
 }
+
+
+

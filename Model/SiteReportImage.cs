@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace maria.Model
 {
@@ -9,7 +10,7 @@ namespace maria.Model
         public int siteReportId { get; set; }
         public string FilePath { get; set; }
         public string FileName { get; set; }
-      //  [JsonIgnore]
+        [JsonIgnore]
         public SiteReport siteReports { get; set; }
     }
 }

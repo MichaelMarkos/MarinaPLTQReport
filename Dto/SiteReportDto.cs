@@ -11,6 +11,7 @@
         public string TechName { get; set; }
         public int CheckingItemsCount { get; set; }
         public string? ReportNumber { get; set; }
+        public List<string>? Images { get; set; }
 
     }
 }
