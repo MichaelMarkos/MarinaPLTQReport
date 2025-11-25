@@ -6,8 +6,10 @@
         public DateTime Date { get; set; }
         public long UserId { get; set; } = 1;
         public string? ReportNumber { get; set; }
+        public string reportType { get; set; }
         public string? InvoiceNumber { get; set; }
         public string CompanyName { get; set; }
+        public string salesName { get; set; }
         public string? ProjectAddress { get; set; }
        
         public int resizableSquarewidth { get; set; }
@@ -22,6 +24,14 @@
         public int directionShape { get; set; }
         public int floors { get; set; }
         public int foundationHeight { get; set; }
+        public int capinaHeight { get; set; }
+        public int liftWidth { get; set; }
+        public int rightWidth { get; set; }
+        public int centerWidth { get; set; }
+        public int directionWidth { get; set; }
+        public int directionHeight { get; set; }
+        public string wellStatus { get; set; }
+        public string capinaStatus { get; set; }
         public string floorHeights { get; set; }
         public string doorDirections { get; set; }
         public string? workRequied { get; set; }
@@ -32,11 +42,19 @@
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         //public string? PdfFilePath { get; set; } 
 
-        public string ClientName { get; set; }
-        public string ClientSignaturePath { get; set; }
-        public string TechSignaturePath { get; set; }
+      //  public string ClientName { get; set; }
+        //public string ClientSignaturePath { get; set; }
+        //public string TechSignaturePath { get; set; }
         public string TechName { get; set; }
         public string? PhoneNum { get; set; }
+
+
+        public string WellImagePath { get; set; }
+        public string DirectionImagePath { get; set; }
+        public string ResizableImagePath { get; set; }
+
+
+
         public ICollection<ElevatorImage> elevatorFiles { get; set; } = new List<ElevatorImage>();
     }
 }
