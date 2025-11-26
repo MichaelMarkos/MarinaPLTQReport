@@ -21,7 +21,7 @@
         public int? widthShape { get; set; }
         public int? heightShape { get; set; }
         public int? radiusShape { get; set; }
-        public int directionShape { get; set; }
+       // public int directionShape { get; set; }
         public int floors { get; set; }
         public int foundationHeight { get; set; }
         public int capinaHeight { get; set; }

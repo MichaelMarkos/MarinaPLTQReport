@@ -206,7 +206,7 @@ public class EquipmentReportController : ControllerBase
             widthShape = int.TryParse(form["width"], out var width) ? width : 0,
             heightShape = int.TryParse(form["height"], out var height) ? height : 0,
             radiusShape = int.TryParse(form["radius"], out var radius) ? radius : 0,
-            directionShape = int.TryParse(form["direction"], out var direction) ? direction : 0,
+           // directionShape = int.TryParse(form["direction"], out var direction) ? direction : 0,
             floors = int.TryParse(form["floors"], out var floors) ? floors : 0,
             foundationHeight = int.TryParse(form["foundationHeight"], out var foundationHeight) ? foundationHeight : 0,
             resizableSquarewidth = int.TryParse(form["resizableSquarewidth"], out var resizableSquarewidth) ? resizableSquarewidth : 0,
@@ -3526,7 +3526,7 @@ public class EquipmentReportController : ControllerBase
                 widthShape = x.widthShape,
                 heightShape = x.heightShape,
                 radiusShape = x.radiusShape,
-                directionShape = x.directionShape,
+                //directionShape = x.directionShape,
                 floors = x.floors,
                 foundationHeight = x.foundationHeight,
                 capinaHeight = x.capinaHeight,
@@ -3651,7 +3651,7 @@ public class EquipmentReportController : ControllerBase
             widthShape = ElevatorReportDb.widthShape ,
             heightShape = ElevatorReportDb.heightShape ,
             radiusShape =ElevatorReportDb.radiusShape,
-            directionShape = ElevatorReportDb.directionShape ,
+           // directionShape = ElevatorReportDb.directionShape ,
             foundationHeight = ElevatorReportDb.foundationHeight,
             floorHeights = !string.IsNullOrEmpty(ElevatorReportDb.floorHeights)
  ? ElevatorReportDb.floorHeights.Trim('"', '[', ']').Replace("\",\"", ",")
@@ -3798,20 +3798,20 @@ public class EquipmentReportController : ControllerBase
                     .FontFamily("Cairo")
                     .FontSize(12);
 
-                        // السهم
-                        string directionSymbol = ElevatorReportDb.directionShape switch
-                        {
-                            9 => "←",
-                            3 => "→",
-                            12 => "↑",
-                            6 => "↓",
-                            _ => ""
-                        };
+                    //    // السهم
+                    //    string directionSymbol = ElevatorReportDb.directionShape switch
+                    //    {
+                    //        9 => "←",
+                    //        3 => "→",
+                    //        12 => "↑",
+                    //        6 => "↓",
+                    //        _ => ""
+                    //    };
 
-                        row.ConstantItem(80)
-                    .Text($"{directionSymbol} {ElevatorReportDb.directionShape}")
-                    .FontFamily("Cairo")
-                    .FontSize(15);
+                    //    row.ConstantItem(80)
+                    //.Text($"{directionSymbol} {ElevatorReportDb.directionShape}")
+                    //.FontFamily("Cairo")
+                    //.FontSize(15);
                     });
 
                     // Row 4: مقاسات سيبس
@@ -3888,8 +3888,25 @@ public class EquipmentReportController : ControllerBase
                         for (int i = heightList.Count - 1; i >= 1; i--)
                         {
                             table.Cell().Border(1).Padding(4).AlignCenter().Text($"الدور  {i}").FontFamily("Cairo").FontSize(9);
-                            table.Cell().Border(1).Padding(4).AlignCenter().Text(heightList[i]).FontFamily("Cairo").FontSize(9);
-                            table.Cell().Border(1).Padding(4).AlignCenter().Text(directionList[i]).FontFamily("Cairo").FontSize(9);
+                            if(heightList[i] ==1001)
+                            {
+                                table.Cell().Border(1).Padding(4).AlignCenter().Text("تحت الانشاء").FontFamily("Cairo").FontSize(9);
+
+                            }
+                            else
+                            {
+                                table.Cell().Border(1).Padding(4).AlignCenter().Text(heightList[i]).FontFamily("Cairo").FontSize(9);
+
+                            }
+                            if(directionList[i] ==66)
+                            {
+                                table.Cell().Border(1).Padding(4).AlignCenter().Text("تحت الانشاء").FontFamily("Cairo").FontSize(9);
+
+                            }
+                            else
+                            {
+                                table.Cell().Border(1).Padding(4).AlignCenter().Text(directionList[i]).FontFamily("Cairo").FontSize(9);
+                            }
                         }
 
 
