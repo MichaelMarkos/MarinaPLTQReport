@@ -204,6 +204,7 @@ public class EquipmentReportController : ControllerBase
             salesName = form["personName"],
             ProjectAddress = GetFormValueOrDefault(form, "projectAddress"),
             widthShape = int.TryParse(form["width"], out var width) ? width : 0,
+            garagsNum = int.TryParse(form["garagsNum"], out var garagsNum) ? garagsNum : 0,
             heightShape = int.TryParse(form["height"], out var height) ? height : 0,
             radiusShape = int.TryParse(form["radius"], out var radius) ? radius : 0,
            // directionShape = int.TryParse(form["direction"], out var direction) ? direction : 0,
@@ -224,10 +225,12 @@ public class EquipmentReportController : ControllerBase
 
 
             floorHeights = form["floorHeights"],
+            garagsHeights = form["garagsHeights"],
             shapeType = form["shapeType"],
             typeElevator = form["typeElevator"],
             workRequied = form["workRequied"],
             doorDirections = form["doorDirections"],
+            garagsDirections = form["garagsDirections"],
             Notes = form["notes"],
             PhoneNum = form["phoneNum"],
             // Signatures (paths to be saved after upload)
@@ -3528,11 +3531,15 @@ public class EquipmentReportController : ControllerBase
                 radiusShape = x.radiusShape,
                 //directionShape = x.directionShape,
                 floors = x.floors,
+                garagsNum = x.garagsNum,
                 foundationHeight = x.foundationHeight,
-                capinaHeight = x.capinaHeight,
+                capinaHeight = (int)x.capinaHeight,
                 capinaStatus = x.capinaStatus,
                 floorHeights = !string.IsNullOrEmpty(x.floorHeights)
                     ? x.floorHeights.Trim('"', '[', ']').Replace("\",\"", ",")
+                    : string.Empty,
+                garagsHeights = !string.IsNullOrEmpty(x.garagsHeights)
+                    ? x.garagsHeights.Trim('"', '[', ']').Replace("\",\"", ",")
                     : string.Empty,
                 workRequied = !string.IsNullOrEmpty(x.workRequied)
                     ? x.workRequied.Trim('"', '[', ']').Replace("\",\"", ",")
@@ -3557,6 +3564,9 @@ public class EquipmentReportController : ControllerBase
 
                 doorDirections =  !string.IsNullOrEmpty(x.doorDirections)
                     ? x.doorDirections.Trim('"', '[', ']').Replace("\",\"", ",")
+                    : string.Empty,
+                garagsDirections =  !string.IsNullOrEmpty(x.garagsDirections)
+                    ? x.garagsDirections.Trim('"', '[', ']').Replace("\",\"", ",")
                     : string.Empty,
 
             };
@@ -3668,6 +3678,9 @@ public class EquipmentReportController : ControllerBase
  ? ElevatorReportDb.doorDirections.Trim('"', '[', ']').Replace("\",\"", ",")
  : string.Empty,
 
+            rightWidth = ElevatorReportDb.rightWidth,
+            liftWidth = ElevatorReportDb.liftWidth,
+            centerWidth = ElevatorReportDb.centerWidth,
 
         };
 
@@ -3791,6 +3804,15 @@ public class EquipmentReportController : ControllerBase
                             parts.Add($"العمق {ElevatorReportDb.heightShape}");
                         if (ElevatorReportDb.radiusShape > 0)
                             parts.Add($"نصف القطر {ElevatorReportDb.radiusShape}");
+
+                        parts.Add($"         ");
+
+                        if (ElevatorReportDb.rightWidth > 0)
+                            parts.Add($"كتف يمين {ElevatorReportDb.rightWidth}");
+                        if (ElevatorReportDb.centerWidth > 0)
+                            parts.Add($"فتحه الباب {ElevatorReportDb.centerWidth}");
+                        if (ElevatorReportDb.liftWidth > 0)
+                            parts.Add($" كتف شمال  {ElevatorReportDb.liftWidth}");
                         string finalText = "مقاسات البئر: " + string.Join("   ", parts);
 
                         row.RelativeItem()
@@ -3876,6 +3898,15 @@ public class EquipmentReportController : ControllerBase
                     .Replace("[", "").Replace("]", "").Replace("\"", "")
                     .Split(',', StringSplitOptions.RemoveEmptyEntries)
                     .Select(int.Parse).ToList();
+                        var gargeheightList = ElevatorReportDb.garagsHeights
+                    .Replace("[", "").Replace("]", "").Replace("\"", "")
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(int.Parse).ToList();
+
+                        var gargedirectionList = ElevatorReportDb.garagsDirections
+                    .Replace("[", "").Replace("]", "").Replace("\"", "")
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(int.Parse).ToList();
 
                         // الأرضي
                         table.Cell().Border(1).Padding(4).AlignCenter().Text("الكابينه").FontFamily("Cairo").FontSize(9);
@@ -3909,12 +3940,37 @@ public class EquipmentReportController : ControllerBase
                             }
                         }
 
-
-
-                           // الحراج
-                        table.Cell().Border(1).Padding(4).AlignCenter().Text("الجراج").FontFamily("Cairo").FontSize(9);
+                            // الارضي
+                        table.Cell().Border(1).Padding(4).AlignCenter().Text("الارضي").FontFamily("Cairo").FontSize(9);
                         table.Cell().Border(1).Padding(4).AlignCenter().Text(heightList[0]).FontFamily("Cairo").FontSize(9);
                         table.Cell().Border(1).Padding(4).AlignCenter().Text(directionList[0]).FontFamily("Cairo").FontSize(9);
+
+                        for (int i = 0 ; i <= gargeheightList.Count-1 ;i++)
+                        {
+                            table.Cell().Border(1).Padding(4).AlignCenter().Text($"الجراج -  {i+1}").FontFamily("Cairo").FontSize(9);
+                            if(gargeheightList[i] ==1005)
+                            {
+                                table.Cell().Border(1).Padding(4).AlignCenter().Text("تحت الانشاء").FontFamily("Cairo").FontSize(9);
+
+                            }
+                            else
+                            {
+                                table.Cell().Border(1).Padding(4).AlignCenter().Text(gargeheightList[i]).FontFamily("Cairo").FontSize(9);
+
+                            }
+                            if(gargedirectionList[i] ==70)
+                            {
+                                table.Cell().Border(1).Padding(4).AlignCenter().Text("تحت الانشاء").FontFamily("Cairo").FontSize(9);
+
+                            }
+                            else
+                            {
+                                table.Cell().Border(1).Padding(4).AlignCenter().Text(gargedirectionList[i]).FontFamily("Cairo").FontSize(9);
+                            }
+                        }
+
+
+                       
 
 
                         table.Cell().Border(1).Padding(4) .AlignCenter() .Text("حفره البئر").FontFamily("Cairo").FontSize(9);
@@ -3968,7 +4024,7 @@ public class EquipmentReportController : ControllerBase
 
 
         var pdf = document.GeneratePdf();
-        return File(pdf , "application/pdf" , "report.pdf");
+        return File(pdf , "application/pdf" , $"{DateTime.Now}-report.pdf");
     }
 
     private string GenerateSvgStringCorrected(SvgRequest dto)

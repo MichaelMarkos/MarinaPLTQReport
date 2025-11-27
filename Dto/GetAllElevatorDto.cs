@@ -15,6 +15,11 @@
         public int resizableSquareHeight { get; set; }
 
 
+        public int? liftWidth { get; set; }
+        public int? rightWidth { get; set; }
+        public int? centerWidth { get; set; }
+
+
         public string typeElevator { get; set; }
         public string shapeType { get; set; }
         public int? widthShape { get; set; }
@@ -24,9 +29,13 @@
         public int floors { get; set; }
         public int foundationHeight { get; set; }
         public string floorHeights { get; set; }
+        public string? garagsHeights { get; set; }
+        public string? garagsDirections { get; set; }
+        public int garagsNum { get; set; }
+
         public string? workRequied { get; set; }
 
-        public int capinaHeight { get; set; }
+        public int? capinaHeight { get; set; }
         public string capinaStatus { get; set; }
 
         public string? Notes { get; set; }

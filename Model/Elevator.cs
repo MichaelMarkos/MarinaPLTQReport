@@ -23,17 +23,20 @@
         public int? radiusShape { get; set; }
        // public int directionShape { get; set; }
         public int floors { get; set; }
+        public int garagsNum { get; set; }
         public int foundationHeight { get; set; }
-        public int capinaHeight { get; set; }
-        public int liftWidth { get; set; }
-        public int rightWidth { get; set; }
-        public int centerWidth { get; set; }
+        public int? capinaHeight { get; set; }
+        public int? liftWidth { get; set; }
+        public int? rightWidth { get; set; }
+        public int? centerWidth { get; set; }
         public int directionWidth { get; set; }
         public int directionHeight { get; set; }
         public string wellStatus { get; set; }
         public string capinaStatus { get; set; }
         public string floorHeights { get; set; }
+        public string? garagsHeights { get; set; }
         public string doorDirections { get; set; }
+        public string? garagsDirections { get; set; }
         public string? workRequied { get; set; }
 
       
