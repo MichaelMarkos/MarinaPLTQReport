@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public DateTime Date { get; set; }
         public string ReportNumber { get; set; }
+
         public string reportType { get; set; }
         public string salesName { get; set; }
 
@@ -31,6 +32,7 @@
         public string floorHeights { get; set; }
         public string? garagsHeights { get; set; }
         public string? garagsDirections { get; set; }
+        public string? garagstwoDirections { get; set; }
         public int garagsNum { get; set; }
 
         public string? workRequied { get; set; }
@@ -53,6 +55,8 @@
         public string []? imageSva { get; set; } = new string [] { };
 
         public string doorDirections { get; set; }
+        public string? doortwoDirections { get; set; }
+        public bool twoDirectionFlag { get; set; }
 
     }
 }

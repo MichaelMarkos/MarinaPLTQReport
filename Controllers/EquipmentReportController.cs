@@ -11,6 +11,7 @@ using QuestPDF.Fluent;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using SkiaSharp;
 using Svg.FilterEffects;
 using System;
 using System.IO;
@@ -230,7 +231,11 @@ public class EquipmentReportController : ControllerBase
             typeElevator = form["typeElevator"],
             workRequied = form["workRequied"],
             doorDirections = form["doorDirections"],
+            doortwoDirections = form["doortwoDirections"],
             garagsDirections = form["garagsDirections"],
+            garagstwoDirections = form["garagstwoDirections"],
+            twoDirectionFlag = bool.Parse( form["twoDirectionFlag"]),
+
             Notes = form["notes"],
             PhoneNum = form["phoneNum"],
             // Signatures (paths to be saved after upload)
@@ -351,38 +356,61 @@ public class EquipmentReportController : ControllerBase
     }
 
     [HttpGet("GetAllReports")]
-    public async Task<IActionResult> GetAllReports(long userId , int pageNumber = 1 , int pageSize = 10)
+    public async Task<IActionResult> GetAllReports(
+    long userId ,
+    string? reportNumber ,
+    string? companyName ,
+    string? techName ,
+    string? phoneNum ,
+    string? from ,
+    string? to ,
+    int pageNumber = 1 ,
+    int pageSize = 5)
     {
         if(pageNumber<1)
             pageNumber=1;
         if(pageSize<1)
             pageSize=10;
 
+        var query = _db.Reports.AsQueryable();
 
-        var totalReports = await _db.Reports.CountAsync();
-
-        var reports = new List<Report>();
-
+        // فلتر المستخدم
         if(userId>0)
-        {
-            reports=await _db.Reports
-               .Where(x => x.UserId==userId)
-               .OrderByDescending(r => r.CreatedAt)
-               .Skip((pageNumber-1)*pageSize)
-               .Take(pageSize)
-               .ToListAsync();
-        }
-        else
-        {
-            reports=await _db.Reports
-           .OrderByDescending(r => r.CreatedAt)
-           .Skip((pageNumber-1)*pageSize)
-           .Take(pageSize)
-           .ToListAsync();
-        }
+            query=query.Where(x => x.UserId==userId);
+
+        // فلتر رقم التقرير
+        if(!string.IsNullOrWhiteSpace(reportNumber))
+            query=query.Where(x => x.ReportNumber.Contains(reportNumber));
+
+        // فلتر اسم الشركة
+        if(!string.IsNullOrWhiteSpace(companyName))
+            query=query.Where(x => x.CompanyName.Contains(companyName));
+
+        // فلتر الفني
+        if(!string.IsNullOrWhiteSpace(techName))
+            query=query.Where(x => x.TechName.Contains(techName));
+
+        // فلتر رقم الهاتف
+        if(!string.IsNullOrWhiteSpace(phoneNum))
+            query=query.Where(x => x.PhoneNum.Contains(phoneNum));
+
+        // فلتر التاريخ
+        if(!string.IsNullOrWhiteSpace(from)&&!string.IsNullOrWhiteSpace(to))
+            query=query.Where(x => x.CreatedAt.Date>=DateTime.Parse(from)&&x.CreatedAt.Date<=DateTime.Parse(to));
+
+        // ترتيب
+        query=query.OrderByDescending(r => r.CreatedAt);
+
+        // Total بعد الفلاتر
+        var totalReports = await query.CountAsync();
+
+        // Paging
+        var reports = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
 
         var imagesDb = await _db.ReportFiles.ToListAsync();
-
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
         var pagedReports = reports.Select(x => new GetAllReportDto
@@ -390,7 +418,7 @@ public class EquipmentReportController : ControllerBase
             Id = x.Id,
             Date = x.Date,
             ReportNumber = x.ReportNumber,
-            ReportType= x.ReportType,
+            ReportType = x.ReportType,
             InvoiceNumber = x.InvoiceNumber,
             CompanyName = x.CompanyName,
             ProjectAddress = x.ProjectAddress,
@@ -400,27 +428,34 @@ public class EquipmentReportController : ControllerBase
             Model = x.Model,
             SerialNumber = x.SerialNumber,
             WarrantyStatus = x.WarrantyStatus,
+
             specifications = $"{x.Cradle} Cradle  {x.Meter} Meter with ( {x.Unit} ) Suspension Unit ",
-            ReasonOfVisitJson = (x.Installation != 0 ? x.Installation + " Installation ," : "") +
-                                (x.Removing != 0 ? x.Removing + " Removing ," : "") +
-                                (x.Shifting != 0 ? x.Shifting + " Shifting ," : "") +
-                                (x.PeriodicMaintenance != 0 ? x.PeriodicMaintenance + " PeriodicMaintenance ," : "") +
-                                (x.ThirdParty != 0 ? x.ThirdParty + " ThirdParty ," : "") +
-                                (x.Inspection != 0 ? x.Inspection + " Inspection ," : "") +
-                                (x.Delivery != 0 ? x.Delivery + " Delivery ," : "") +
-                                (x.OnScaffolding != 0 ? x.OnScaffolding + " OnScaffolding ," : "") ,
+
+            ReasonOfVisitJson =
+                (x.Installation != 0 ? x.Installation + " Installation ," : "") +
+                (x.Removing != 0 ? x.Removing + " Removing ," : "") +
+                (x.Shifting != 0 ? x.Shifting + " Shifting ," : "") +
+                (x.PeriodicMaintenance != 0 ? x.PeriodicMaintenance + " PeriodicMaintenance ," : "") +
+                (x.ThirdParty != 0 ? x.ThirdParty + " ThirdParty ," : "") +
+                (x.Inspection != 0 ? x.Inspection + " Inspection ," : "") +
+                (x.Delivery != 0 ? x.Delivery + " Delivery ," : "") +
+                (x.OnScaffolding != 0 ? x.OnScaffolding + " OnScaffolding ," : ""),
+
             spareParts = ConvertSparePartsToString(x.spareParts),
             Notes = x.Notes,
             CreatedAt = x.CreatedAt,
             ClientName = x.ClientName,
             TechName = x.TechName,
             PhoneNum = x.PhoneNum,
+
             ClientSignaturePath = baseUrl + x.ClientSignaturePath,
             TechSignaturePath = baseUrl + x.TechSignaturePath,
+
             Images = imagesDb
                 .Where(y => y.ReportId == x.Id)
                 .Select(p => baseUrl + p.FilePath)
                 .ToList()
+
         }).ToList();
 
         return Ok(new
@@ -514,21 +549,40 @@ public class EquipmentReportController : ControllerBase
     //    });
     //}
     [HttpGet("GetPagedSiteReports")]
-    public async Task<IActionResult> GetPagedSiteReports(long userId , int page = 1 , int pageSize = 5)
+    public async Task<IActionResult> GetPagedSiteReports(long userId , string? reportNumber , string? companyName , string? techName , string? phoneNum , string? from , string? to , int page = 1 , int pageSize = 5)
     {
-        var query = _db.SiteReports.AsQueryable();
+        var query = _db.SiteReports
+        .Include(x => x.checkingItemReport)
+        .AsQueryable();
+
+        // فلتر المستخدم
         if(userId>0)
-        {
-            query=_db.SiteReports
-         .Include(x => x.checkingItemReport).Where(x => x.UserId==userId)
-         .OrderByDescending(x => x.Date);
-        }
-        else
-        {
-            query=_db.SiteReports
-          .Include(x => x.checkingItemReport)
-          .OrderByDescending(x => x.Date);
-        }
+            query=query.Where(x => x.UserId==userId);
+
+        // فلتر رقم التقرير
+        if(!string.IsNullOrWhiteSpace(reportNumber))
+            query=query.Where(x => x.ReportNumber.Contains(reportNumber));
+
+        // فلتر اسم الشركة
+        if(!string.IsNullOrWhiteSpace(companyName))
+            query=query.Where(x => x.CompanyName.Contains(companyName));
+
+        // فلتر اسم الفني
+        if(!string.IsNullOrWhiteSpace(techName))
+            query=query.Where(x => x.TechName.Contains(techName));
+
+        // فلتر رقم الهاتف
+        if(!string.IsNullOrWhiteSpace(phoneNum))
+            query=query.Where(x => x.PhoneNum.Contains(phoneNum));
+
+        // فلتر التاريخ
+        if(!string.IsNullOrWhiteSpace(from)&&!string.IsNullOrWhiteSpace(to))
+            query=query.Where(x => x.CreatedAt.Date>=DateTime.Parse(from)&&x.CreatedAt.Date<=DateTime.Parse(to));
+
+
+        // ترتيب
+        query=query.OrderByDescending(x => x.Date);
+
 
         var reportlist =  await query
         .Skip((page-1)*pageSize)
@@ -549,6 +603,8 @@ public class EquipmentReportController : ControllerBase
         {
             Id = x.Id,
             CompanyName = x.CompanyName,
+            PhoneNum = x.PhoneNum,
+            InvoiceNumber = x.InvoiceNumber,
             Date = x.Date,
             ClientSignaturePath = baseUrl + x.ClientSignaturePath,
             TechSignaturePath = baseUrl + x.TechSignaturePath,
@@ -574,22 +630,43 @@ public class EquipmentReportController : ControllerBase
         });
     }
 
+
     [HttpGet("GetPagedSafetyReports")]
-    public async Task<IActionResult> GetPagedSafetyReports(long userId , int page = 1 , int pageSize = 5)
+    public async Task<IActionResult> GetPagedSafetyReports(long userId , string? reportNumber , string? companyName , string? techName , string? phoneNum , string? from , string? to , int page = 1 ,
+        int pageSize = 5)
     {
-        var query = _db.SafetyReport.AsQueryable();
+        var query = _db.SafetyReport
+            .Include(x => x.safetyItemsReport)
+            .AsQueryable();
+
+        // فلتر المستخدم
         if(userId>0)
-        {
-            query=_db.SafetyReport
-         .Include(x => x.safetyItemsReport).Where(x => x.UserId==userId)
-         .OrderByDescending(x => x.Date);
-        }
-        else
-        {
-            query=_db.SafetyReport
-          .Include(x => x.safetyItemsReport)
-          .OrderByDescending(x => x.Date);
-        }
+            query=query.Where(x => x.UserId==userId);
+
+        // فلتر رقم التقرير
+        if(!string.IsNullOrWhiteSpace(reportNumber))
+            query=query.Where(x => x.ReportNumber.Contains(reportNumber));
+
+        // فلتر اسم الشركة
+        if(!string.IsNullOrWhiteSpace(companyName))
+            query=query.Where(x => x.CompanyName.Contains(companyName));
+
+        // فلتر اسم الفني أو المسؤول
+        if(!string.IsNullOrWhiteSpace(techName))
+            query=query.Where(x => x.TechName.Contains(techName));
+
+        // فلتر رقم الهاتف
+        if(!string.IsNullOrWhiteSpace(phoneNum))
+            query=query.Where(x => x.PhoneNum.Contains(phoneNum));
+
+        // فلتر التاريخ
+        if(!string.IsNullOrWhiteSpace(from)&&!string.IsNullOrWhiteSpace(to))
+            query=query.Where(x => x.CreatedAt.Date>=DateTime.Parse(from)&&x.CreatedAt.Date<=DateTime.Parse(to));
+
+
+        // ترتيب نهائي
+        query=query.OrderByDescending(x => x.Date);
+
 
 
         var reportlist =  await query
@@ -611,6 +688,7 @@ public class EquipmentReportController : ControllerBase
         {
             Id = x.Id,
             CompanyName = x.CompanyName,
+            InvoiceNumber = x.InvoiceNumber,
             Date = x.Date,
             CreatedAt = x.CreatedAt,
             ClientSignaturePath = baseUrl + x.ClientSignaturePath,
@@ -703,6 +781,10 @@ public class EquipmentReportController : ControllerBase
 
         var result = new SafetyReportDetailDto
         {
+            ReportNumber = report.ReportNumber,
+            InvoiceNumber =  report.InvoiceNumber,
+            PhoneNum= report.PhoneNum,
+            TechName = report.TechName,
             CompanyName=report.CompanyName ,
             Date=report.Date ,
             ClientSignaturePath=report.ClientSignaturePath!=null ? baseUrl+report.ClientSignaturePath : null ,
@@ -725,6 +807,35 @@ public class EquipmentReportController : ControllerBase
         return Ok(result);
 
     }
+
+
+    [HttpPost("UpdateSafetyReport")]
+    public IActionResult UpdateSafetyReport([FromBody] SafetyReportUpdate model)
+    {
+
+
+        // مثال: إذا كنت تستخدم EF Core
+        var report = _db.SafetyReport.FirstOrDefault(x => x.Id == model.Id);
+
+        if(report!=null)
+        {
+            // إضافة جديد
+
+            report.CompanyName=model.CompanyName;
+            report.TechName=model.TechName;
+            report.PhoneNum=model.PhoneNum;
+            report.ReportNumber=model.ReportNumber;
+            report.InvoiceNumber=model.InvoiceNumber;
+
+
+            _db.SafetyReport.Update(report);
+            _db.SaveChanges();
+
+        }
+
+        return Ok(new { message = "تم حفظ التقرير بنجاح" , id = report.Id });
+    }
+
 
     [HttpGet("GetDeliveryReportDetails/{id}")]
     public async Task<IActionResult> GetDeliveryReportDetails(int id)
@@ -803,8 +914,6 @@ public class EquipmentReportController : ControllerBase
     {
         try
         {
-
-
 
 
 
@@ -1504,21 +1613,46 @@ public class EquipmentReportController : ControllerBase
 
 
     [HttpGet("GetPagedDeliveryReports")]
-    public async Task<IActionResult> GetPagedDeliveryReports(long userId , int page = 1 , int pageSize = 5)
+    public async Task<IActionResult> GetPagedDeliveryReports(
+      long userId ,
+      string? reportNumber ,
+      string? companyName ,
+      string? techName ,
+      string? phoneNum ,
+       string? from ,
+       string? to ,
+      int page = 1 ,
+      int pageSize = 5)
     {
-        var query = _db.DeliveryReport.AsQueryable();
+        var query = _db.DeliveryReport
+            .Include(x => x.checkingItemReport)
+            .AsQueryable();
+
+        // فلتر المستخدم
         if(userId>0)
-        {
-            query=_db.DeliveryReport.Where(x => x.UserId==userId)
-       .Include(x => x.checkingItemReport)
-       .OrderByDescending(x => x.Date);
-        }
-        else
-        {
-            query=_db.DeliveryReport
-       .Include(x => x.checkingItemReport)
-       .OrderByDescending(x => x.Date);
-        }
+            query=query.Where(x => x.UserId==userId);
+
+        // فلتر رقم التقرير
+        if(!string.IsNullOrWhiteSpace(reportNumber))
+            query=query.Where(x => x.ReportNumber.Contains(reportNumber));
+
+        // فلتر اسم الشركة
+        if(!string.IsNullOrWhiteSpace(companyName))
+            query=query.Where(x => x.CompanyName.Contains(companyName));
+
+        // فلتر اسم الفني / المستلم
+        if(!string.IsNullOrWhiteSpace(techName))
+            query=query.Where(x => x.TechName.Contains(techName));
+
+        // فلتر رقم الهاتف
+        if(!string.IsNullOrWhiteSpace(phoneNum))
+            query=query.Where(x => x.PhoneNum.Contains(phoneNum));
+
+        // فلتر التاريخ
+        if(!string.IsNullOrWhiteSpace(from)&&!string.IsNullOrWhiteSpace(to))
+            query=query.Where(x => x.Date.Date>=DateTime.Parse(from)&&x.Date.Date<=DateTime.Parse(to));
+        // ترتيب
+        query=query.OrderByDescending(x => x.Date);
 
 
         var reportlist =  await query
@@ -1539,6 +1673,8 @@ public class EquipmentReportController : ControllerBase
         .Select(x => new SiteReportDto
         {
             Id = x.Id,
+            PhoneNum =x.PhoneNum,
+            InvoiceNumber = x.InvoiceNumber,
             CompanyName = x.CompanyName,
             Date = x.Date,
             ClientSignaturePath = baseUrl + x.ClientSignaturePath,
@@ -1564,7 +1700,6 @@ public class EquipmentReportController : ControllerBase
             reports
         });
     }
-
 
     [HttpGet("pdf22")]
     public IActionResult GetReportPdf22()
@@ -1644,7 +1779,7 @@ public class EquipmentReportController : ControllerBase
         return File(pdf , "application/pdf" , "report.pdf");
     }
     [HttpGet("pdf23")]
-    public IActionResult GetReportPdf23(int Id , string InvoiceNum = "  ")
+    public IActionResult GetReportPdf23(int Id)
     {
         QuestPDF.Settings.License=LicenseType.Community;
 
@@ -1705,9 +1840,9 @@ public class EquipmentReportController : ControllerBase
                 page.Header()
                     // 🖼️ الصورة بعرض الصفحة
                          .Column(col =>
-                          {
-                              // 🖼️ الصورة بعرض الصفحة
-                              col.Item()
+                         {
+                             // 🖼️ الصورة بعرض الصفحة
+                             col.Item()
                             .AlignCenter()
                             .Element(e =>
                             {
@@ -1718,19 +1853,19 @@ public class EquipmentReportController : ControllerBase
                                  .FitWidth()
                                  ;  // يجعل الصورة تمتد بعرض الصفحة تلقائيًا
                             });
-                              col.Item().LineHorizontal(1)
+                             col.Item().LineHorizontal(1)
     .LineColor(Colors.Grey.Lighten2);
-                              // 📝 العنوان أسفل الصورة
-                              col.Item()
+                             // 📝 العنوان أسفل الصورة
+                             col.Item()
                             .AlignCenter()
                             .PaddingTop(5)
                             .Text($"{reportDb.ReportType}")
                             .FontFamily("Cairo")
                             .FontSize(20)
                             .Bold();
-                              col.Item().LineHorizontal(1)
+                             col.Item().LineHorizontal(1)
     .LineColor(Colors.Grey.Lighten2);
-                          });
+                         });
 
                 // ===== المحتوى =====
                 page.Content()
@@ -1742,7 +1877,7 @@ public class EquipmentReportController : ControllerBase
                             row.RelativeItem().Text($"Date : {reportDb.Date.ToShortDateString()}").FontFamily("Cairo").FontSize(12);
                             row.Spacing(60);
                             row.RelativeItem().Text($"Report # : {reportDb.ReportNumber}").FontFamily("Cairo").FontSize(12);
-                            row.RelativeItem().Text($"Invoice # : {InvoiceNum}").FontFamily("Cairo").FontSize(12);
+                            row.RelativeItem().Text($"Invoice # : {reportDb.InvoiceNumber}").FontFamily("Cairo").FontSize(12);
                         });
 
                         col.Item().Row(row =>
@@ -1766,7 +1901,7 @@ public class EquipmentReportController : ControllerBase
                         col.Item().Row(row =>
                         {
                             row.Spacing(20); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Specifications : {reportDb.Cradle} Cradle , {reportDb.Meter} Meter , With {reportDb.Unit} suspension Unit").FontFamily("Cairo").FontSize(14);
+                            row.RelativeItem().Text($"Specifications :   {ReasonOfVisitJson}   {reportDb.Cradle} Cradle , {reportDb.Meter} Meter , With {reportDb.Unit} suspension Unit").FontFamily("Cairo").FontSize(14);
 
                         });
 
@@ -1817,7 +1952,7 @@ public class EquipmentReportController : ControllerBase
                         col.Item().Row(row =>
                         {
                             row.Spacing(20); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Report : {reportDb.Notes} ").FontFamily("Cairo").FontSize(12);
+                            row.RelativeItem().Text($"Notes : {reportDb.Notes} ").FontFamily("Cairo").FontSize(12);
 
                         });
                         col.Item().LineHorizontal(1)
@@ -1937,7 +2072,7 @@ public class EquipmentReportController : ControllerBase
 
 
     [HttpGet("pdf24")]
-    public IActionResult GetReportPdf24(int Id , string InvoiceNum = " ")
+    public IActionResult GetReportPdf24(int Id)
     {
         QuestPDF.Settings.License=LicenseType.Community;
 
@@ -2045,7 +2180,7 @@ public class EquipmentReportController : ControllerBase
                             row.RelativeItem().Text($"Date : {SiteReportDb.Date.ToShortDateString()}").FontFamily("Cairo").FontSize(12);
                             row.Spacing(60);
                             row.RelativeItem().Text($"Report # : {SiteReportDb.ReportNumber}").FontFamily("Cairo").FontSize(12);
-                            row.RelativeItem().Text($"Invoice # : {InvoiceNum}").FontFamily("Cairo").FontSize(12);
+                            row.RelativeItem().Text($"Invoice # : {SiteReportDb.InvoiceNumber}").FontFamily("Cairo").FontSize(12);
                         });
 
                         col.Item().Row(row =>
@@ -2062,7 +2197,7 @@ public class EquipmentReportController : ControllerBase
                         //    row.RelativeItem().Text($"Report : {reportDb.Notes} ").FontFamily("Cairo").FontSize(12);
 
                         //});
-                        col.Item().Table(table =>
+                        col.Item().Scale(0.85f).Table(table =>
                         {
                             table.ColumnsDefinition(columns =>
                             {
@@ -2761,7 +2896,7 @@ public class EquipmentReportController : ControllerBase
     }
 
     [HttpGet("GetSafetyReportPdf")]
-    public IActionResult GetSafetyReportPdf(int Id , string InvoiceNum = " ")
+    public IActionResult GetSafetyReportPdf(int Id)
     {
         QuestPDF.Settings.License=LicenseType.Community;
 
@@ -2873,7 +3008,7 @@ public class EquipmentReportController : ControllerBase
                             row.RelativeItem().Text($"Date : {SiteReportDb.Date.ToShortDateString()}").FontFamily("Cairo").FontSize(10);
                             row.Spacing(20);
                             row.RelativeItem().Text($"Report # : {SiteReportDb.ReportNumber}").FontFamily("Cairo").FontSize(10);
-                            row.RelativeItem().Text($"Invoice # {InvoiceNum}:").FontFamily("Cairo").FontSize(10);
+                            row.RelativeItem().Text($"Invoice # {SiteReportDb.InvoiceNumber}:").FontFamily("Cairo").FontSize(10);
                         });
 
                         col.Item().Row(row =>
@@ -3136,7 +3271,7 @@ public class EquipmentReportController : ControllerBase
 
 
     [HttpGet("GetDeliveryReportPdf")]
-    public IActionResult GetDeliveryReportPdf(int Id , string InvoiceNum = " ")
+    public IActionResult GetDeliveryReportPdf(int Id)
     {
         QuestPDF.Settings.License=LicenseType.Community;
 
@@ -3235,7 +3370,7 @@ public class EquipmentReportController : ControllerBase
                         col.Item()
                             .AlignCenter()
                             .PaddingTop(5)
-                            .Text("Site Report")
+                            .Text("Delivery Notes Reports")
                             .FontFamily("Cairo")
                             .FontSize(20)
                             .Bold();
@@ -3253,7 +3388,7 @@ public class EquipmentReportController : ControllerBase
                             row.RelativeItem().Text($"Date : {DeliveryReportDb.Date.ToShortDateString()}").FontFamily("Cairo").FontSize(12);
                             row.Spacing(60);
                             row.RelativeItem().Text($"Report # : {DeliveryReportDb.ReportNumber}").FontFamily("Cairo").FontSize(12);
-                            row.RelativeItem().Text($"Invoice # : {InvoiceNum}").FontFamily("Cairo").FontSize(12);
+                            row.RelativeItem().Text($"Invoice # : {DeliveryReportDb.InvoiceNumber}").FontFamily("Cairo").FontSize(12);
                         });
 
                         col.Item().Row(row =>
@@ -3422,56 +3557,82 @@ public class EquipmentReportController : ControllerBase
 
 
     [HttpGet("GetPagedElevatorReport")]
-    public async Task<IActionResult> GetPagedElevatorReport(long userId , int pageNumber = 1 , int pageSize = 10)
+    public async Task<IActionResult> GetPagedElevatorReport(
+    long userId ,
+    string? reportNumber ,
+    string? companyName ,
+    string? techName ,
+    string? salesName ,
+    string? phoneNum ,
+    string? from ,
+    string? to ,
+    int pageNumber = 1 ,
+    int pageSize = 10)
     {
         if(pageNumber<1)
             pageNumber=1;
         if(pageSize<1)
             pageSize=10;
 
-        var totalReports = await _db.Elevator.CountAsync();
-        var reports = new List<Elevator>();
+        var query = _db.Elevator.AsQueryable();
 
+        // فلتر المستخدم
         if(userId>0)
-        {
-            reports=await _db.Elevator
-                .Where(x => x.UserId==userId)
-                .OrderByDescending(r => r.CreatedAt)
-                .Skip((pageNumber-1)*pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-        }
-        else
-        {
-            reports=await _db.Elevator
-                .OrderByDescending(r => r.CreatedAt)
-                .Skip((pageNumber-1)*pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-        }
+            query=query.Where(x => x.UserId==userId);
 
-        var imagesDb = await _db.ElevatorImage.Where(x => reports.Select(y => y.Id).Contains(x.ElevatorId)).ToListAsync();
+        // فلتر رقم التقرير
+        if(!string.IsNullOrWhiteSpace(reportNumber))
+            query=query.Where(x => x.ReportNumber.Contains(reportNumber));
+
+        // فلتر اسم الشركة
+        if(!string.IsNullOrWhiteSpace(companyName))
+            query=query.Where(x => x.CompanyName.Contains(companyName));
+
+        // فلتر الفني
+        if(!string.IsNullOrWhiteSpace(techName))
+            query=query.Where(x => x.TechName.Contains(techName));
+        // فلتر المبيعات
+        if(!string.IsNullOrWhiteSpace(salesName))
+            query=query.Where(x => x.salesName.Contains(salesName));
+
+        // فلتر رقم الهاتف
+        if(!string.IsNullOrWhiteSpace(phoneNum))
+            query=query.Where(x => x.PhoneNum.Contains(phoneNum));
+
+        // فلتر التاريخ
+        if(!string.IsNullOrWhiteSpace(from)&&!string.IsNullOrWhiteSpace(to))
+            query=query.Where(x => x.CreatedAt.Date>=DateTime.Parse(from)&&x.CreatedAt.Date<=DateTime.Parse(to));
+
+
+        // ترتيب
+        query=query.OrderByDescending(r => r.CreatedAt);
+
+        // Total بعد الفلاتر
+        var totalCount = await query.CountAsync();
+
+        // Paging
+        var reports = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        // جلب الصور
+        var imagesDb = await _db.ElevatorImage
+            .Where(x => reports.Select(r => r.Id).Contains(x.ElevatorId))
+            .ToListAsync();
+
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
-
 
         var svgFolder = Path.Combine(_env.WebRootPath, "elevatorsvg");
 
-        // إنشاء المجلد إذا لم يكن موجودًا
         if(!Directory.Exists(svgFolder))
-        {
             Directory.CreateDirectory(svgFolder);
-        }
         else
         {
-            // تنظيف الملفات القديمة
             var oldFiles = Directory.GetFiles(svgFolder, "*.svg");
             foreach(var file in oldFiles)
                 System.IO.File.Delete(file);
         }
-
-
-
-
 
         var pagedReports = reports.Select(x =>
         {
@@ -3486,32 +3647,11 @@ public class EquipmentReportController : ControllerBase
 
             string svgString = "";
             if (x.shapeType == "square-semicircle")
-            {
                 svgString = GenerateSvgStringCorrected(svgRequest);
-
-            }
             else if (x.shapeType == "square")
-            {
                 svgString = GenerateSvgString(svgRequest);
-
-            }
             else if (x.shapeType == "circle")
-            {
                 svgString = GenerateSvgCircle(svgRequest);
-
-            }
-
-            //// اسم ملف فريد لكل تقرير
-            //var svgFileName = $"elevator_{x.Id}.svg";
-            //var svgFilePath = Path.Combine(svgFolder, svgFileName);
-
-            //// حفظ الملف قبل استخدامه
-            //System.IO.File.WriteAllText(svgFilePath, svgString);
-
-            //var svgUrl = $"{Request.Scheme}://{Request.Host}/elevatorsvg/{svgFileName}";
-
-
-
 
             return new GetAllElevatorDto
             {
@@ -3529,64 +3669,69 @@ public class EquipmentReportController : ControllerBase
                 widthShape = x.widthShape,
                 heightShape = x.heightShape,
                 radiusShape = x.radiusShape,
-                //directionShape = x.directionShape,
                 floors = x.floors,
                 garagsNum = x.garagsNum,
                 foundationHeight = x.foundationHeight,
                 capinaHeight = (int)x.capinaHeight,
                 capinaStatus = x.capinaStatus,
-                floorHeights = !string.IsNullOrEmpty(x.floorHeights)
+                floorHeights = x.floorHeights != null
                     ? x.floorHeights.Trim('"', '[', ']').Replace("\",\"", ",")
                     : string.Empty,
-                garagsHeights = !string.IsNullOrEmpty(x.garagsHeights)
+                garagsHeights = x.garagsHeights != null
                     ? x.garagsHeights.Trim('"', '[', ']').Replace("\",\"", ",")
                     : string.Empty,
-                workRequied = !string.IsNullOrEmpty(x.workRequied)
+                workRequied = x.workRequied != null
                     ? x.workRequied.Trim('"', '[', ']').Replace("\",\"", ",")
                     : string.Empty,
                 Notes = x.Notes,
                 CreatedAt = x.CreatedAt,
-              //  ClientName = x.ClientName,
                 TechName = x.TechName,
                 salesName = x.salesName,
                 wellStatus = x.wellStatus,
                 PhoneNum = x.PhoneNum,
-                //ClientSignaturePath = baseUrl + x.ClientSignaturePath,
-                //TechSignaturePath = baseUrl + x.TechSignaturePath,
+
                 Images = imagesDb
                     .Where(y => y.ElevatorId == x.Id)
                     .Select(p => baseUrl + p.FilePath)
                     .ToList(),
-                imageSva = new string[] { x.WellImagePath, x.DirectionImagePath, x.ResizableImagePath }
-            .Where(u => !string.IsNullOrEmpty(u))
-            .Select(u => baseUrl + u)
-            .ToArray(),
 
-                doorDirections =  !string.IsNullOrEmpty(x.doorDirections)
+                imageSva = new string[] { x.WellImagePath, x.DirectionImagePath, x.ResizableImagePath }
+                    .Where(u => !string.IsNullOrEmpty(u))
+                    .Select(u => baseUrl + u)
+                    .ToArray(),
+
+                doorDirections = x.doorDirections != null
                     ? x.doorDirections.Trim('"', '[', ']').Replace("\",\"", ",")
                     : string.Empty,
-                garagsDirections =  !string.IsNullOrEmpty(x.garagsDirections)
+
+                garagsDirections = x.garagsDirections != null
                     ? x.garagsDirections.Trim('"', '[', ']').Replace("\",\"", ",")
                     : string.Empty,
 
+                doortwoDirections = x.doortwoDirections != null
+                    ? x.doortwoDirections.Trim('"', '[', ']').Replace("\",\"", ",")
+                    : string.Empty,
+
+                garagstwoDirections = x.garagstwoDirections != null
+                    ? x.garagstwoDirections.Trim('"', '[', ']').Replace("\",\"", ",")
+                    : string.Empty,
+                twoDirectionFlag = x.twoDirectionFlag,
             };
         }).ToList();
 
         return Ok(new
         {
-            totalCount = totalReports ,
+            totalCount ,
             pageNumber ,
             pageSize ,
-            totalPages = (int)Math.Ceiling(totalReports/(double)pageSize) ,
+            totalPages = (int)Math.Ceiling(totalCount/(double)pageSize) ,
             reports = pagedReports
         });
     }
 
 
-
-
     [HttpGet("GetElevatorReportPdf")]
-    public async Task<IActionResult> GetElevatorReportPdf(int Id , string InvoiceNum = " ")
+    public async Task<IActionResult> GetElevatorReportPdf(int Id)
     {
         QuestPDF.Settings.License=LicenseType.Community;
 
@@ -3783,7 +3928,7 @@ public class EquipmentReportController : ControllerBase
                     .FontFamily("Cairo").FontSize(12);
 
                         row.RelativeItem()
-                    .Text($"رقم الفاتورة: {InvoiceNum}")
+                    .Text($"رقم الفاتورة: {ElevatorReportDb.InvoiceNumber}")
                     .FontFamily("Cairo").FontSize(12);
                     });
 
@@ -3871,8 +4016,9 @@ public class EquipmentReportController : ControllerBase
                 .FontFamily("Cairo").FontSize(12);
 
                     // ===== جدول الأدوار =====
-                    col.Item().AlignRight().Table(table =>
+                    col.Item().AlignRight().Scale(0.85f).Table(table =>
                     {
+
                         table.ColumnsDefinition(columns =>
                         {
                             columns.RelativeColumn(50);
@@ -3970,7 +4116,7 @@ public class EquipmentReportController : ControllerBase
                         }
 
 
-                       
+
 
 
                         table.Cell().Border(1).Padding(4) .AlignCenter() .Text("حفره البئر").FontFamily("Cairo").FontSize(9);
@@ -4025,6 +4171,215 @@ public class EquipmentReportController : ControllerBase
 
         var pdf = document.GeneratePdf();
         return File(pdf , "application/pdf" , $"{DateTime.Now}-report.pdf");
+    }
+
+
+    [HttpGet("GetEquipmentReportDetails/{id}")]
+    public async Task<IActionResult> GetEquipmentReportDetails(int id)
+    {
+        var report = await _db.Reports .FirstOrDefaultAsync(x => x.Id == id);
+
+
+        if(report==null)
+            return NotFound();
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+        var result = new EquipmentReportUpdateDto
+        {
+            ReportNumber = report.ReportNumber,
+            InvoiceNumber = report.InvoiceNumber,
+            PhoneNum = report.PhoneNum,
+            TechName = report.TechName,
+            CompanyName = report.CompanyName,
+            Date = report.Date,
+
+        };
+        return Ok(result);
+
+    }
+
+
+    [HttpPost("UpdateEquipmentReport")]
+    public IActionResult UpdateEquipmentReport([FromBody] EquipmentReportUpdateDto model)
+    {
+
+
+        // مثال: إذا كنت تستخدم EF Core
+        var report = _db.Reports.FirstOrDefault(x => x.Id == model.Id);
+
+        if(report!=null)
+        {
+            // إضافة جديد
+
+            report.CompanyName=model.CompanyName;
+            report.TechName=model.TechName;
+            report.PhoneNum=model.PhoneNum;
+            report.ReportNumber=model.ReportNumber;
+            report.InvoiceNumber=model.InvoiceNumber;
+
+
+            _db.Reports.Update(report);
+            _db.SaveChanges();
+
+        }
+
+        return Ok(new { message = "تم حفظ التقرير بنجاح" , id = report.Id });
+    }
+
+    [HttpGet("SiteDetails/{id}")]
+    public async Task<IActionResult> SiteDetails(int id)
+    {
+        var report = await _db.SiteReports.FirstOrDefaultAsync(x => x.Id == id);
+
+
+        if(report==null)
+            return NotFound();
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+        var result = new SiteReportUpdateDto
+        {
+            ReportNumber = report.ReportNumber,
+            InvoiceNumber = report.InvoiceNumber,
+            PhoneNum = report.PhoneNum,
+            TechName = report.TechName,
+            CompanyName = report.CompanyName,
+            Date = report.Date,
+
+        };
+        return Ok(result);
+
+    }
+
+
+    [HttpPost("UpdateSiteReport")]
+    public IActionResult UpdateSiteReport([FromBody] SiteReportUpdateDto model)
+    {
+
+
+        // مثال: إذا كنت تستخدم EF Core
+        var report = _db.SiteReports.FirstOrDefault(x => x.Id == model.Id);
+
+        if(report!=null)
+        {
+            // إضافة جديد
+
+            report.CompanyName=model.CompanyName;
+            report.TechName=model.TechName;
+            report.PhoneNum=model.PhoneNum;
+            report.ReportNumber=model.ReportNumber;
+            report.InvoiceNumber=model.InvoiceNumber;
+
+
+            _db.SiteReports.Update(report);
+            _db.SaveChanges();
+
+        }
+
+        return Ok(new { message = "تم حفظ التقرير بنجاح" , id = report.Id });
+    }
+
+    [HttpGet("DeliveryDetails/{id}")]
+    public async Task<IActionResult> DeliveryDetails(int id)
+    {
+        var report = await _db.DeliveryReport.FirstOrDefaultAsync(x => x.Id == id);
+
+
+        if(report==null)
+            return NotFound();
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+        var result = new SiteReportUpdateDto
+        {
+            ReportNumber = report.ReportNumber,
+            InvoiceNumber = report.InvoiceNumber,
+            PhoneNum = report.PhoneNum,
+            TechName = report.TechName,
+            CompanyName = report.CompanyName,
+            Date = report.Date,
+
+        };
+        return Ok(result);
+
+    }
+
+
+    [HttpPost("UpdateDeliveryReport")]
+    public IActionResult UpdateDeliveryReport([FromBody] SiteReportUpdateDto model)
+    {
+
+
+        // مثال: إذا كنت تستخدم EF Core
+        var report = _db.DeliveryReport.FirstOrDefault(x => x.Id == model.Id);
+
+        if(report!=null)
+        {
+            // إضافة جديد
+
+            report.CompanyName=model.CompanyName;
+            report.TechName=model.TechName;
+            report.PhoneNum=model.PhoneNum;
+            report.ReportNumber=model.ReportNumber;
+            report.InvoiceNumber=model.InvoiceNumber;
+
+
+            _db.DeliveryReport.Update(report);
+            _db.SaveChanges();
+
+        }
+
+        return Ok(new { message = "تم حفظ التقرير بنجاح" , id = report.Id });
+    }
+
+    [HttpGet("ElevatorDetails/{id}")]
+    public async Task<IActionResult> ElevatorDetails(int id)
+    {
+        var report = await _db.Elevator.FirstOrDefaultAsync(x => x.Id == id);
+
+
+        if(report==null)
+            return NotFound();
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+        var result = new SiteReportUpdateDto
+        {
+            ReportNumber = report.ReportNumber,
+            InvoiceNumber = report.InvoiceNumber,
+            PhoneNum = report.PhoneNum,
+            TechName = report.TechName,
+            CompanyName = report.CompanyName,
+            Date = report.Date,
+
+        };
+        return Ok(result);
+
+    }
+
+
+    [HttpPost("UpdateElevatorReport")]
+    public IActionResult UpdateElevatorReport([FromBody] SiteReportUpdateDto model)
+    {
+
+
+        // مثال: إذا كنت تستخدم EF Core
+        var report = _db.Elevator.FirstOrDefault(x => x.Id == model.Id);
+
+        if(report!=null)
+        {
+            // إضافة جديد
+
+            report.CompanyName=model.CompanyName;
+            report.TechName=model.TechName;
+            report.PhoneNum=model.PhoneNum;
+            report.ReportNumber=model.ReportNumber;
+            report.InvoiceNumber=model.InvoiceNumber;
+
+
+            _db.Elevator.Update(report);
+            _db.SaveChanges();
+
+        }
+
+        return Ok(new { message = "تم حفظ التقرير بنجاح" , id = report.Id });
     }
 
     private string GenerateSvgStringCorrected(SvgRequest dto)

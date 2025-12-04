@@ -11,17 +11,17 @@
         public string CompanyName { get; set; }
         public string salesName { get; set; }
         public string? ProjectAddress { get; set; }
-       
+
         public int resizableSquarewidth { get; set; }
         public int resizableSquareHeight { get; set; }
-      
+
 
         public string typeElevator { get; set; }
         public string shapeType { get; set; }
         public int? widthShape { get; set; }
         public int? heightShape { get; set; }
         public int? radiusShape { get; set; }
-       // public int directionShape { get; set; }
+        // public int directionShape { get; set; }
         public int floors { get; set; }
         public int garagsNum { get; set; }
         public int foundationHeight { get; set; }
@@ -39,13 +39,15 @@
         public string? garagsDirections { get; set; }
         public string? workRequied { get; set; }
 
-      
+        public string? doortwoDirections { get; set; }
+        public string? garagstwoDirections { get; set; }
+        public bool twoDirectionFlag { get; set; }
 
         public string? Notes { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         //public string? PdfFilePath { get; set; } 
 
-      //  public string ClientName { get; set; }
+        //  public string ClientName { get; set; }
         //public string ClientSignaturePath { get; set; }
         //public string TechSignaturePath { get; set; }
         public string TechName { get; set; }
