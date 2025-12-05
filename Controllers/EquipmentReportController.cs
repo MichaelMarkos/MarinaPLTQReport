@@ -4054,6 +4054,22 @@ public class EquipmentReportController : ControllerBase
                     .Split(',', StringSplitOptions.RemoveEmptyEntries)
                     .Select(int.Parse).ToList();
 
+
+
+                      var gargeTwodirectionList = ElevatorReportDb.garagstwoDirections
+                       .Replace("[", "").Replace("]", "").Replace("\"", "")
+                       .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                       .ToList(); // ← بدون تحويل إلى int
+
+                        var directionTwoList = ElevatorReportDb.doortwoDirections
+                           .Replace("[", "").Replace("]", "").Replace("\"", "")
+                           .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                           .ToList(); // ← بدون تحويل إلى int
+
+
+
+
+
                         // الأرضي
                         table.Cell().Border(1).Padding(4).AlignCenter().Text("الكابينه").FontFamily("Cairo").FontSize(9);
                         if(ElevatorReportDb.capinaHeight != 0)
@@ -4082,15 +4098,15 @@ public class EquipmentReportController : ControllerBase
                             }
                             else
                             {
-                                table.Cell().Border(1).Padding(4).AlignCenter().Text(directionList[i]).FontFamily("Cairo").FontSize(9);
+                                table.Cell().Border(1).Padding(4).AlignCenter().Text(directionList[i] + "  " + directionTwoList[i]).FontFamily("Cairo").FontSize(9);
+
                             }
                         }
 
                             // الارضي
                         table.Cell().Border(1).Padding(4).AlignCenter().Text("الارضي").FontFamily("Cairo").FontSize(9);
                         table.Cell().Border(1).Padding(4).AlignCenter().Text(heightList[0]).FontFamily("Cairo").FontSize(9);
-                        table.Cell().Border(1).Padding(4).AlignCenter().Text(directionList[0]).FontFamily("Cairo").FontSize(9);
-
+                        table.Cell().Border(1).Padding(4).AlignCenter().Text(directionList[0]+"  " + directionTwoList[0]).FontFamily("Cairo").FontSize(9);
                         for (int i = 0 ; i <= gargeheightList.Count-1 ;i++)
                         {
                             table.Cell().Border(1).Padding(4).AlignCenter().Text($"الجراج -  {i+1}").FontFamily("Cairo").FontSize(9);
@@ -4111,7 +4127,7 @@ public class EquipmentReportController : ControllerBase
                             }
                             else
                             {
-                                table.Cell().Border(1).Padding(4).AlignCenter().Text(gargedirectionList[i]).FontFamily("Cairo").FontSize(9);
+                                table.Cell().Border(1).Padding(4).AlignCenter().Text(gargedirectionList[i] +"  "+ gargeTwodirectionList[i]).FontFamily("Cairo").FontSize(9);
                             }
                         }
 
