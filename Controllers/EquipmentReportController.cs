@@ -1901,7 +1901,7 @@ public class EquipmentReportController : ControllerBase
                         col.Item().Row(row =>
                         {
                             row.Spacing(20); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Specifications :   {ReasonOfVisitJson}   {reportDb.Cradle} Cradle , {reportDb.Meter} Meter , With {reportDb.Unit} suspension Unit").FontFamily("Cairo").FontSize(14);
+                            row.RelativeItem().Text($"Specifications :  {reportDb.Cradle} Cradle , {reportDb.Meter} Meter , With {reportDb.Unit} suspension Unit").FontFamily("Cairo").FontSize(14);
 
                         });
 
@@ -1948,6 +1948,14 @@ public class EquipmentReportController : ControllerBase
                         });
                         col.Item().LineHorizontal(1)
     .LineColor(Colors.Grey.Lighten2);
+
+
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(20); // المسافة بين العناصر
+                            row.RelativeItem().Text($"Report :   {ReasonOfVisitJson}   {reportDb.Cradle} Cradle , {reportDb.Meter} Meter , With {reportDb.Unit} suspension Unit").FontFamily("Cairo").FontSize(14);
+
+                        });
 
                         col.Item().Row(row =>
                         {
