@@ -19,7 +19,7 @@ namespace maria.Dto
         public string specifications { get; set; }
         public string? ReasonOfVisitJson { get; set; }
         public string? spareParts { get; set; }
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string ClientSignaturePath { get; set; }
         public string TechSignaturePath { get; set; }
