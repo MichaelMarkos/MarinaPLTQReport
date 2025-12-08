@@ -1874,7 +1874,10 @@ public class EquipmentReportController : ControllerBase
                         col.Item().Row(row =>
                         {
                             row.Spacing(20); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Date : {reportDb.Date.ToShortDateString()}").FontFamily("Cairo").FontSize(12);
+                            row.RelativeItem()
+   .Text($"Date : {reportDb.Date.ToString("dd/MM/yyyy")}")
+   .FontFamily("Cairo")
+   .FontSize(12);
                             row.Spacing(60);
                             row.RelativeItem().Text($"Report # : {reportDb.ReportNumber}").FontFamily("Cairo").FontSize(12);
                             row.RelativeItem().Text($"Invoice # : {reportDb.InvoiceNumber}").FontFamily("Cairo").FontSize(12);
