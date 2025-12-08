@@ -33,6 +33,7 @@
 
         public string? spareParts { get; set; }
         public string? Notes { get; set; }
+        public string? receivedPayment { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         //public string? PdfFilePath { get; set; } 
 

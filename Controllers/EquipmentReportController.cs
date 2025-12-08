@@ -106,6 +106,7 @@ public class EquipmentReportController : ControllerBase
             // Text Fields
             spareParts = form["spareParts"],
             Notes = form["notes"],
+            receivedPayment = form["receivedPayment"],
             PhoneNum = form["phoneNum"],
             // Signatures (paths to be saved after upload)
             ClientSignaturePath = form["clientSignaturePath"],
@@ -1964,6 +1965,12 @@ public class EquipmentReportController : ControllerBase
                         {
                             row.Spacing(20); // المسافة بين العناصر
                             row.RelativeItem().Text($"Notes : {reportDb.Notes} ").FontFamily("Cairo").FontSize(12);
+
+                        });
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(20); // المسافة بين العناصر
+                            row.RelativeItem().Text($"Received payment : {reportDb.receivedPayment}  QR").FontFamily("Cairo").FontSize(12);
 
                         });
                         col.Item().LineHorizontal(1)
