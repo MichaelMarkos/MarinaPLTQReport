@@ -1860,7 +1860,7 @@ public class EquipmentReportController : ControllerBase
                              col.Item()
                             .AlignCenter()
                             .PaddingTop(5)
-                            .Text($"{reportDb.ReportType}")
+                            .Text("Site Report")
                             .FontFamily("Cairo")
                             .FontSize(20)
                             .Bold();
@@ -2180,7 +2180,7 @@ public class EquipmentReportController : ControllerBase
                         col.Item()
                             .AlignCenter()
                             .PaddingTop(1)
-                            .Text("Site Report")
+                            .Text("Checking Site Report (Installation / Shifting)")
                             .FontFamily("Cairo")
                             .FontSize(20)
                             .Bold();
@@ -2195,7 +2195,10 @@ public class EquipmentReportController : ControllerBase
                         col.Item().Row(row =>
                         {
                             row.Spacing(20); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Date : {SiteReportDb.Date.ToShortDateString()}").FontFamily("Cairo").FontSize(12);
+                            row.RelativeItem()
+.Text($"Date : {SiteReportDb.Date.ToString("dd/MM/yyyy")}")
+.FontFamily("Cairo")
+.FontSize(12);
                             row.Spacing(60);
                             row.RelativeItem().Text($"Report # : {SiteReportDb.ReportNumber}").FontFamily("Cairo").FontSize(12);
                             row.RelativeItem().Text($"Invoice # : {SiteReportDb.InvoiceNumber}").FontFamily("Cairo").FontSize(12);
