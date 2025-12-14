@@ -1,14 +1,14 @@
-﻿namespace maria.Model
+﻿namespace maria.Dto
 {
-    public class Report
+    public class ReportEditDto
     {
         public int Id { get; set; }
         public DateTime? Date { get; set; }
-        //public string? ReportType { get; set; }
+        public string? ReportType { get; set; }
         public long UserId { get; set; } = 1;
         public string? ReportNumber { get; set; }
         public string? InvoiceNumber { get; set; }
-        public string? CompanyName { get; set; }
+        public string CompanyName { get; set; }
         public string? ProjectAddress { get; set; }
         public string? EquipmentType { get; set; }
         public string? ModelMarnia { get; set; }
@@ -42,7 +42,7 @@
         public string TechSignaturePath { get; set; }
         public string? TechName { get; set; }
         public string? PhoneNum { get; set; }
-        public ICollection<ReportImage> ReportFiles { get; set; } = new List<ReportImage>();
+        public List<string>? Images { get; set; }
 
     }
 }
