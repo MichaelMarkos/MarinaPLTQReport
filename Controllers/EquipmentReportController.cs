@@ -444,7 +444,7 @@ public class EquipmentReportController : ControllerBase
             SerialNumber = x.SerialNumber,
             WarrantyStatus = x.WarrantyStatus,
 
-            specifications = $"{x.Cradle} Cradle  {x.Meter} Meter with ( {x.Unit} ) Suspension Unit ",
+            specifications = $"{x.Cradle} {x.EquipmentType}  {x.Meter} Meter with ( {x.Unit} ) Suspension Unit ",
 
             ReasonOfVisitJson =
                 (x.Installation != 0 ? x.Installation + " Installation ," : "") +
@@ -1889,7 +1889,7 @@ public class EquipmentReportController : ControllerBase
                             row.Spacing(20); // المسافة بين العناصر
                             row.RelativeItem()
                                 .Text(
-                                    $"Specifications :  {reportDb.Cradle} Cradle , {reportDb.Meter} Meter , With {reportDb.Unit} suspension Unit")
+                                    $"Specifications :  {reportDb.Cradle} {reportDb.EquipmentType} , {reportDb.Meter} Meter , With {reportDb.Unit} suspension Unit")
                                 .FontFamily("Cairo").FontSize(14);
                         });
 
