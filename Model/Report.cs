@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public DateTime? Date { get; set; }
-        //public string? ReportType { get; set; }
+        public string? ReportType { get; set; }
         public long UserId { get; set; } = 1;
         public string? ReportNumber { get; set; }
         public string? InvoiceNumber { get; set; }

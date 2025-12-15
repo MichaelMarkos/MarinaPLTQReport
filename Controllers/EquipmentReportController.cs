@@ -433,7 +433,7 @@ public class EquipmentReportController : ControllerBase
             Id = x.Id,
             Date = x.Date ,
             ReportNumber = x.ReportNumber,
-            //ReportType = x.ReportType,
+            ReportType = x.ReportType,
             InvoiceNumber = x.InvoiceNumber,
             CompanyName = x.CompanyName,
             ProjectAddress = x.ProjectAddress,
@@ -444,7 +444,10 @@ public class EquipmentReportController : ControllerBase
             SerialNumber = x.SerialNumber,
             WarrantyStatus = x.WarrantyStatus,
 
-            specifications = $"{x.Cradle} {x.EquipmentType}  {x.Meter} Meter with ( {x.Unit} ) Suspension Unit ",
+            specifications =
+     (x.Cradle > 0 ? $" {x.Cradle}" : "") + $" {x.EquipmentType}" +
+    (x.Meter > 0 ? $" {x.Meter} Meter with" : "") +
+    (!string.IsNullOrWhiteSpace(x.Unit) ? $" ( {x.Unit} ) Suspension Unit" : ""),
 
             ReasonOfVisitJson =
                 (x.Installation != 0 ? x.Installation + " Installation ," : "") +
@@ -462,6 +465,7 @@ public class EquipmentReportController : ControllerBase
             ClientName = x.ClientName,
             TechName = x.TechName,
             PhoneNum = x.PhoneNum,
+            receivedPayment = x.receivedPayment,
 
             ClientSignaturePath = baseUrl + x.ClientSignaturePath,
             TechSignaturePath = baseUrl + x.TechSignaturePath,
@@ -1838,7 +1842,7 @@ public class EquipmentReportController : ControllerBase
                         col.Item()
                             .AlignCenter()
                             .PaddingTop(5)
-                            .Text("Site Report")
+                            .Text(reportDb.ReportType)
                             .FontFamily("Cairo")
                             .FontSize(20)
                             .Bold();
@@ -1886,12 +1890,21 @@ public class EquipmentReportController : ControllerBase
 
                         col.Item().Row(row =>
                         {
-                            row.Spacing(20); // المسافة بين العناصر
+                            row.Spacing(20);
+
                             row.RelativeItem()
                                 .Text(
-                                    $"Specifications :  {reportDb.Cradle} {reportDb.EquipmentType} , {reportDb.Meter} Meter , With {reportDb.Unit} suspension Unit")
-                                .FontFamily("Cairo").FontSize(14);
+                                    "Specifications : " +
+                                    (reportDb.Cradle > 0 ? $" {reportDb.Cradle}" : "") + $" {reportDb.EquipmentType}" +
+                                    (reportDb.Meter > 0 ? $" , {reportDb.Meter} Meter" : "") +
+                                    (!string.IsNullOrWhiteSpace(reportDb.Unit)
+                                        ? $" , With {reportDb.Unit} Suspension Unit"
+                                        : "")
+                                )
+                                .FontFamily("Cairo")
+                                .FontSize(14);
                         });
+
 
                         col.Item().LineHorizontal(1)
                             .LineColor(Colors.Grey.Lighten2);
@@ -1942,12 +1955,23 @@ public class EquipmentReportController : ControllerBase
 
                         col.Item().Row(row =>
                         {
-                            row.Spacing(20); // المسافة بين العناصر
+                            row.Spacing(20);
+
                             row.RelativeItem()
                                 .Text(
-                                    $"Report :   {ReasonOfVisitJson}   {reportDb.Cradle} Cradle , {reportDb.Meter} Meter , With {reportDb.Unit} suspension Unit")
-                                .FontFamily("Cairo").FontSize(14);
+                                    "Report : " +
+                                    ReasonOfVisitJson +
+                                    (reportDb.Cradle > 0 ? $" {reportDb.Cradle}" : "") +
+                                    $" {reportDb.EquipmentType}" +
+                                    (reportDb.Meter > 0 ? $" , {reportDb.Meter} Meter" : "") +
+                                    (!string.IsNullOrWhiteSpace(reportDb.Unit)
+                                        ? $" , With {reportDb.Unit} Suspension Unit"
+                                        : "")
+                                )
+                                .FontFamily("Cairo")
+                                .FontSize(14);
                         });
+
 
                         col.Item().Row(row =>
                         {
@@ -4385,7 +4409,7 @@ public class EquipmentReportController : ControllerBase
         // ** Update normal fields **
         // -----------------------------
         report.Date=DateTime.TryParse(form ["date"] , out var dateVal) ? dateVal : report.Date;
-        //report.ReportType = form["reportType"];
+        report.ReportType=form ["reportType"];
         report.CompanyName=form ["companyName"];
         report.ProjectAddress=form ["projectAddress"];
 
