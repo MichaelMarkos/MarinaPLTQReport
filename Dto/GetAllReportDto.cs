@@ -26,7 +26,8 @@ namespace maria.Dto
         public string? ClientName { get; set; }
         public string? TechName { get; set; }
         public string? PhoneNum { get; set; }
-       
+        public string? receivedPayment { get; set; }
+
         public List<string>? Images { get; set; } 
 
     }
