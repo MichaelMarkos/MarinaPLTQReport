@@ -82,7 +82,7 @@ public class EquipmentReportController : ControllerBase
         {
             // Basic Info
             Date = DateTime.TryParse(form["date"], out var parsedDate) ? parsedDate :null,
-            //ReportType = form["reportType"],
+            ReportType = form["reportType"],
             ReportNumber = newReportNumber, //InvoiceNumber = form["invoiceNumber"],
             CompanyName = form["companyName"],
             ProjectAddress = GetFormValueOrDefault(form, "projectAddress"),
