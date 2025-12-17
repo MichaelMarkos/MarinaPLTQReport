@@ -12,6 +12,11 @@ namespace maria.Model
         public string CorrectiveAction { get; set; }
 
         public bool faultFlag { get; set; }
+
+
+        public string fault { get; set; }
+
+        public bool CorrectiveActionFlag { get; set; }
         public SafetyReport safetyReport { get; set; }
         public SafetyItems safetyItems { get; set; }
     }

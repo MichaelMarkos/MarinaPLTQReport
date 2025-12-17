@@ -622,6 +622,9 @@ public class EquipmentReportController : ControllerBase
             .Select(x => new SiteReportDto
             {
                 Id = x.Id,
+                ReportType= x.ReportType,
+                Projectlocation = x.Projectlocation,
+                ProjectDescription= x.ProjectDescription,
                 CompanyName = x.CompanyName,
                 PhoneNum = x.PhoneNum,
                 InvoiceNumber = x.InvoiceNumber,
@@ -720,7 +723,7 @@ public class EquipmentReportController : ControllerBase
                 ClientName = x.ClientName,
                 TechName = x.TechName,
                 PhoneNum = x.PhoneNum,
-                ProjectName = x.ProjectName,
+                //ProjectName = x.ProjectName,
                 ProjectDescription = x.ProjectDescription,
                 Projectlocation = x.Projectlocation,
                 TeamNum = x.TeamNum,
@@ -728,7 +731,7 @@ public class EquipmentReportController : ControllerBase
                 TeamLeaderNum = x.TeamLeaderNum,
                 TeamMembers = x.TeamMembers,
                 Notes = x.Notes,
-                SiteName = x.SiteName,
+                //SiteName = x.SiteName,
                 Images = imagesDb != null
                     ? imagesDb
                         .Where(y => y.safetyReportId == x.Id)
@@ -763,6 +766,9 @@ public class EquipmentReportController : ControllerBase
 
         var result = new SiteReportDetailDto
         {
+            ReportType= report.ReportType,
+            Projectlocation= report.Projectlocation,
+            ProjectDescription= report.ProjectDescription,
             CompanyName = report.CompanyName,
             Date = report.Date,
             ClientSignaturePath = report.ClientSignaturePath != null ? baseUrl + report.ClientSignaturePath : null,
@@ -818,9 +824,11 @@ public class EquipmentReportController : ControllerBase
                 return new CheckingSafetyItemsDto
                 {
                     Item = a.Item,
+                    fault = reportItem?.fault,
                     CorrectiveAction = reportItem?.CorrectiveAction,
                     faultFlag = reportItem?.faultFlag ?? false,
-                    Review = !(reportItem?.faultFlag ?? false),
+                    CorrectiveActionFlag = reportItem?.CorrectiveActionFlag ?? false,
+                    Review = !(reportItem?.faultFlag ?? false) && !(reportItem?.CorrectiveActionFlag ?? false)
                 };
             }).ToList()
         };
@@ -983,6 +991,9 @@ public class EquipmentReportController : ControllerBase
 
             var sitereport = new SiteReport
             {
+                ReportType= request["reportType"],
+                ProjectDescription= request["projectDescription"],
+                Projectlocation= request["projectlocation"],
                 CompanyName = request["companyName"],
                 ReportNumber = newReportNumber,
                 TechName = request["techName"],
@@ -1140,13 +1151,13 @@ public class EquipmentReportController : ControllerBase
                 Date = DateTime.TryParse(request["date"], out var parsedDate) ? parsedDate : DateTime.Now,
                 PhoneNum = request["phoneNum"],
                 CreatedAt = DateTime.Now,
-                SiteName = request["siteName"],
+                //SiteName = request["siteName"],
                 TeamNum = int.Parse(request["teamNum"]),
                 TeamLeaderName = request["teamLeaderName"],
                 TeamLeaderNum = int.Parse(request["teamLeaderNum"]),
                 ProjectDescription = request["projectDescription"],
                 Projectlocation = request["projectlocation"],
-                ProjectName = request["projectName"],
+                //ProjectName = request["projectName"],
                 TeamMembers = request["teamMembers"],
                 Notes = request["notes"],
             };
@@ -1196,13 +1207,15 @@ public class EquipmentReportController : ControllerBase
             // تحويل العناصر القادمة من JSON إلى كائنات
             foreach(var item in Items)
             {
-                if(item.faultFlag==true||!string.IsNullOrEmpty(item.CorrectiveAction))
+                if(item.faultFlag==true||item.CorrectiveActionFlag==true)
                 {
                     var report = new SafetyItemsReport
                     {
                         SafetyItemsId = item.SafetyItemId,
+                        fault = item.Fault,
                         CorrectiveAction = item.CorrectiveAction,
                         faultFlag = item.faultFlag,
+                        CorrectiveActionFlag = item.CorrectiveActionFlag,
                         SafetyReportId = saftyreport.Id
                     };
                     //if(string.IsNullOrEmpty(item.Fault)&&string.IsNullOrEmpty(item.CorrectiveAction)&&item.faultFlag==true&&item.CorrectiveActionFlag==item.faultFlag==true)
@@ -2185,7 +2198,7 @@ public class EquipmentReportController : ControllerBase
                         col.Item()
                             .AlignCenter()
                             .PaddingTop(1)
-                            .Text("Checking Site Report (Installation / Shifting)")
+                            .Text($"Checking Site Report ({SiteReportDb.ReportType})")
                             .FontFamily("Cairo")
                             .FontSize(20)
                             .Bold();
@@ -2974,9 +2987,11 @@ public class EquipmentReportController : ControllerBase
             return new CheckingSafetyItemsDto
             {
                 Item = a.Item,
+                fault = reportItem?.fault,
                 CorrectiveAction = reportItem?.CorrectiveAction,
                 faultFlag = reportItem?.faultFlag ?? false,
-                Review = !(reportItem?.faultFlag ?? false)
+                CorrectiveActionFlag = reportItem?.CorrectiveActionFlag ?? false,
+                Review = !(reportItem?.faultFlag ?? false) && !(reportItem?.CorrectiveActionFlag ?? false)
             };
         }).ToList();
 
@@ -3029,7 +3044,7 @@ public class EquipmentReportController : ControllerBase
                         col.Item().Row(row =>
                         {
                             row.Spacing(10); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Date : {SiteReportDb.Date.ToShortDateString()}")
+                            row.RelativeItem().Text($"Date : {SiteReportDb.Date?.ToShortDateString()}")
                                 .FontFamily("Cairo").FontSize(10);
                             row.Spacing(20);
                             row.RelativeItem().Text($"Report # : {SiteReportDb.ReportNumber}").FontFamily("Cairo")
@@ -3044,16 +3059,16 @@ public class EquipmentReportController : ControllerBase
                             row.RelativeItem().Text($"Company Name : {SiteReportDb.CompanyName}").FontFamily("Cairo")
                                 .FontSize(10);
 
-                            row.Spacing(20);
-                            row.RelativeItem().Text($"Site Name # : {SiteReportDb.SiteName}").FontFamily("Cairo")
-                                .FontSize(10);
+                            //row.Spacing(20);
+                            //row.RelativeItem().Text($"Site Name # : {SiteReportDb.SiteName}").FontFamily("Cairo")
+                            //    .FontSize(10);
                         });
                         col.Item().Row(row =>
                         {
                             row.Spacing(10); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Project Name : {SiteReportDb.ProjectName}").FontFamily("Cairo")
-                                .FontSize(10);
-                            row.Spacing(20);
+                            //row.RelativeItem().Text($"Project Name : {SiteReportDb.ProjectName}").FontFamily("Cairo")
+                            //    .FontSize(10);
+                            //row.Spacing(20);
                             row.RelativeItem().Text($"location  : {SiteReportDb.Projectlocation}").FontFamily("Cairo")
                                 .FontSize(10);
                             row.RelativeItem().Text($" Description : {SiteReportDb.ProjectDescription}")
@@ -3070,47 +3085,56 @@ public class EquipmentReportController : ControllerBase
                         col.Item().Width(PageSizes.A4.Width - 40) // عرض A4 ناقص الهوامش
                             .Element(e =>
                             {
-                                e.Scale(0.85f) // تصغير 15% ليظهر بشكل ممتاز داخل A4
-                                    .Table(table =>
-                                    {
-                                        table.ColumnsDefinition(columns =>
+                                e.Scale(0.85f)
+        .Table(table =>
+        {
+            table.ColumnsDefinition(columns =>
+            {
+                columns.RelativeColumn(50);
+                columns.RelativeColumn(8);
+                columns.RelativeColumn(8);
+                columns.RelativeColumn(8);
+                columns.RelativeColumn(8);
+                columns.RelativeColumn(8);
+            });
+
+            table.Header(header =>
                                         {
-                                            columns.RelativeColumn(60);
-                                            columns.RelativeColumn(10);
-                                            columns.RelativeColumn(10);
-                                            columns.RelativeColumn(20);
+                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Items")
+                                    .FontFamily("Cairo").Bold();
+                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Review")
+                                    .FontFamily("Cairo").Bold();
+                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                                    .FontFamily("Cairo").Bold();
+                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                                    .FontFamily("Cairo").Bold();
+                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                                    .FontFamily("Cairo").Bold();
+                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                                    .FontFamily("Cairo").Bold();
                                         });
+            foreach (var item in checkingItems)
+            {
+                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.Item).FontFamily("Cairo").FontSize(8);
 
-                                        table.Header(header =>
-                                        {
-                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
-                                                .Text("Items").Bold();
+                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.Review == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
 
-                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
-                                                .Text("Review").Bold();
+                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.faultFlag == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
 
-                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
-                                                .Text("Fault").Bold();
+                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.CorrectiveActionFlag == true ? "✔" : "  ").FontFamily("Cairo")
+                                    .FontSize(9);
 
-                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
-                                                .Text("Corrective").Bold();
-                                        });
 
-                                        foreach (var item in checkingItems)
-                                        {
-                                            table.Cell().Border(1).Padding(1).AlignCenter()
-                                                .Text(item.Item).FontSize(9);
-
-                                            table.Cell().Border(1).Padding(1).AlignCenter()
-                                                .Text(item.Review ? "✔" : " ").FontSize(10);
-
-                                            table.Cell().Border(1).Padding(1).AlignCenter()
-                                                .Text(item.faultFlag ? "✔" : " ").FontSize(10);
-
-                                            table.Cell().Border(1).Padding(1).AlignCenter()
-                                                .Text(item.CorrectiveAction ?? "-").FontSize(9);
-                                        }
-                                    });
+                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.fault ?? "-").FontFamily("Cairo").FontSize(9);
+                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.CorrectiveAction ?? "-").FontFamily("Cairo").FontSize(9);
+            }
+        });
                             });
 
 
@@ -3130,16 +3154,16 @@ public class EquipmentReportController : ControllerBase
                         col.Item().Width(PageSizes.A4.Width - 40) // عرض A4 ناقص الهوامش
                             .Element(e =>
                             {
-                                e.Scale(0.85f) // تصغير 15% ليظهر بشكل ممتاز داخل A4
-                                    .Table(table =>
-                                    {
-                                        table.ColumnsDefinition(columns =>
-                                        {
-                                            columns.RelativeColumn(20);
-                                            columns.RelativeColumn(80);
-                                        });
+                                e.Scale(0.85f)
+        .Table(table =>
+        {
+            table.ColumnsDefinition(columns =>
+            {
+                columns.RelativeColumn(1);
+                columns.RelativeColumn(4);
+            });
 
-                                        table.Header(header =>
+            table.Header(header =>
                                         {
                                             header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
                                                 .Text("Index").Bold();
@@ -3148,18 +3172,18 @@ public class EquipmentReportController : ControllerBase
                                                 .Text("Name").Bold();
                                         });
 
-                                        var i = 1;
-                                        foreach (var item in members.Split(","))
-                                        {
-                                            table.Cell().Border(1).Padding(1).AlignCenter()
+            var i = 1;
+            foreach (var item in members.Split(","))
+            {
+                table.Cell().Border(1).Padding(1).AlignCenter()
                                                 .Text(i).FontSize(9);
 
-                                            table.Cell().Border(1).Padding(1).AlignCenter()
+                table.Cell().Border(1).Padding(1).AlignCenter()
                                                 .Text(item).FontSize(10);
 
-                                            i++;
-                                        }
-                                    });
+                i++;
+            }
+        });
                             });
 
 
