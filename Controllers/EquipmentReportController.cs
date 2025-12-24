@@ -2,24 +2,15 @@
 using maria.Dto;
 using maria.Model;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.IdentityModel.Tokens;
+
 using QuestPDF.Drawing;
-using QuestPDF.Fluent;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using SkiaSharp;
-using Svg.FilterEffects;
-using System;
-using System.IO;
-using System.Net.Http;
+
 using System.Text.Json;
-using System.Threading.Tasks;
-using static maria.Dto.DeliveryReportDetailDto;
-using static System.Net.Mime.MediaTypeNames;
+
 
 [Route("api/[controller]")]
 [ApiController]
@@ -81,7 +72,7 @@ public class EquipmentReportController : ControllerBase
         var report = new Report
         {
             // Basic Info
-            Date = DateTime.TryParse(form["date"], out var parsedDate) ? parsedDate :null,
+            Date = DateTime.TryParse(form["date"], out var parsedDate) ? parsedDate : null,
             ReportType = form["reportType"],
             ReportNumber = newReportNumber, //InvoiceNumber = form["invoiceNumber"],
             CompanyName = form["companyName"],
@@ -431,7 +422,7 @@ public class EquipmentReportController : ControllerBase
         var pagedReports = reports.Select(x => new GetAllReportDto
         {
             Id = x.Id,
-            Date = x.Date ,
+            Date = x.Date,
             ReportNumber = x.ReportNumber,
             ReportType = x.ReportType,
             InvoiceNumber = x.InvoiceNumber,
@@ -622,9 +613,9 @@ public class EquipmentReportController : ControllerBase
             .Select(x => new SiteReportDto
             {
                 Id = x.Id,
-                ReportType= x.ReportType,
+                ReportType = x.ReportType,
                 Projectlocation = x.Projectlocation,
-                ProjectDescription= x.ProjectDescription,
+                ProjectDescription = x.ProjectDescription,
                 CompanyName = x.CompanyName,
                 PhoneNum = x.PhoneNum,
                 InvoiceNumber = x.InvoiceNumber,
@@ -766,9 +757,9 @@ public class EquipmentReportController : ControllerBase
 
         var result = new SiteReportDetailDto
         {
-            ReportType= report.ReportType,
-            Projectlocation= report.Projectlocation,
-            ProjectDescription= report.ProjectDescription,
+            ReportType = report.ReportType,
+            Projectlocation = report.Projectlocation,
+            ProjectDescription = report.ProjectDescription,
             CompanyName = report.CompanyName,
             Date = report.Date,
             ClientSignaturePath = report.ClientSignaturePath != null ? baseUrl + report.ClientSignaturePath : null,
@@ -882,6 +873,7 @@ public class EquipmentReportController : ControllerBase
             Date=report.Date ,
             ClientSignaturePath=report.ClientSignaturePath!=null ? baseUrl+report.ClientSignaturePath : null ,
             TechSignaturePath=baseUrl+report.TechSignaturePath!=null ? baseUrl+report.TechSignaturePath : null ,
+
             checkingItems=report.checkingItemReport.Select(a => new DeliveryItemsDto
             {
                 Description=a.deliveryNote.Description ,
@@ -991,9 +983,9 @@ public class EquipmentReportController : ControllerBase
 
             var sitereport = new SiteReport
             {
-                ReportType= request["reportType"],
-                ProjectDescription= request["projectDescription"],
-                Projectlocation= request["projectlocation"],
+                ReportType = request["reportType"],
+                ProjectDescription = request["projectDescription"],
+                Projectlocation = request["projectlocation"],
                 CompanyName = request["companyName"],
                 ReportNumber = newReportNumber,
                 TechName = request["techName"],
@@ -1358,6 +1350,7 @@ public class EquipmentReportController : ControllerBase
                 Date = DateTime.TryParse(request["date"], out var parsedDate) ? parsedDate : DateTime.Now,
                 PhoneNum = request["phoneNum"],
                 Notes = request["notes"],
+                ReportType = request["ReportType"],
                 ReportNumber = newReportNumber,
                 UserId = long.Parse(request["userId"]),
             };
@@ -1414,6 +1407,8 @@ public class EquipmentReportController : ControllerBase
                     deliveryNoteId = item.checkingItemId,
                     Quantity = int.Parse(item.quantity),
                     deliveryReportId = deliveryreport.Id,
+                    UnitValue = !string.IsNullOrEmpty(item.unit) ? item.unit : null
+
                 };
 
 
@@ -1446,6 +1441,8 @@ public class EquipmentReportController : ControllerBase
                     deliveryNoteId = item.checkingItemId,
                     Quantity = int.Parse(item.quantity),
                     deliveryReportId = deliveryreport.Id,
+                    UnitValue = !string.IsNullOrEmpty(item.unit) ? item.unit : null
+
                 };
 
 
@@ -1478,7 +1475,7 @@ public class EquipmentReportController : ControllerBase
                     deliveryNoteId = item.checkingItemId,
                     Quantity = int.Parse(item.quantity),
                     deliveryReportId = deliveryreport.Id,
-                    UnitValue = !string.IsNullOrEmpty(item.unit) ? int.Parse(item.unit) : null
+                    UnitValue = !string.IsNullOrEmpty(item.unit) ? item.unit : null
                 };
 
 
@@ -1495,7 +1492,7 @@ public class EquipmentReportController : ControllerBase
                     deliveryNoteId = item.checkingItemId,
                     Quantity = int.Parse(item.quantity),
                     deliveryReportId = deliveryreport.Id,
-                    UnitValue = !string.IsNullOrEmpty(item.unit) ? int.Parse(item.unit) : null
+                    UnitValue = !string.IsNullOrEmpty(item.unit) ? item.unit : null
                 };
 
 
@@ -1643,7 +1640,7 @@ public class EquipmentReportController : ControllerBase
 
         // فلتر التاريخ
         if(!string.IsNullOrWhiteSpace(from)&&!string.IsNullOrWhiteSpace(to))
-            query=query.Where(x => x.Date.Date>=DateTime.Parse(from)&&x.Date.Date<=DateTime.Parse(to));
+            query=query.Where(x => x.Date.HasValue&&x.Date.Value.Date>=DateTime.Parse(from)&&x.Date.Value.Date<=DateTime.Parse(to));
         // ترتيب
         query=query.OrderByDescending(x => x.Date);
 
@@ -1676,6 +1673,8 @@ public class EquipmentReportController : ControllerBase
                 ReportNumber = x.ReportNumber,
                 ClientName = x.ClientName,
                 TechName = x.TechName,
+                Notes = x.Notes,
+                ReportType = x.ReportType,
                 Images = imagesDb != null
                     ? imagesDb
                         .Where(y => y.deliveryReportId == x.Id)
@@ -1884,20 +1883,20 @@ public class EquipmentReportController : ControllerBase
                         col.Item().Row(row =>
                         {
                             row.Spacing(20); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Company Name : {reportDb.CompanyName ??" "}").FontFamily("Cairo")
+                            row.RelativeItem().Text($"Company Name : {reportDb.CompanyName ?? " "}").FontFamily("Cairo")
                                 .FontSize(12);
                         });
                         col.Item().Row(row =>
                         {
                             row.Spacing(20); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Adress / Project : {reportDb.ProjectAddress??" "}").FontFamily("Cairo")
+                            row.RelativeItem().Text($"Adress / Project : {reportDb.ProjectAddress ?? " "}").FontFamily("Cairo")
                                 .FontSize(12);
                         });
 
                         col.Item().Row(row =>
                         {
                             row.Spacing(20); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Equipment : {reportDb.EquipmentType ??" "}").FontFamily("Cairo")
+                            row.RelativeItem().Text($"Equipment : {reportDb.EquipmentType ?? " "}").FontFamily("Cairo")
                                 .FontSize(12);
                         });
 
@@ -2488,7 +2487,7 @@ public class EquipmentReportController : ControllerBase
                         col.Item().Row(row =>
                         {
                             row.Spacing(20); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Date : {reportDb.Date?.ToShortDateString() ??" "}").FontFamily("Cairo")
+                            row.RelativeItem().Text($"Date : {reportDb.Date?.ToShortDateString() ?? " "}").FontFamily("Cairo")
                                 .FontSize(12);
                             row.Spacing(60);
                             row.RelativeItem().Text($"Report # : {reportDb.ReportNumber}").FontFamily("Cairo")
@@ -3099,20 +3098,20 @@ public class EquipmentReportController : ControllerBase
             });
 
             table.Header(header =>
-                                        {
-                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Items")
+            {
+                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Items")
                                     .FontFamily("Cairo").Bold();
-                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Review")
+                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Review")
                                     .FontFamily("Cairo").Bold();
-                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
                                     .FontFamily("Cairo").Bold();
-                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
                                     .FontFamily("Cairo").Bold();
-                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
                                     .FontFamily("Cairo").Bold();
-                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
                                     .FontFamily("Cairo").Bold();
-                                        });
+            });
             foreach (var item in checkingItems)
             {
                 table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
@@ -3164,13 +3163,13 @@ public class EquipmentReportController : ControllerBase
             });
 
             table.Header(header =>
-                                        {
-                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
+            {
+                header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
                                                 .Text("Index").Bold();
 
-                                            header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
+                header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter()
                                                 .Text("Name").Bold();
-                                        });
+            });
 
             var i = 1;
             foreach (var item in members.Split(","))
@@ -3416,7 +3415,7 @@ public class EquipmentReportController : ControllerBase
                         col.Item()
                             .AlignCenter()
                             .PaddingTop(5)
-                            .Text("Delivery Notes Reports")
+                            .Text($"{DeliveryReportDb.ReportType} Report")
                             .FontFamily("Cairo")
                             .FontSize(20)
                             .Bold();
@@ -3431,7 +3430,7 @@ public class EquipmentReportController : ControllerBase
                         col.Item().Row(row =>
                         {
                             row.Spacing(20); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Date : {DeliveryReportDb.Date.ToShortDateString()}")
+                            row.RelativeItem().Text($"Date : {DeliveryReportDb.Date?.ToShortDateString() ?? "N/A"}")
                                 .FontFamily("Cairo").FontSize(12);
                             row.Spacing(60);
                             row.RelativeItem().Text($"Report # : {DeliveryReportDb.ReportNumber}").FontFamily("Cairo")
@@ -3445,6 +3444,9 @@ public class EquipmentReportController : ControllerBase
                             row.Spacing(20); // المسافة بين العناصر
                             row.RelativeItem().Text($"Company Name : {DeliveryReportDb.CompanyName}")
                                 .FontFamily("Cairo").FontSize(12);
+                            row.Spacing(60);
+                            row.RelativeItem().Text($"PhoneNum. : {DeliveryReportDb.PhoneNum} ").FontFamily("Cairo")
+                                .FontSize(12);
                         });
 
 
@@ -3454,39 +3456,41 @@ public class EquipmentReportController : ControllerBase
                         //    row.RelativeItem().Text($"Report : {reportDb.Notes} ").FontFamily("Cairo").FontSize(12);
 
                         //});
+                        col.Spacing(15);
+
                         col.Item().Table(table =>
                         {
                             table.ColumnsDefinition(columns =>
                             {
-                                columns.RelativeColumn(60);
+                                columns.RelativeColumn(55);
                                 columns.RelativeColumn(20);
-                                columns.RelativeColumn(10);
-                                columns.RelativeColumn(10);
+                                columns.RelativeColumn(5);
+                                columns.RelativeColumn(20);
                             });
 
                             // ===== هيدر الجدول =====
                             table.Header(header =>
                             {
-                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Description")
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter().AlignMiddle().Text("Description")
                                     .FontFamily("Cairo").Bold();
-                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("DeliveryType")
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter().AlignMiddle().Text("DeliveryType")
                                     .FontFamily("Cairo").Bold();
-                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Qty").FontFamily("Cairo")
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter().AlignMiddle().Text("Qty").FontFamily("Cairo")
                                     .Bold();
-                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Unit")
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).AlignCenter().AlignMiddle().Text("Unit")
                                     .FontFamily("Cairo").Bold();
                             });
                             foreach (var item in DeliveryReport.checkingItems)
                             {
-                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4).AlignCenter().AlignMiddle()
                                     .Text(item.Description).FontFamily("Cairo").FontSize(9);
 
-                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4).AlignCenter().AlignMiddle()
                                     .Text(item.DeliveryType ?? "-").FontFamily("Cairo").FontSize(9);
-                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4).AlignCenter().AlignMiddle()
                                     .Text(item.Quantity).FontFamily("Cairo").FontSize(9);
 
-                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4).AlignCenter().AlignMiddle()
                                     .Text(item.Unit).FontFamily("Cairo").FontSize(10);
                             }
                         });
@@ -3494,11 +3498,12 @@ public class EquipmentReportController : ControllerBase
                         //  col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
 
 
+
                         col.Item().Row(row =>
                         {
-                            row.Spacing(20); // المسافة بين العناصر
-                            row.RelativeItem().Text($"PhoneNum. : {DeliveryReportDb.PhoneNum} ").FontFamily("Cairo")
+                            row.RelativeItem().Text($"Report : {DeliveryReportDb.Notes} ").FontFamily("Cairo")
                                 .FontSize(12);
+
                         });
 
                         col.Item().Row(row =>
@@ -3604,6 +3609,7 @@ public class EquipmentReportController : ControllerBase
         string? techName ,
         string? salesName ,
         string? phoneNum ,
+        string? salesPersom ,
         string? from ,
         string? to ,
         int pageNumber = 1 ,
@@ -3634,6 +3640,8 @@ public class EquipmentReportController : ControllerBase
         // فلتر المبيعات
         if(!string.IsNullOrWhiteSpace(salesName))
             query=query.Where(x => x.salesName.Contains(salesName));
+
+
 
         // فلتر رقم الهاتف
         if(!string.IsNullOrWhiteSpace(phoneNum))
@@ -4101,11 +4109,18 @@ public class EquipmentReportController : ControllerBase
                         {
                             table.Cell().Border(1).Padding(4).AlignCenter().Text($"الدور  {i}").FontFamily("Cairo")
                                 .FontSize(9);
+
+                            string dir2 =  directionTwoList.Count > 0
+   ? directionTwoList[i]
+   : " ";
+
+
                             if (heightList[i] == 1001)
                             {
                                 table.Cell().Border(1).Padding(4).AlignCenter().Text("تحت الانشاء").FontFamily("Cairo")
                                     .FontSize(9);
                             }
+
                             else
                             {
                                 table.Cell().Border(1).Padding(4).AlignCenter().Text(heightList[i]).FontFamily("Cairo")
@@ -4117,24 +4132,55 @@ public class EquipmentReportController : ControllerBase
                                 table.Cell().Border(1).Padding(4).AlignCenter().Text("تحت الانشاء").FontFamily("Cairo")
                                     .FontSize(9);
                             }
+
                             else
                             {
                                 table.Cell().Border(1).Padding(4).AlignCenter()
-                                    .Text(directionList[i] + "  " + directionTwoList[i]).FontFamily("Cairo")
+                                    .Text(directionList[i] + "  " + $"{dir2}").FontFamily("Cairo")
                                     .FontSize(9);
                             }
                         }
+                        string dir3 = directionTwoList.Count > 0
+   ? directionTwoList[0]
+   : " ";
+                        table.Cell().Border(1).Padding(4).AlignCenter().Text("الارضي").FontFamily("Cairo").FontSize(9);
+
+                        if (heightList[0] == 1001)
+                        {
+                            table.Cell().Border(1).Padding(4).AlignCenter().Text("تحت الانشاء").FontFamily("Cairo")
+                                .FontSize(9);
+                        }
+
+                        else
+                        {
+                            table.Cell().Border(1).Padding(4).AlignCenter().Text(heightList[0]).FontFamily("Cairo")
+                             .FontSize(9);
+                        }
+
+                        if (directionList[0] == 66)
+                        {
+                            table.Cell().Border(1).Padding(4).AlignCenter().Text("تحت الانشاء").FontFamily("Cairo")
+                                .FontSize(9);
+                        }
+
+                        else
+                        {
+
+                            table.Cell().Border(1).Padding(4).AlignCenter()
+                                .Text(directionList[0] + "  " + $"{dir3}").FontFamily("Cairo").FontSize(9);
+                        }
+
+
 
                         // الارضي
-                        table.Cell().Border(1).Padding(4).AlignCenter().Text("الارضي").FontFamily("Cairo").FontSize(9);
-                        table.Cell().Border(1).Padding(4).AlignCenter().Text(heightList[0]).FontFamily("Cairo")
-                            .FontSize(9);
-                        table.Cell().Border(1).Padding(4).AlignCenter()
-                            .Text(directionList[0] + "  " + directionTwoList[0]).FontFamily("Cairo").FontSize(9);
+                       
                         for (int i = 0; i <= gargeheightList.Count - 1; i++)
                         {
                             table.Cell().Border(1).Padding(4).AlignCenter().Text($"الجراج -  {i + 1}")
                                 .FontFamily("Cairo").FontSize(9);
+                            string dirGarage2 =  gargeTwodirectionList.Count >0
+? gargeTwodirectionList[i]
+: " ";
                             if (gargeheightList[i] == 1005)
                             {
                                 table.Cell().Border(1).Padding(4).AlignCenter().Text("تحت الانشاء").FontFamily("Cairo")
@@ -4154,7 +4200,7 @@ public class EquipmentReportController : ControllerBase
                             else
                             {
                                 table.Cell().Border(1).Padding(4).AlignCenter()
-                                    .Text(gargedirectionList[i] + "  " + gargeTwodirectionList[i]).FontFamily("Cairo")
+                                    .Text(gargedirectionList[i] + "  " + $"{dirGarage2}").FontFamily("Cairo")
                                     .FontSize(9);
                             }
                         }
