@@ -2,15 +2,24 @@
 using maria.Dto;
 using maria.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.IdentityModel.Tokens;
 using QuestPDF.Drawing;
+using QuestPDF.Fluent;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-
+using SkiaSharp;
+using Svg.FilterEffects;
+using System;
+using System.IO;
+using System.Net.Http;
 using System.Text.Json;
-
+using System.Threading.Tasks;
+using static maria.Dto.DeliveryReportDetailDto;
+using static System.Net.Mime.MediaTypeNames;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -3928,7 +3937,7 @@ public class EquipmentReportController : ControllerBase
 
                     // عنوان التقرير
                     col.Item().AlignCenter().PaddingTop(5)
-                        .Text($"{ElevatorReportDb.reportType}")
+                        .Text($" معاينة مصعد ( {ElevatorReportDb.reportType} )")
                         .FontFamily("Cairo")
                         .FontSize(16)
                         .Bold();
@@ -4090,7 +4099,7 @@ public class EquipmentReportController : ControllerBase
 
 
                         // الأرضي
-                        table.Cell().Border(1).Padding(4).AlignCenter().Text("الكابينه").FontFamily("Cairo")
+                        table.Cell().Border(1).Padding(4).AlignCenter().Text("الماكينة").FontFamily("Cairo")
                             .FontSize(9);
                         if (ElevatorReportDb.capinaHeight != 0)
                         {
@@ -4176,7 +4185,7 @@ public class EquipmentReportController : ControllerBase
                        
                         for (int i = 0; i <= gargeheightList.Count - 1; i++)
                         {
-                            table.Cell().Border(1).Padding(4).AlignCenter().Text($"الجراج -  {i + 1}")
+                            table.Cell().Border(1).Padding(4).AlignCenter().Text($" - {i + 1}")
                                 .FontFamily("Cairo").FontSize(9);
                             string dirGarage2 =  gargeTwodirectionList.Count >0
 ? gargeTwodirectionList[i]
