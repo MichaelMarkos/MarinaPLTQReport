@@ -3491,6 +3491,9 @@ public class EquipmentReportController : ControllerBase
                             });
                             foreach (var item in DeliveryReport.checkingItems)
                             {
+                                bool endsWithM = !string.IsNullOrEmpty(item.Description)
+                 && item.Description.EndsWith("M");
+
                                 table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4).AlignCenter().AlignMiddle()
                                     .Text(item.Description).FontFamily("Cairo").FontSize(9);
 
@@ -3499,8 +3502,22 @@ public class EquipmentReportController : ControllerBase
                                 table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4).AlignCenter().AlignMiddle()
                                     .Text(item.Quantity).FontFamily("Cairo").FontSize(9);
 
-                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4).AlignCenter().AlignMiddle()
-                                    .Text(item.Unit).FontFamily("Cairo").FontSize(10);
+                                table.Cell()
+                                                .Border(1)
+                                                .PaddingVertical(1)
+                                                .PaddingHorizontal(4)
+                                                .AlignCenter()
+                                                .AlignMiddle()
+                                                .Text(text =>
+                                                {
+                                                    text.Span(item.Unit).FontFamily("Cairo").FontSize(10);
+
+                                                    if (endsWithM)
+                                                    {
+                                                        text.Span(" M").FontFamily("Cairo").FontSize(9);
+                                                    }
+                                                });
+
                             }
                         });
 
@@ -3952,7 +3969,7 @@ public class EquipmentReportController : ControllerBase
                     col.Item().AlignRight().Row(row =>
                     {
                         row.RelativeItem()
-                            .Text($"التاريخ: {ElevatorReportDb.Date.ToShortDateString()}")
+                            .Text($"التاريخ: {ElevatorReportDb.Date:dd/MM/yyyy}")
                             .FontFamily("Cairo").FontSize(12);
 
                         row.RelativeItem()
@@ -3980,8 +3997,10 @@ public class EquipmentReportController : ControllerBase
                             parts.Add($"العرض {ElevatorReportDb.widthShape}");
                         if (ElevatorReportDb.heightShape > 0)
                             parts.Add($"العمق {ElevatorReportDb.heightShape}");
-                        if (ElevatorReportDb.radiusShape > 0)
+                        if (ElevatorReportDb.radiusShape > 0 && ElevatorReportDb.shapeType != "circle")
                             parts.Add($"نصف القطر {ElevatorReportDb.radiusShape}");
+                        if (ElevatorReportDb.radiusShape > 0 && ElevatorReportDb.shapeType == "circle")
+                            parts.Add($" القطر {ElevatorReportDb.radiusShape}");
 
                         parts.Add($"         ");
 
