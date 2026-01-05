@@ -12,6 +12,7 @@ namespace maria.Dto
         public DateTime? Date { get; set; }
         public string? ClientSignaturePath { get; set; }
         public string? TechSignaturePath { get; set; }
+        public List<string>? Images { get; set; }
         public List<CheckingItemsDto> checkingItems { get; set; }
     }
 

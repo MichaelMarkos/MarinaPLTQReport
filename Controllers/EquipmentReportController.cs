@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using maria.Dto;
+using maria.Migrations;
 using maria.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ using SkiaSharp;
 using Svg.FilterEffects;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -601,7 +603,7 @@ public class EquipmentReportController : ControllerBase
 
 
         // ترتيب
-        query=query.OrderByDescending(x => x.Date);
+        query=query.OrderByDescending(x => x.CreatedAt);
 
 
         var reportlist = await query
@@ -691,7 +693,7 @@ public class EquipmentReportController : ControllerBase
 
 
         // ترتيب نهائي
-        query=query.OrderByDescending(x => x.Date);
+        query=query.OrderByDescending(x => x.CreatedAt);
 
 
         var reportlist = await query
@@ -759,6 +761,7 @@ public class EquipmentReportController : ControllerBase
             .FirstOrDefaultAsync(x => x.Id == id);
 
         var checkItemDb = await _db.CheckingItems.ToListAsync();
+        var imagesDb = await _db.SiteReportImages.Where(x => x.siteReportId == id).ToListAsync();
 
         if(report==null)
             return NotFound();
@@ -773,6 +776,7 @@ public class EquipmentReportController : ControllerBase
             Date = report.Date,
             ClientSignaturePath = report.ClientSignaturePath != null ? baseUrl + report.ClientSignaturePath : null,
             TechSignaturePath = baseUrl + report.TechSignaturePath != null ? baseUrl + report.TechSignaturePath : null,
+            Images = imagesDb.Select(x => baseUrl + x.FilePath).ToList(),
             checkingItems = checkItemDb.Select(a =>
             {
                 var reportItem = report.checkingItemReport.Where(x => x.CheckingItemId == a.Id).FirstOrDefault();
@@ -874,6 +878,7 @@ public class EquipmentReportController : ControllerBase
         if(report==null)
             return NotFound();
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var imagesDb = await _db.DelivryReportImages.Where(x => x.deliveryReportId == id).ToListAsync();
 
         return Ok(new DeliveryReportDetailDto
         {
@@ -882,15 +887,186 @@ public class EquipmentReportController : ControllerBase
             Date=report.Date ,
             ClientSignaturePath=report.ClientSignaturePath!=null ? baseUrl+report.ClientSignaturePath : null ,
             TechSignaturePath=baseUrl+report.TechSignaturePath!=null ? baseUrl+report.TechSignaturePath : null ,
-
+            Images=imagesDb.Select(x => baseUrl+x.FilePath).ToList() ,
             checkingItems=report.checkingItemReport.Select(a => new DeliveryItemsDto
             {
+                deliveryNoteId=a.deliveryNoteId ,
                 Description=a.deliveryNote.Description ,
                 DeliveryType=a.deliveryNote.DeliveryType ,
                 Quantity=a.Quantity ,
                 Unit=a.UnitValue!=null ? a.UnitValue : null
             }).ToList()
         });
+    }
+
+
+    //[HttpGet("GetDeliveryReportDetailsForUpdate22/{id}")]
+    //public async Task<IActionResult> GetDeliveryReportDetailsForUpdate22(int id)
+    //{
+    //    var report = await _db.DeliveryReport
+    //    .Include(x => x.checkingItemReport)
+    //    .FirstOrDefaultAsync(x => x.Id == id);
+
+    //    if(report==null)
+    //        return NotFound();
+
+    //    var allDeliveryNotes = await _db.DeliveryNotes.ToListAsync();
+
+    //    var baseUrl = $"{Request.Scheme}://{Request.Host}";
+    //    var imagesDb = await _db.DelivryReportImages
+    //    .Where(x => x.deliveryReportId == id)
+    //    .ToListAsync();
+
+    //    List<DeliveryItemDto> FillItems(string deliveryType)
+    //    {
+    //        return allDeliveryNotes
+    //            .Where(x => x.DeliveryType==deliveryType)
+    //            .Select(note =>
+    //            {
+    //                var existing = report.checkingItemReport
+    //                .FirstOrDefault(r => r.deliveryNoteId == note.Id );
+
+    //                return new DeliveryItemDto
+    //                {
+    //                    Id = existing !=null?  existing.Id :0,
+    //                    DeliveryNoteId=note.Id ,
+    //                    Item=note.Description ,
+    //                    Quantity=existing!=null ? existing.Quantity : 0 ,
+    //                    UnitFlag=note.UnitFlag ,
+    //                    Unit=existing!=null ? existing.UnitValue??"" : "" ,
+    //                    IsModified=false
+    //                };
+    //            })
+    //            .ToList();
+    //    }
+
+    //    var dto = new DeliveryReportDetailForUpdateDto
+    //    {
+    //        ReportType = report.ReportType,
+    //        Date = report.Date,
+    //        CompanyName = report.CompanyName,
+    //        PhoneNum = report.PhoneNum,
+    //        ClientName = report.ClientName,
+    //        TechName = report.TechName,
+    //        Notes = report.Notes,
+
+    //        Items  = FillItems("Suspension Mechanism"),
+    //        Items1 = FillItems("Scaffolding-Aluminum"),
+    //        Items2 = FillItems("Suspended Platform"),
+    //        Items3 = FillItems("Installation Fittings"),
+    //        Items4 = FillItems("Scaffolding-Steel"),
+    //        Items5 = FillItems("Home/Goods-elevator"),
+
+    //        Images = imagesDb.Select(x => baseUrl + x.FilePath).ToList()
+    //    };
+
+    //    return Ok(dto);
+    //}
+
+
+    [HttpGet("GetDeliveryReportDetailsForUpdate/{id}")]
+    public async Task<IActionResult> GetDeliveryReportDetailsForUpdate(int id)
+    {
+        var report = await _db.DeliveryReport
+        .Include(x => x.checkingItemReport)
+        .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (report == null)
+            return NotFound();
+
+        var allDeliveryNotes = await _db.DeliveryNotes.ToListAsync();
+
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var imagesDb = await _db.DelivryReportImages
+        .Where(x => x.deliveryReportId == id)
+        .ToListAsync();
+
+        var checkingItemReports = _db.DeliveryNoteReport.Where(x => x.deliveryReportId == id).Include(y => y.deliveryNote).ToList();
+
+        List<DeliveryItemForUpdateDto> FillItems(string deliveryType)
+        {
+            var itemsForUpdate = new List<DeliveryItemForUpdateDto>();
+
+            // كل DeliveryNotes لهذا النوع
+            var deliveryNotesByType = allDeliveryNotes
+                .Where(x => x.DeliveryType == deliveryType)
+                .ToList();
+
+            // كل السجلات الموجودة فعليًا (قد تكون مكررة)
+            var checkingItemByType = checkingItemReports
+                .Where(x => x.deliveryNote.DeliveryType == deliveryType)
+                .ToList();
+
+            foreach (var note in deliveryNotesByType)
+            {
+                // كل الصفوف المرتبطة بنفس DeliveryNote
+                var existingItems = checkingItemByType
+                    .Where(x => x.deliveryNoteId == note.Id)
+                    .ToList();
+
+                if (existingItems.Any())
+                {
+                    // ⬅️ أضفهم جميعًا (بدون دمج)
+                    foreach (var item in existingItems)
+                    {
+                        itemsForUpdate.Add(new DeliveryItemForUpdateDto
+                        {
+                            Id = item.Id,
+                            checkingItemId = item.deliveryNoteId,
+                            Item = item.deliveryNote.Description,
+                            Quantity = item.Quantity,
+                            UnitFlag = item.deliveryNote.UnitFlag,
+                            Unit = item.UnitValue ?? ""
+                        });
+                    }
+                }
+                else
+                {
+                    // ⬅️ لا يوجد أي سجل → أضف صف افتراضي واحد
+                    itemsForUpdate.Add(new DeliveryItemForUpdateDto
+                    {
+                        Id = 0,
+                        checkingItemId = note.Id,
+                        Item = note.Description,
+                        Quantity = 0,
+                        UnitFlag = note.UnitFlag,
+                        Unit = ""
+                    });
+                }
+            }
+
+            return itemsForUpdate ;
+        }
+
+
+
+
+
+
+        var dto = new DeliveryReportDetailForUpdateDto
+        {
+            ReportType = report.ReportType,
+            Date = report.Date,
+            CompanyName = report.CompanyName,
+            PhoneNum = report.PhoneNum,
+            ClientName = report.ClientName,
+            TechName = report.TechName,
+            Notes = report.Notes,
+
+            Items = FillItems("Suspension Mechanism"),
+            Items1 = FillItems("Scaffolding-Aluminum"),
+            Items2 = FillItems("Suspended Platform"),
+            Items3 = FillItems("installation-Fittings"),
+            Items4 = FillItems("Scaffolding-Steel"),
+            Items5 = FillItems("Home/Goods-elevator"),
+            Scissorlifts = FillItems("Scissor lifts"),
+            manliftList = FillItems("Man lifts"),
+            productList = FillItems("Other Products"),
+
+            Images = imagesDb.Select(x => baseUrl + x.FilePath).ToList()
+        };
+
+        return Ok(dto);
     }
 
 
@@ -4617,6 +4793,94 @@ public class EquipmentReportController : ControllerBase
             id = report.Id ,
             message = "Report updated successfully"
         });
+    }
+
+
+
+    [HttpPost("deleteReport/{id}")]
+    public IActionResult deleteReport(int id)
+    {
+        // مثال: إذا كنت تستخدم EF Core
+        var report = _db.Reports.FirstOrDefault(x => x.Id == id);
+        if(report!=null)
+        {
+            var reportImages = _db.ReportFiles.Where(x => x.ReportId == id).ToList();
+            _db.ReportFiles.RemoveRange(reportImages);
+            _db.Reports.Remove(report);
+
+
+            _db.SaveChanges();
+        }
+
+        return Ok(new { message = "تم المسح بنجاح" , id = report.Id });
+    }
+    [HttpPost("deletesite/{id}")]
+    public IActionResult deletesite(int id)
+    {
+        // مثال: إذا كنت تستخدم EF Core
+        var report = _db.SiteReports.FirstOrDefault(x => x.Id == id);
+        if(report!=null)
+        {
+            var reportImages = _db.SiteReportImages.Where(x => x.siteReportId == id).ToList();
+            _db.SiteReportImages.RemoveRange(reportImages);
+            _db.SiteReports.Remove(report);
+
+
+            _db.SaveChanges();
+        }
+
+        return Ok(new { message = "تم المسح بنجاح" , id = report.Id });
+    }
+    [HttpPost("deletesafety/{id}")]
+    public IActionResult deletesafety(int id)
+    {
+        // مثال: إذا كنت تستخدم EF Core
+        var report = _db.SafetyReport.FirstOrDefault(x => x.Id == id);
+        if(report!=null)
+        {
+            var reportImages = _db.SafetyReportImage.Where(x => x.safetyReportId == id).ToList();
+            _db.SafetyReportImage.RemoveRange(reportImages);
+            _db.SafetyReport.Remove(report);
+
+
+            _db.SaveChanges();
+        }
+
+        return Ok(new { message = "تم المسح بنجاح" , id = report.Id });
+    }
+    [HttpPost("deleteelevator/{id}")]
+    public IActionResult deleteelevator(int id)
+    {
+        // مثال: إذا كنت تستخدم EF Core
+        var report = _db.Elevator.FirstOrDefault(x => x.Id == id);
+        if(report!=null)
+        {
+            var reportImages = _db.ElevatorImage.Where(x => x.ElevatorId == id).ToList();
+            _db.ElevatorImage.RemoveRange(reportImages);
+            _db.Elevator.Remove(report);
+
+
+            _db.SaveChanges();
+        }
+
+        return Ok(new { message = "تم المسح بنجاح" , id = report.Id });
+    }
+    [HttpPost("deletedelivery/{id}")]
+    public IActionResult deletedelivery(int id)
+    {
+        // مثال: إذا كنت تستخدم EF Core
+        var report = _db.DeliveryReport.FirstOrDefault(x => x.Id == id);
+        if(report!=null)
+        {
+            var reportImages = _db.DelivryReportImages.Where(x => x.deliveryReportId == id).ToList();
+            _db.DelivryReportImages.RemoveRange(reportImages);
+            _db.DeliveryReport.Remove(report);
+
+
+            _db.SaveChanges();
+        }
+
+        return Ok(new { message = "تم المسح بنجاح" , id = report.Id });
     }
 
 

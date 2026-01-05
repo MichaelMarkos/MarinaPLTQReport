@@ -10,16 +10,19 @@
         public string? ClientSignaturePath { get; set; }
         public string? TechSignaturePath { get; set; }
         public string? Notes { get; set; }
+        public List<string>? Images { get; set; }
+
         public List<DeliveryItemsDto> checkingItems { get; set; }
 
 
     }
-        public class DeliveryItemsDto
-        {
-            public string Description { get; set; }
-            public string DeliveryType { get; set; }
-            public int Quantity { get; set; }
-            public string? Unit { get; set; }
-        }
-    
+    public class DeliveryItemsDto
+    {
+        public int deliveryNoteId { get; set; }
+        public string Description { get; set; }
+        public string DeliveryType { get; set; }
+        public int Quantity { get; set; }
+        public string? Unit { get; set; }
+    }
+
 }
