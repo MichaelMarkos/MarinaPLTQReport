@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure.Core;
 using maria.Dto;
 using maria.Migrations;
 using maria.Model;
@@ -989,13 +990,18 @@ public class EquipmentReportController : ControllerBase
 
             // كل DeliveryNotes لهذا النوع
             var deliveryNotesByType = allDeliveryNotes
-                .Where(x => x.DeliveryType == deliveryType)
+                .Where(x => x.DeliveryType == deliveryType && x.DeliveryType != "Scissor lifts" && x.DeliveryType != "Man lifts" && x.DeliveryType != "Other Products" )
+                .ToList();
+
+            var deliveryNotesByOtherType = allDeliveryNotes
+                .Where(x => x.DeliveryType  == "Scissor lifts" || x.DeliveryType == "Man lifts" || x.DeliveryType == "Other Products" )
                 .ToList();
 
             // كل السجلات الموجودة فعليًا (قد تكون مكررة)
             var checkingItemByType = checkingItemReports
                 .Where(x => x.deliveryNote.DeliveryType == deliveryType)
                 .ToList();
+           
 
             foreach (var note in deliveryNotesByType)
             {
@@ -1033,6 +1039,31 @@ public class EquipmentReportController : ControllerBase
                         Unit = ""
                     });
                 }
+            }
+            foreach (var note in deliveryNotesByOtherType)
+            {
+                // كل الصفوف المرتبطة بنفس DeliveryNote
+                var existingItems = checkingItemByType
+                    .Where(x => x.deliveryNoteId == note.Id)
+                    .ToList();
+
+                if (existingItems.Any())
+                {
+                    // ⬅️ أضفهم جميعًا (بدون دمج)
+                    foreach (var item in existingItems)
+                    {
+                        itemsForUpdate.Add(new DeliveryItemForUpdateDto
+                        {
+                            Id = item.Id,
+                            checkingItemId = item.deliveryNoteId,
+                            Item = item.deliveryNote.Description,
+                            Quantity = item.Quantity,
+                            UnitFlag = item.deliveryNote.UnitFlag,
+                            Unit = item.UnitValue ?? ""
+                        });
+                    }
+                }
+              
             }
 
             return itemsForUpdate ;
@@ -1534,6 +1565,7 @@ public class EquipmentReportController : ControllerBase
                 TechName = request["techName"],
                 Date = DateTime.TryParse(request["date"], out var parsedDate) ? parsedDate : DateTime.Now,
                 PhoneNum = request["phoneNum"],
+                ProjectAddress = request["projectAddress"],
                 Notes = request["notes"],
                 ReportType = request["ReportType"],
                 ReportNumber = newReportNumber,
@@ -2055,7 +2087,7 @@ public class EquipmentReportController : ControllerBase
                         {
                             row.Spacing(20); // المسافة بين العناصر
                             row.RelativeItem()
-                            .Text($"Date : {reportDb.Date?.ToString("dd/MM/yyyy") ?? ""}")
+                            .Text($"Date : {reportDb.Date?.ToString("yyyy/MM/dd") ?? ""}")
                                 .FontFamily("Cairo")
                                 .FontSize(12);
                             row.Spacing(60);
@@ -2398,7 +2430,7 @@ public class EquipmentReportController : ControllerBase
                         {
                             row.Spacing(20); // المسافة بين العناصر
                             row.RelativeItem()
-                                .Text($"Date : {SiteReportDb.Date.ToString("dd/MM/yyyy")}")
+                                .Text($"Date : {SiteReportDb.Date.ToString("yyyy/MM/dd")}")
                                 .FontFamily("Cairo")
                                 .FontSize(12);
                             row.Spacing(60);
@@ -3228,7 +3260,7 @@ public class EquipmentReportController : ControllerBase
                         col.Item().Row(row =>
                         {
                             row.Spacing(10); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Date : {SiteReportDb.Date?.ToShortDateString()}")
+                            row.RelativeItem().Text($"Date : {SiteReportDb.Date?.ToString("yyyy/MM/dd")}")
                                 .FontFamily("Cairo").FontSize(10);
                             row.Spacing(20);
                             row.RelativeItem().Text($"Report # : {SiteReportDb.ReportNumber}").FontFamily("Cairo")
@@ -3615,7 +3647,7 @@ public class EquipmentReportController : ControllerBase
                         col.Item().Row(row =>
                         {
                             row.Spacing(20); // المسافة بين العناصر
-                            row.RelativeItem().Text($"Date : {DeliveryReportDb.Date?.ToShortDateString() ?? "N/A"}")
+                            row.RelativeItem().Text($"Date : {DeliveryReportDb.Date?.ToString("yyyy/MM/dd") ?? ""}")
                                 .FontFamily("Cairo").FontSize(12);
                             row.Spacing(60);
                             row.RelativeItem().Text($"Report # : {DeliveryReportDb.ReportNumber}").FontFamily("Cairo")
@@ -3628,6 +3660,8 @@ public class EquipmentReportController : ControllerBase
                         {
                             row.Spacing(20); // المسافة بين العناصر
                             row.RelativeItem().Text($"Company Name : {DeliveryReportDb.CompanyName}")
+                                .FontFamily("Cairo").FontSize(12);
+                            row.RelativeItem().Text($"project / address : {DeliveryReportDb.ProjectAddress}")
                                 .FontFamily("Cairo").FontSize(12);
                             row.Spacing(60);
                             row.RelativeItem().Text($"PhoneNum. : {DeliveryReportDb.PhoneNum} ").FontFamily("Cairo")
@@ -4145,7 +4179,7 @@ public class EquipmentReportController : ControllerBase
                     col.Item().AlignRight().Row(row =>
                     {
                         row.RelativeItem()
-                            .Text($"التاريخ: {ElevatorReportDb.Date:dd/MM/yyyy}")
+                            .Text($"التاريخ: {ElevatorReportDb.Date:yyyy/MM/dd}")
                             .FontFamily("Cairo").FontSize(12);
 
                         row.RelativeItem()
@@ -4659,6 +4693,376 @@ public class EquipmentReportController : ControllerBase
 
         return Ok(new { message = "تم حفظ التقرير بنجاح" , id = report.Id });
     }
+    //[HttpPost("editdeliveryReport")]
+    //public async Task<IActionResult> editdeliveryReport([FromForm] IFormCollection request)
+    //{
+    //    try
+    //    {
+    //        var currentYear = DateTime.Now.Year.ToString().Substring(2);
+
+    //        // ابحث عن آخر تقرير في نفس السنة
+    //        var lastReport = _db.DeliveryReport
+    //            .Where(r => r.ReportNumber.StartsWith(currentYear + "/"))
+    //            .OrderByDescending(r => r.ReportNumber)
+    //            .FirstOrDefault();
+    //        int nextNumber = 1;
+    //        if(lastReport!=null)
+    //        {
+    //            var parts = lastReport.ReportNumber.Split('/');
+    //            if(parts.Length==2&&int.TryParse(parts [1] , out int lastNum))
+    //            {
+    //                nextNumber=lastNum+1;
+    //            }
+    //        }
+
+    //        var newReportNumber = $"{currentYear}/{nextNumber:D3}";
+
+
+    //        var itemsJson = request["items"];
+    //        if(string.IsNullOrEmpty(itemsJson))
+    //            return BadRequest("No items data received.");
+
+
+    //        // var Items = System.Text.Json.JsonSerializer.Deserialize<List<CheckingItemDto>>(itemsJson)!;
+
+
+    //        var Items = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>(
+    //            itemsJson,
+    //            new System.Text.Json.JsonSerializerOptions
+    //            {
+    //                PropertyNameCaseInsensitive = true
+    //            }
+    //        )!;
+
+
+    //        var itemsJson1 = request["items1"];
+    //        if(string.IsNullOrEmpty(itemsJson1))
+    //            return BadRequest("No items data received.");
+    //        var Items1 = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>(itemsJson1,
+    //            new System.Text.Json.JsonSerializerOptions
+    //            {
+    //                PropertyNameCaseInsensitive = true
+    //            }
+    //        )!;
+
+    //        var itemsJson2 = request["items2"];
+    //        if(string.IsNullOrEmpty(itemsJson2))
+    //            return BadRequest("No items data received.");
+    //        var Items2 = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>(itemsJson2,
+    //            new System.Text.Json.JsonSerializerOptions
+    //            {
+    //                PropertyNameCaseInsensitive = true
+    //            }
+    //        )!;
+
+    //        var itemsJson3 = request["items3"];
+    //        if(string.IsNullOrEmpty(itemsJson3))
+    //            return BadRequest("No items data received.");
+    //        var Items3 = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>(itemsJson3,
+    //            new System.Text.Json.JsonSerializerOptions
+    //            {
+    //                PropertyNameCaseInsensitive = true
+    //            }
+    //        )!;
+
+    //        var itemsJson4 = request["items4"];
+    //        if(string.IsNullOrEmpty(itemsJson4))
+    //            return BadRequest("No items data received.");
+    //        var Items4 = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>(itemsJson4,
+    //            new System.Text.Json.JsonSerializerOptions
+    //            {
+    //                PropertyNameCaseInsensitive = true
+    //            }
+    //        )!;
+
+
+    //        var itemsJson5 = request["items5"];
+    //        if(string.IsNullOrEmpty(itemsJson5))
+    //            return BadRequest("No items data received.");
+    //        var Items5 = System.Text.Json.JsonSerializer.Deserialize<List<DeliveryNoteDto>>(itemsJson5,
+    //            new System.Text.Json.JsonSerializerOptions
+    //            {
+    //                PropertyNameCaseInsensitive = true
+    //            }
+    //        )!;
+
+    //        string uploadRoot =
+    //            Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
+    //                "UploadSiteReport");
+
+    //        if(!Directory.Exists(uploadRoot))
+    //            Directory.CreateDirectory(uploadRoot);
+
+    //        // حفظ الصور
+
+    //        // ✅ حفظ الصور
+
+
+    //        // حفظ التواقيع
+    //        string? clientSignaturePath = null;
+    //        string? techSignaturePath = null;
+    //        var clientSig = request.Files.FirstOrDefault(f => f.Name == "clientSignature");
+    //        var techSig = request.Files.FirstOrDefault(f => f.Name == "techSignature");
+
+    //        var deliveryreport = new DeliveryReport
+    //        {
+    //            CompanyName = request["companyName"],
+    //            ClientName = request["clientName"],
+    //            TechName = request["techName"],
+    //            Date = DateTime.TryParse(request["date"], out var parsedDate) ? parsedDate : DateTime.Now,
+    //            PhoneNum = request["phoneNum"],
+    //            projectAddress = request["projectAddress"],
+    //            Notes = request["notes"],
+    //            ReportType = request["ReportType"],
+    //            ReportNumber = newReportNumber,
+    //            UserId = long.Parse(request["userId"]),
+    //        };
+
+    //        if(clientSig!=null)
+    //        {
+    //            string fileName = $"client_{Guid.NewGuid()}.png";
+    //            string fullPath = Path.Combine(uploadRoot, fileName);
+    //            using(var stream = new FileStream(fullPath , FileMode.Create))
+    //                await clientSig.CopyToAsync(stream);
+    //            clientSignaturePath=$"/UploadSiteReport/{fileName}";
+    //            deliveryreport.ClientSignaturePath=clientSignaturePath;
+    //        }
+
+    //        if(techSig!=null)
+    //        {
+    //            string fileName = $"tech_{Guid.NewGuid()}.png";
+    //            string fullPath = Path.Combine(uploadRoot, fileName);
+    //            using(var stream = new FileStream(fullPath , FileMode.Create))
+    //                await techSig.CopyToAsync(stream);
+    //            techSignaturePath=$"/UploadSiteReport/{fileName}";
+    //            deliveryreport.TechSignaturePath=techSignaturePath;
+    //        }
+
+
+    //        _db.DeliveryReport.Add(deliveryreport);
+    //        await _db.SaveChangesAsync();
+
+    //        List<string> imagePaths = new List<string>();
+    //        foreach(var file in request.Files.Where(f => f.Name=="images"))
+    //        {
+    //            string fileName = $"{Guid.NewGuid()}_{file.FileName}";
+    //            string fullPath = Path.Combine(uploadRoot, fileName);
+    //            using(var stream = new FileStream(fullPath , FileMode.Create))
+    //                await file.CopyToAsync(stream);
+    //            imagePaths.Add($"/UploadSiteReport/{fileName}");
+    //            _db.DelivryReportImages.Add(new DelivryReportImage
+    //            {
+    //                deliveryReportId=deliveryreport.Id ,
+    //                FileName=fileName ,
+    //                FilePath=$"/UploadSiteReport/{fileName}"
+    //            });
+    //            await _db.SaveChangesAsync();
+    //        }
+
+
+    //        foreach(var item in Items)
+    //        {
+    //            if(item.quantity=="0"||item.checkingItemId==0)
+    //                continue;
+
+    //            var report = new DeliveryNoteReport
+    //            {
+    //                deliveryNoteId = item.checkingItemId,
+    //                Quantity = int.Parse(item.quantity),
+    //                deliveryReportId = deliveryreport.Id,
+    //                UnitValue = !string.IsNullOrEmpty(item.unit) ? item.unit : null
+
+    //            };
+
+
+    //            _db.DeliveryNoteReport.Add(report);
+    //        }
+
+    //        foreach(var item in Items1)
+    //        {
+    //            if(item.quantity=="0"||item.checkingItemId==0)
+    //                continue;
+
+    //            var report = new DeliveryNoteReport
+    //            {
+    //                deliveryNoteId = item.checkingItemId,
+    //                Quantity = int.Parse(item.quantity),
+    //                deliveryReportId = deliveryreport.Id,
+    //            };
+
+
+    //            _db.DeliveryNoteReport.Add(report);
+    //        }
+
+    //        foreach(var item in Items2)
+    //        {
+    //            if(item.quantity=="0"||item.checkingItemId==0)
+    //                continue;
+
+    //            var report = new DeliveryNoteReport
+    //            {
+    //                deliveryNoteId = item.checkingItemId,
+    //                Quantity = int.Parse(item.quantity),
+    //                deliveryReportId = deliveryreport.Id,
+    //                UnitValue = !string.IsNullOrEmpty(item.unit) ? item.unit : null
+
+    //            };
+
+
+    //            _db.DeliveryNoteReport.Add(report);
+    //        }
+
+    //        foreach(var item in Items3)
+    //        {
+    //            if(item.quantity=="0"||item.checkingItemId==0)
+    //                continue;
+
+    //            var report = new DeliveryNoteReport
+    //            {
+    //                deliveryNoteId = item.checkingItemId,
+    //                Quantity = int.Parse(item.quantity),
+    //                deliveryReportId = deliveryreport.Id,
+    //            };
+
+
+    //            _db.DeliveryNoteReport.Add(report);
+    //        }
+
+    //        foreach(var item in Items4)
+    //        {
+    //            if(item.quantity=="0"||item.checkingItemId==0)
+    //                continue;
+
+    //            var report = new DeliveryNoteReport
+    //            {
+    //                deliveryNoteId = item.checkingItemId,
+    //                Quantity = int.Parse(item.quantity),
+    //                deliveryReportId = deliveryreport.Id,
+    //                UnitValue = !string.IsNullOrEmpty(item.unit) ? item.unit : null
+    //            };
+
+
+    //            _db.DeliveryNoteReport.Add(report);
+    //        }
+
+    //        foreach(var item in Items5)
+    //        {
+    //            if(item.quantity=="0"||item.checkingItemId==0)
+    //                continue;
+
+    //            var report = new DeliveryNoteReport
+    //            {
+    //                deliveryNoteId = item.checkingItemId,
+    //                Quantity = int.Parse(item.quantity),
+    //                deliveryReportId = deliveryreport.Id,
+    //                UnitValue = !string.IsNullOrEmpty(item.unit) ? item.unit : null
+    //            };
+
+
+    //            _db.DeliveryNoteReport.Add(report);
+    //        }
+
+
+    //        var scissorliftsJson = request["scissorliftsList"];
+
+    //        var scissorlifts = System.Text.Json.JsonSerializer.Deserialize<List<scissorliftsDto>>(scissorliftsJson,
+    //            new System.Text.Json.JsonSerializerOptions
+    //            {
+    //                PropertyNameCaseInsensitive = true
+    //            });
+    //        if(scissorlifts.Count>0)
+    //        {
+    //            foreach(var item in scissorlifts)
+    //            {
+    //                var newDeliveryNote = _db.DeliveryNotes.Add(new DeliveryNote
+    //                {
+    //                    Description = item.model + " / " + item.heightModel,
+    //                    DeliveryType = "Scissor lifts",
+    //                    OptionalFlag = true
+    //                });
+    //                await _db.SaveChangesAsync();
+
+    //                var report = _db.DeliveryNoteReport.Add(new DeliveryNoteReport
+    //                {
+    //                    deliveryNoteId = newDeliveryNote.Entity.Id,
+    //                    Quantity = int.Parse(item.quantity),
+    //                    deliveryReportId = deliveryreport.Id,
+    //                });
+    //            }
+    //        }
+
+
+    //        var manliftListJson = request["manliftList"];
+
+    //        var manliftList = System.Text.Json.JsonSerializer.Deserialize<List<scissorliftsDto>>(manliftListJson,
+    //            new System.Text.Json.JsonSerializerOptions
+    //            {
+    //                PropertyNameCaseInsensitive = true
+    //            });
+    //        if(manliftList.Count>0)
+    //        {
+    //            foreach(var item in manliftList)
+    //            {
+    //                var newDeliveryNote = _db.DeliveryNotes.Add(new DeliveryNote
+    //                {
+    //                    Description = item.model + " / " + item.heightModel,
+    //                    DeliveryType = "Man lifts",
+    //                    OptionalFlag = true
+    //                });
+    //                await _db.SaveChangesAsync();
+
+    //                var report = _db.DeliveryNoteReport.Add(new DeliveryNoteReport
+    //                {
+    //                    deliveryNoteId = newDeliveryNote.Entity.Id,
+    //                    Quantity = int.Parse(item.quantity),
+    //                    deliveryReportId = deliveryreport.Id,
+    //                });
+    //            }
+    //        }
+
+
+    //        var productListJson = request["productList"];
+
+    //        var productList = System.Text.Json.JsonSerializer.Deserialize<List<productListDto>>(productListJson,
+    //            new System.Text.Json.JsonSerializerOptions
+    //            {
+    //                PropertyNameCaseInsensitive = true
+    //            });
+    //        if(productList.Count>0)
+    //        {
+    //            foreach(var item in productList)
+    //            {
+    //                var newDeliveryNote = _db.DeliveryNotes.Add(new DeliveryNote
+    //                {
+    //                    Description = item.description,
+    //                    DeliveryType = "Other Products",
+    //                    OptionalFlag = true
+    //                });
+    //                await _db.SaveChangesAsync();
+
+    //                var report = _db.DeliveryNoteReport.Add(new DeliveryNoteReport
+    //                {
+    //                    deliveryNoteId = newDeliveryNote.Entity.Id,
+    //                    Quantity = int.Parse(item.quantity),
+    //                    deliveryReportId = deliveryreport.Id,
+    //                });
+    //            }
+    //        }
+
+
+    //        await _db.SaveChangesAsync();
+
+    //        return Ok(new
+    //        {
+    //            message = "✅ تم حفظ البيانات والتواقيع بنجاح" ,
+    //            imagePaths
+    //        });
+    //    }
+    //    catch(Exception ex)
+    //    {
+    //        return StatusCode(500 , ex.Message);
+    //    }
+    //}
 
     [HttpPost("EditEquipmentReport")]
     [RequestSizeLimit(20_000_000)] // 20 MB
