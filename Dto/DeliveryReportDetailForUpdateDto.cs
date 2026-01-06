@@ -8,7 +8,9 @@
         public string PhoneNum { get; set; }
         public string ClientName { get; set; }
         public string TechName { get; set; }
+
         public string Notes { get; set; }
+        public string? ProjectAddress { get; set; }
 
         public List<DeliveryItemForUpdateDto> Items { get; set; }
         public List<DeliveryItemForUpdateDto> Items1 { get; set; }

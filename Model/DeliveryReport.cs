@@ -9,6 +9,7 @@
         public string? ClientSignaturePath { get; set; }
         public string? TechSignaturePath { get; set; }
         public DateTime? Date { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public string? ReportNumber { get; set; }
         public string? InvoiceNumber { get; set; }
         public string? CompanyName { get; set; }

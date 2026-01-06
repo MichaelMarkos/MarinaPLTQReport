@@ -9,7 +9,10 @@ namespace maria.Dto
         public string? ReportType { get; set; }
         public string? Projectlocation { get; set; }
         public string? ProjectDescription { get; set; }
+        public string? PhoneNum { get; set; }
         public DateTime? Date { get; set; }
+        public string? ClientName { get; set; }
+        public string? TechName { get; set; }
         public string? ClientSignaturePath { get; set; }
         public string? TechSignaturePath { get; set; }
         public List<string>? Images { get; set; }
