@@ -1960,7 +1960,7 @@ public class EquipmentReportController : ControllerBase
         if (!string.IsNullOrWhiteSpace(from) && !string.IsNullOrWhiteSpace(to))
             query = query.Where(x => x.Date.HasValue && x.Date.Value.Date >= DateTime.Parse(from) && x.Date.Value.Date <= DateTime.Parse(to));
         // ترتيب
-        query = query.OrderByDescending(x => x.Date);
+        query = query.OrderByDescending(x => x.CreatedAt);
 
 
         var reportlist = await query
