@@ -13,9 +13,9 @@ namespace maria.Helpers
 
 
 
-            CreateMap<Report, ReportEditDto>().ReverseMap();
+            CreateMap<Report , ReportEditDto>().ReverseMap();
+            CreateMap<Elevator , GetelevatorDetailsDto>().ReverseMap();
 
-           
 
         }
     }

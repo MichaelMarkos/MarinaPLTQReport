@@ -8,6 +8,9 @@
         public string? PhoneNum { get; set; }
         public string? ReportNumber { get; set; }
         public string? InvoiceNumber { get; set; }
+        public int? TeamNum { get; set; }
+        public int? TeamLeaderNum { get; set; }
+        public string? TeamLeaderName { get; set; }
 
         public DateTime? Date { get; set; }
         public string? ClientSignaturePath { get; set; }
