@@ -618,6 +618,9 @@ public class EquipmentReportController : ControllerBase
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
         var elevatordto = _mapper.Map<GetelevatorDetailsDto>(query);
+        elevatordto.WellImagePath =baseUrl + elevatordto.WellImagePath;
+        elevatordto.DirectionImagePath=baseUrl+elevatordto.DirectionImagePath;
+        elevatordto.ResizableImagePath=baseUrl+elevatordto.ResizableImagePath;
         elevatordto.Images=imagesDb
                 .Where(y => y.ElevatorId==reportId)
                 .Select(p => baseUrl+p.FilePath)

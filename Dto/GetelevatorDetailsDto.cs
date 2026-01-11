@@ -53,9 +53,9 @@
         public string? PhoneNum { get; set; }
 
 
-        public string WellImagePath { get; set; }
-        public string DirectionImagePath { get; set; }
-        public string ResizableImagePath { get; set; }
+        public string? WellImagePath { get; set; }
+        public string? DirectionImagePath { get; set; }
+        public string? ResizableImagePath { get; set; }
         public List<string> Images { get; set; }
 
     }
