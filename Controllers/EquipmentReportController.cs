@@ -618,7 +618,7 @@ public class EquipmentReportController : ControllerBase
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
         var elevatordto = _mapper.Map<GetelevatorDetailsDto>(query);
-        elevatordto.WellImagePath =baseUrl + elevatordto.WellImagePath;
+        elevatordto.WellImagePath=baseUrl+elevatordto.WellImagePath;
         elevatordto.DirectionImagePath=baseUrl+elevatordto.DirectionImagePath;
         elevatordto.ResizableImagePath=baseUrl+elevatordto.ResizableImagePath;
         elevatordto.Images=imagesDb
@@ -1708,9 +1708,9 @@ public class EquipmentReportController : ControllerBase
                 PhoneNum = request["phoneNum"],
                 CreatedAt = DateTime.Now,
                 //SiteName = request["siteName"],
-                TeamNum = int.Parse(request["teamNum"]),
+                TeamNum = int.TryParse(request["teamNum"], out var teamNum)? teamNum: 0,
                 TeamLeaderName = request["teamLeaderName"],
-                TeamLeaderNum = int.Parse(request["teamLeaderNum"]),
+                TeamLeaderNum = int.TryParse(request["teamLeaderNum"], out var leaderNum)? leaderNum: 0,
                 ProjectDescription = request["projectDescription"],
                 Projectlocation = request["projectlocation"],
                 //ProjectName = request["projectName"],
@@ -3717,7 +3717,9 @@ public class EquipmentReportController : ControllerBase
                             });
 
 
-                            col.Item().Width(PageSizes.A4.Width - 40) // عرض A4 ناقص الهوامش
+                            if( !string.IsNullOrEmpty( SiteReportDb.TeamMembers ) )
+                            {
+                                col.Item().Width(PageSizes.A4.Width - 40) // عرض A4 ناقص الهوامش
                                 .Element(e =>
                                 {
                                     e.Scale(0.85f)
@@ -3752,6 +3754,7 @@ public class EquipmentReportController : ControllerBase
             });
                                 });
 
+                            }
 
                             //  col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
 
