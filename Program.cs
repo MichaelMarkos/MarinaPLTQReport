@@ -31,24 +31,33 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
 var app = builder.Build();
 
 
+
+
+
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    try
+    // 1. If history table is empty, baseline it
+    if (!db.Database.GetAppliedMigrations().Any())
     {
-        // Check if DB exists and if there are any pending migrations
-        if (dbContext.Database.GetPendingMigrations().Any())
+        var allMigrations = db.Database.GetMigrations();
+        var productVersion = typeof(DbContext).Assembly
+            .GetName().Version?.ToString() ?? "8.0.0"; // fallback
+
+        foreach (var migration in allMigrations)
         {
-            Console.WriteLine("Applying pending migrations...");
-            dbContext.Database.Migrate();
+            db.Database.ExecuteSqlRaw(@"
+                INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion)
+                VALUES ({0}, {1})",
+                migration, productVersion);
         }
     }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Database migration failed: {ex.Message}");
-    }
+
+    // 2. Apply any new migrations normally
+    db.Database.Migrate();
 }
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
