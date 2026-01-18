@@ -44,6 +44,7 @@
         public bool twoDirectionFlag { get; set; }
 
         public string? Notes { get; set; }
+        public string? WallStatusForList { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         //public string? PdfFilePath { get; set; } 
 
