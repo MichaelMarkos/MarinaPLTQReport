@@ -1035,6 +1035,7 @@ public class EquipmentReportController : ControllerBase
 
         return Ok(new DeliveryReportDetailDto
         {
+            ReportType=report.ReportType ,
             CompanyName=report.CompanyName ,
             ReportNumber=report.ReportNumber ,
             Date=report.Date ,
