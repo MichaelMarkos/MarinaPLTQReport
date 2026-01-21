@@ -258,7 +258,7 @@ public class EquipmentReportController : ControllerBase
             reportType = form["reportType"],
             TechName = form["techName"],
             UserId = long.Parse(form["userId"]),
-
+            WallStatusForList = form["wallStatusForList"],
 
             CreatedAt = DateTime.UtcNow
         };
@@ -386,7 +386,7 @@ public class EquipmentReportController : ControllerBase
         // TechSignaturePath = form["techSignaturePath"],
         oldReport.reportType=form ["reportType"];
         oldReport.TechName=form ["techName"];
-
+        oldReport.WallStatusForList=form ["wallStatusForList"];
         // حفظ التوقيعات والصور في مجلد
         string uploadRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
             "elevator");
@@ -4465,6 +4465,7 @@ public class EquipmentReportController : ControllerBase
             rightWidth = ElevatorReportDb.rightWidth,
             liftWidth = ElevatorReportDb.liftWidth,
             centerWidth = ElevatorReportDb.centerWidth,
+            WallStatusForList = ElevatorReportDb.WallStatusForList,
         };
 
 
@@ -4582,12 +4583,14 @@ public class EquipmentReportController : ControllerBase
                             parts.Add($"فتحه الباب {ElevatorReportDb.centerWidth}");
                         if (ElevatorReportDb.liftWidth > 0)
                             parts.Add($" كتف شمال  {ElevatorReportDb.liftWidth}");
-                        string finalText = "مقاسات البئر: " + string.Join("   ", parts);
+                        if (ElevatorReportDb.WallStatusForList != null)
+                            parts.Add($" {ElevatorReportDb.WallStatusForList}");
+                        string finalText = "مقاسات الغرفة: " + string.Join("   ", parts);
 
                         row.RelativeItem()
                             .Text(finalText)
                             .FontFamily("Cairo")
-                            .FontSize(12);
+                            .FontSize(10);
 
                         //    // السهم
                         //    string directionSymbol = ElevatorReportDb.directionShape switch

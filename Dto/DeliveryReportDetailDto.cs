@@ -4,6 +4,7 @@
     {
 
         public int Id { get; set; }
+        public string? ReportType { get; set; }
         public string? ReportNumber { get; set; }
         public string? CompanyName { get; set; }
         public string? ProjectAddress { get; set; }

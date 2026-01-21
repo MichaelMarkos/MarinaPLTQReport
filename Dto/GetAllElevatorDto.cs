@@ -50,6 +50,7 @@
 
         public string wellStatus { get; set; }
 
+        public string? WallStatusForList { get; set; }
 
         public List<string>? Images { get; set; }
         public string []? imageSva { get; set; } = new string [] { };
