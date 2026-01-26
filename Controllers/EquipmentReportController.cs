@@ -3545,7 +3545,7 @@ public class EquipmentReportController : ControllerBase
             }
 
 
-            var checkItemDb = _db.CheckingItems.ToList();
+            var checkItemDb = _db.SafetyItems.ToList();
             var checkingItems = checkItemDb.Select(a =>
             {
                 var reportItem = SiteReportDb.safetyItemsReport.Where(x => x.SafetyItemsId == a.Id).FirstOrDefault();
