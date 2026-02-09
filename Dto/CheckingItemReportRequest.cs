@@ -54,4 +54,12 @@ namespace maria.Dto
         public bool CorrectiveActionFlag { get; set; }
         public bool faultFlag { get; set; }
     }
+    public class ElevatorItemDto
+    {
+        public int checkingItemId { get; set; }
+        public string? Fault { get; set; }
+        public string? CorrectiveAction { get; set; }
+        public bool CorrectiveActionFlag { get; set; }
+        public bool faultFlag { get; set; }
+    }
 }

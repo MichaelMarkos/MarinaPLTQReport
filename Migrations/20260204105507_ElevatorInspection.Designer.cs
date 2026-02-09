@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using maria.Model;
 
@@ -11,9 +12,11 @@ using maria.Model;
 namespace maria.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260204105507_ElevatorInspection")]
+    partial class ElevatorInspection
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -410,32 +413,6 @@ namespace maria.Migrations
                     b.HasIndex("ElevatorId");
 
                     b.ToTable("ElevatorImage");
-                });
-
-            modelBuilder.Entity("maria.Model.ElevatorInspectionImage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ElevatorInspectionId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ElevatorInspectionId");
-
-                    b.ToTable("ElevatorInspectionImage");
                 });
 
             modelBuilder.Entity("maria.Model.ElevatorInspectionItems", b =>
@@ -954,17 +931,6 @@ namespace maria.Migrations
                         .IsRequired();
 
                     b.Navigation("Elevator");
-                });
-
-            modelBuilder.Entity("maria.Model.ElevatorInspectionImage", b =>
-                {
-                    b.HasOne("maria.Model.ElevatorInspectionReport", "ElevatorInspectionReports")
-                        .WithMany()
-                        .HasForeignKey("ElevatorInspectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ElevatorInspectionReports");
                 });
 
             modelBuilder.Entity("maria.Model.ElevatorInspectionItems", b =>
