@@ -5343,7 +5343,7 @@ public class EquipmentReportController : ControllerBase
                                     .BorderColor(Colors.Grey.Darken2)
                                     .Padding(5)
                                     .Width(150)
-                                    .Height(100)
+                                    .Height(150)
                                     .Image(techImage)
                                     .FitWidth();
                             });
@@ -5355,7 +5355,7 @@ public class EquipmentReportController : ControllerBase
                                     .BorderColor(Colors.Grey.Darken2)
                                     .Padding(5)
                                     .Width(150)
-                                    .Height(100)
+                                    .Height(150)
                                     .Image(clientImage) // استخدم صورة أخرى أو نفس الصورة
                                     .FitWidth();
                             });
