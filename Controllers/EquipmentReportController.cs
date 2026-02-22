@@ -4701,6 +4701,9 @@ public class EquipmentReportController : ControllerBase
                             row.Spacing(20); // المسافة بين العناصر
                             row.RelativeItem().Text($"Company Name : {elevatorReportDb.CompanyName}").FontFamily("Cairo")
                                 .FontSize(12);
+                            row.Spacing(60);
+                            row.RelativeItem().Text($"PO number # : {elevatorReportDb.ClientName}").FontFamily("Cairo")
+                                .FontSize(12);
                         });
 
 
@@ -5314,6 +5317,304 @@ public class EquipmentReportController : ControllerBase
                         });
 
 
+
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(10); // المسافة بين العناصر
+                            row.RelativeItem().AlignCenter().Text("مراجعة المواصفات الفنية المطلوبة").FontFamily("Cairo")
+                                .FontSize(12);
+                        });
+                        col.Spacing(5);
+
+                        col.Item().Scale(0.87f).Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(60);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                            });
+
+                            // ===== هيدر الجدول =====
+                            table.Header(header =>
+                            {
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Items")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Review")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                                    .FontFamily("Cairo").Bold();
+                            });
+                            foreach (var item in checkingItems.Where(x => x.Type == "مراجعة المواصفات الفنية المطلوبة"))
+                            {
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.Item).FontFamily("Cairo").FontSize(9);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.Review == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.faultFlag == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.CorrectiveActionFlag == true ? "✔" : "  ").FontFamily("Cairo")
+                                    .FontSize(9);
+
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.fault ?? "-").FontFamily("Cairo").FontSize(9);
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.CorrectiveAction ?? "-").FontFamily("Cairo").FontSize(9);
+                            }
+                        });
+
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(10); // المسافة بين العناصر
+                            row.RelativeItem().AlignCenter().Text("مراجعة الديكور والتشطيب").FontFamily("Cairo")
+                                .FontSize(12);
+                        });
+                        col.Spacing(5);
+
+                        col.Item().Scale(0.87f).Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(60);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                            });
+
+                            // ===== هيدر الجدول =====
+                            table.Header(header =>
+                            {
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Items")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Review")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                                    .FontFamily("Cairo").Bold();
+                            });
+                            foreach (var item in checkingItems.Where(x => x.Type == "مراجعة الديكور والتشطيب"))
+                            {
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.Item).FontFamily("Cairo").FontSize(9);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.Review == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.faultFlag == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.CorrectiveActionFlag == true ? "✔" : "  ").FontFamily("Cairo")
+                                    .FontSize(9);
+
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.fault ?? "-").FontFamily("Cairo").FontSize(9);
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.CorrectiveAction ?? "-").FontFamily("Cairo").FontSize(9);
+                            }
+                        });
+
+                        //df
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(10); // المسافة بين العناصر
+                            row.RelativeItem().AlignCenter().Text("فحص الأضرار قبل التسليم").FontFamily("Cairo")
+                                .FontSize(12);
+                        });
+                        col.Spacing(5);
+
+                        col.Item().Scale(0.87f).Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(60);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                            });
+
+                            // ===== هيدر الجدول =====
+                            table.Header(header =>
+                            {
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Items")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Review")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                                    .FontFamily("Cairo").Bold();
+                            });
+                            foreach (var item in checkingItems.Where(x => x.Type == "فحص الأضرار قبل التسليم"))
+                            {
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.Item).FontFamily("Cairo").FontSize(9);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.Review == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.faultFlag == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.CorrectiveActionFlag == true ? "✔" : "  ").FontFamily("Cairo")
+                                    .FontSize(9);
+
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.fault ?? "-").FontFamily("Cairo").FontSize(9);
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.CorrectiveAction ?? "-").FontFamily("Cairo").FontSize(9);
+                            }
+                        });
+
+                        //hh 
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(10); // المسافة بين العناصر
+                            row.RelativeItem().AlignCenter().Text("التشغيل التجريبي ").FontFamily("Cairo")
+                                .FontSize(12);
+                        });
+                        col.Spacing(5);
+
+                        col.Item().Scale(0.87f).Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(60);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                            });
+
+                            // ===== هيدر الجدول =====
+                            table.Header(header =>
+                            {
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Items")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Review")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                                    .FontFamily("Cairo").Bold();
+                            });
+                            foreach (var item in checkingItems.Where(x => x.Type == "التشغيل التجريبي "))
+                            {
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.Item).FontFamily("Cairo").FontSize(9);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.Review == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.faultFlag == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.CorrectiveActionFlag == true ? "✔" : "  ").FontFamily("Cairo")
+                                    .FontSize(9);
+
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.fault ?? "-").FontFamily("Cairo").FontSize(9);
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.CorrectiveAction ?? "-").FontFamily("Cairo").FontSize(9);
+                            }
+                        });
+
+                        //f 
+                        col.Item().Row(row =>
+                        {
+                            row.Spacing(10); // المسافة بين العناصر
+                            row.RelativeItem().AlignCenter().Text("اعتماد نهائي").FontFamily("Cairo")
+                                  .FontSize(12);
+                        });
+                        col.Spacing(5);
+
+                        col.Item().Scale(0.87f).Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(60);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                                columns.RelativeColumn(8);
+                            });
+
+                            // ===== هيدر الجدول =====
+                            table.Header(header =>
+                            {
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Items")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Review")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Fault")
+                                    .FontFamily("Cairo").Bold();
+                                header.Cell().Border(1).Background("#f0f0f0").Padding(2).Text("Corrective")
+                                    .FontFamily("Cairo").Bold();
+                            });
+                            foreach (var item in checkingItems.Where(x => x.Type == "اعتماد نهائي"))
+                            {
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.Item).FontFamily("Cairo").FontSize(9);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.Review == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.faultFlag == true ? "✔" : " ").FontFamily("Cairo").FontSize(10);
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.CorrectiveActionFlag == true ? "✔" : "  ").FontFamily("Cairo")
+                                    .FontSize(9);
+
+
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.fault ?? "-").FontFamily("Cairo").FontSize(9);
+                                table.Cell().Border(1).PaddingVertical(1).PaddingHorizontal(4)
+                                    .Text(item.CorrectiveAction ?? "-").FontFamily("Cairo").FontSize(9);
+                            }
+                        });
 
                         col.Item().Row(row =>
                         {
@@ -6821,6 +7122,26 @@ public class EquipmentReportController : ControllerBase
 
         return Ok(new { message = "تم المسح بنجاح" , id = report.Id });
     }
+    [HttpPost("deletelevator/{id}")]
+    public IActionResult deletelevator(int id)
+    {
+        var report = _db.LevatorReport.FirstOrDefault(x => x.Id == id);
+        if(report!=null)
+        {
+            var faceades = _db.Facade.Where(x => x.LevatorReportId == id).ToList();
+            var faceIds = faceades.Select(x => x.Id).ToList();
+             _db.Facade.RemoveRange(faceades);
+            var scfaffolding = _db.Scaffold.Where(x => faceIds.Contains(x.FacadeId)).ToList();
+            _db.Scaffold.RemoveRange(scfaffolding);
+            _db.Facade.RemoveRange(faceades);
+            var reportImages = _db.LevatorImage.Where(x => x.LevatorReportId == id).ToList();
+            _db.LevatorImage.RemoveRange(reportImages);
+            _db.LevatorReport.Remove(report);
+            _db.SaveChanges();
+        }
+
+        return Ok(new { message = "تم المسح بنجاح" , id = report.Id });
+    }
     [HttpPost("deletedelivery/{id}")]
     public IActionResult deletedelivery(int id)
     {
@@ -6838,6 +7159,725 @@ public class EquipmentReportController : ControllerBase
 
         return Ok(new { message = "تم المسح بنجاح" , id = report.Id });
     }
+    [HttpPost("deleteelevatorinspection/{id}")]
+    public IActionResult deleteelevatorinspection(int id)
+    {
+        // مثال: إذا كنت تستخدم EF Core
+        var report = _db.ElevatorInspectionReport.FirstOrDefault(x => x.Id == id);
+        if(report!=null)
+        {
+            var elevatorInspectionitem = _db.ElevatorInspectionItems.FirstOrDefault(x => x.ElevatorInspectionReportId == id);
+            _db.ElevatorInspectionItems.Remove(elevatorInspectionitem);
+            var reportImages = _db.ElevatorInspectionImage.Where(x => x.ElevatorInspectionId == id).ToList();
+            _db.ElevatorInspectionImage.RemoveRange(reportImages);
+            _db.ElevatorInspectionReport.Remove(report);
+
+
+            _db.SaveChanges();
+        }
+
+        return Ok(new { message = "تم المسح بنجاح" , id = report.Id });
+    }
+    //[HttpPost("addLevatorReport")]
+    //[RequestSizeLimit(20_000_000)] // 20 MB
+    //public async Task<IActionResult> PostLevatorReport()
+    //{
+    //    var form = await Request.ReadFormAsync();
+    //    var currentYear = DateTime.Now.Year.ToString().Substring(2);
+
+    //    // ابحث عن آخر تقرير في نفس السنة
+    //    var lastReport = _db.Reports
+    //        .Where(r => r.ReportNumber.StartsWith(currentYear + "/"))
+    //        .OrderByDescending(r => r.ReportNumber)
+    //        .FirstOrDefault();
+    //    int nextNumber = 1;
+    //    if(lastReport!=null)
+    //    {
+    //        var parts = lastReport.ReportNumber.Split('/');
+    //        if(parts.Length==2&&int.TryParse(parts [1] , out int lastNum))
+    //        {
+    //            nextNumber=lastNum+1;
+    //        }
+    //    }
+
+    //    var newReportNumber = $"{currentYear}/{nextNumber:D3}";
+
+    //    var report = new Report
+    //    {
+    //        // Basic Info
+    //        Date = DateTime.TryParse(form["date"], out var parsedDate) ? parsedDate : null,
+    //        ReportType = form["reportType"],
+    //        ReportNumber = newReportNumber, //InvoiceNumber = form["invoiceNumber"],
+    //        CompanyName = form["companyName"],
+    //        ProjectAddress = GetFormValueOrDefault(form, "projectAddress"),
+    //        EquipmentType = form["equipmentType"],
+    //        ModelMarnia = form["modelMarnia"],
+    //        ModelMarniaHireOrSale = form["modelMarniaHireOrSale"],
+    //        Model = GetFormValueOrDefault(form, "Model"),
+    //        SerialNumber = GetFormValueOrDefault(form, "SerialNumber"),
+    //        WarrantyStatus = form["warrantyStatus"],
+
+    //        // Numeric Fields
+    //        Cradle = int.TryParse(form["cradle"], out var cradleVal) ? cradleVal : 0,
+    //        Meter = int.TryParse(form["meter"], out var meterVal) ? meterVal : 0,
+    //        Unit = form["unit"],
+
+    //        Installation = int.TryParse(form["installation"], out var installationVal) ? installationVal : null,
+    //        Removing = int.TryParse(form["removing"], out var removingVal) ? removingVal : null,
+    //        Shifting = int.TryParse(form["shifting"], out var shiftingVal) ? shiftingVal : null,
+    //        PeriodicMaintenance = int.TryParse(form["periodicMaintenance"], out var periodicVal) ? periodicVal : null,
+    //        ThirdParty = int.TryParse(form["thirdParty"], out var thirdPartyVal) ? thirdPartyVal : null,
+    //        Breakdown = int.TryParse(form["breakdown"], out var breakdownVal) ? breakdownVal : null,
+    //        Inspection = int.TryParse(form["inspection"], out var inspectionVal) ? inspectionVal : null,
+    //        Delivery = int.TryParse(form["delivery"], out var deliveryVal) ? deliveryVal : null,
+    //        OnScaffolding = int.TryParse(form["onScaffolding"], out var scaffoldingVal) ? scaffoldingVal : null,
+
+    //        // Text Fields
+    //        spareParts = form["spareParts"],
+    //        Notes = form["notes"],
+    //        receivedPayment = form["receivedPayment"],
+    //        PhoneNum = form["phoneNum"],
+    //        // Signatures (paths to be saved after upload)
+    //        ClientSignaturePath = form["clientSignaturePath"],
+    //        TechSignaturePath = form["techSignaturePath"],
+    //        ClientName = form["clientName"],
+    //        TechName = form["techName"],
+    //        UserId = long.Parse(form["userId"]),
+
+
+    //        CreatedAt = DateTime.UtcNow
+    //    };
+
+
+    //    // حفظ التوقيعات والصور في مجلد
+    //    string uploadRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
+    //        "uploads");
+
+    //    if(!Directory.Exists(uploadRoot))
+    //        Directory.CreateDirectory(uploadRoot);
+
+    //    foreach(var file in form.Files)
+    //    {
+    //        if(file.Length==0)
+    //            continue;
+
+    //        // اسم فريد للملف
+    //        string fileName = $"{Guid.NewGuid()}_{file.FileName}";
+    //        string savePath = Path.Combine(uploadRoot, fileName);
+
+    //        using(var stream = new FileStream(savePath , FileMode.Create))
+    //        {
+    //            await file.CopyToAsync(stream);
+    //        }
+
+    //        string relativePath = $"/uploads/{fileName}";
+
+    //        switch(file.Name)
+    //        {
+    //            case "clientSignature":
+    //                report.ClientSignaturePath=relativePath;
+    //                break;
+
+    //            case "techSignature":
+    //                report.TechSignaturePath=relativePath;
+    //                break;
+
+    //            case "images":
+    //                _db.ReportFiles.Add(new ReportImage
+    //                {
+    //                    FilePath=relativePath ,
+    //                    FileName=file.FileName ,
+    //                    Report=report
+    //                });
+    //                break;
+
+
+    //                //case "pdfFile":
+    //                //    report.PdfFilePath = relativePath;
+    //                //    break;
+    //        }
+    //    }
+
+    //    _db.Reports.Add(report);
+    //    await _db.SaveChangesAsync();
+
+    //    return Ok(new { success = true , report.Id , message = "Report saved successfully." });
+    //}
+
+    [HttpGet("GetPagedLevatorReports")]
+    public async Task<IActionResult> GetPagedLevatorReports(long userId , string? reportNumber , string? companyName ,
+        string? techName , string? phoneNum , string? from , string? to , string? salesName , int page = 1 , int pageSize = 5)
+    {
+        var query = _db.LevatorReport .AsQueryable();
+
+        // فلتر المستخدم
+        if(userId>0)
+            query=query.Where(x => x.UserId==userId);
+
+        // فلتر رقم التقرير
+        if(!string.IsNullOrWhiteSpace(reportNumber))
+            query=query.Where(x => x.ReportNumber.Contains(reportNumber));
+
+        // فلتر اسم الشركة
+        if(!string.IsNullOrWhiteSpace(companyName))
+            query=query.Where(x => x.CompanyName.Contains(companyName));
+
+        // فلتر اسم الفني
+        if(!string.IsNullOrWhiteSpace(techName))
+            query=query.Where(x => x.TechName.Contains(techName));
+
+        // فلتر رقم الهاتف
+        if(!string.IsNullOrWhiteSpace(phoneNum))
+            query=query.Where(x => x.PhoneNum.Contains(phoneNum));
+
+        // فلتر التاريخ
+        if(!string.IsNullOrWhiteSpace(from)&&!string.IsNullOrWhiteSpace(to))
+            query=query.Where(x =>
+                x.Date.Date>=DateTime.Parse(from)&&x.Date.Date<=DateTime.Parse(to));
+        // فلتر المبيعات
+        if(!string.IsNullOrWhiteSpace(salesName))
+            query=query.Where(x => x.salesperson.Contains(salesName));
+
+
+        // ترتيب
+        query=query.OrderByDescending(x => x.Id);
+
+
+        var reportlist = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize).ToListAsync();
+
+
+        var imagesDb = await _db.LevatorImage
+            .Where(i => reportlist.Select(x => x.Id).Contains(i.LevatorReportId))
+            .ToListAsync();
+
+
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+
+        int totalCount = await query.CountAsync();
+        var reports = reportlist
+            .Select(x => new SiteReportDto
+            {
+                Id = x.Id,
+                Projectlocation = x.Projectlocation,
+                ProjectDescription = x.ProjectDescription,
+                CompanyName = x.CompanyName,
+                PhoneNum = x.PhoneNum,
+                InvoiceNumber = x.InvoiceNumber,
+                Date = x.Date,
+                
+                ReportNumber = x.ReportNumber,
+                ClientName = x.salesperson,
+                TechName = x.TechName,
+                Images = imagesDb != null
+                    ? imagesDb
+                        .Where(y => y.LevatorReportId == x.Id)
+                        .Select(p => baseUrl + p.FilePath)
+                        .ToList()
+                    : null
+            })
+            .ToList();
+
+        return Ok(new
+        {
+            totalCount ,
+            page ,
+            pageSize ,
+            totalPages = (int)Math.Ceiling(totalCount/(double)pageSize) ,
+            reports
+        });
+    }
+
+
+    [HttpPost("addLevatorReport")]
+    [RequestSizeLimit(20_000_000)]
+    public async Task<IActionResult> addLevatorReport()
+    {
+        var form = await Request.ReadFormAsync();
+
+        int.TryParse(form ["Id"] , out int id);
+
+        LevatorReport report;
+
+        if(id>0)
+        {
+            report=await _db.LevatorReport
+                .Include(r => r.facades)
+                .ThenInclude(f => f.Scaffolds)
+                .FirstOrDefaultAsync(r => r.Id==id);
+
+            if(report==null)
+                return NotFound("Report not found");
+        }
+       
+        else
+        {
+            var year = DateTime.Now.Year.ToString().Substring(2);
+
+            var last = await _db.LevatorReport
+            .Where(r => r.ReportNumber.StartsWith(year + "/"))
+            .OrderByDescending(r => r.ReportNumber)
+            .FirstOrDefaultAsync();
+
+            int next = 1;
+
+            if(last!=null)
+            {
+                var parts = last.ReportNumber.Split('/');
+                if(parts.Length==2&&int.TryParse(parts [1] , out int num))
+                    next=num+1;
+            }
+
+            report=new LevatorReport
+            {
+                ReportNumber=$"{year}/{next:D3}"
+            };
+
+            _db.LevatorReport.Add(report);
+        }
+
+        
+
+        report.Projectlocation=form ["projectlocation"];
+        report.ProjectDescription=form ["projectDescription"];
+        report.InvoiceNumber=form ["invoiceNumber"];
+        report.BuildingType=form ["buildingType"];
+        report.BuildingKind=form ["buildingKind"];
+        report.CompanyName=form ["companyName"];
+        report.salesperson=form ["salesperson"];
+        report.TechName=form ["techName"];
+        report.PhoneNum=form ["phoneNum"];
+        if(!string.IsNullOrEmpty(form ["x"]))
+        {
+            if(decimal.TryParse(form ["x"] , out decimal xValue))
+                report.x=xValue;
+        }
+
+        if(!string.IsNullOrEmpty(form ["y"]))
+        {
+            if(decimal.TryParse(form ["y"] , out decimal yValue))
+                report.y=yValue;
+        }
+        if(DateTime.TryParse(form ["date"] , out var dt))
+            report.Date=dt;
+
+            report.UserId=1;
+
+
+
+        if(!string.IsNullOrEmpty(form ["facades"]))
+        {
+            // قراءة البيانات من JSON كـ DTO
+            var facadeDtos = JsonSerializer.Deserialize<List<FacadeDto>>(form["facades"]);
+
+            // حذف القديم إذا كان موجوداً
+            if(id>0)
+            {
+                var oldFacades = _db.Facade.Where(f => f.LevatorReportId == report.Id);
+                _db.Facade.RemoveRange(oldFacades);
+            }
+
+            // تحويل DTO إلى الكيان الفعلي
+            var newFacades = new List<Facade>();
+
+            foreach(var dto in facadeDtos)
+            {
+                var facade = new Facade
+                {
+                    Id = dto.id,
+                    Number = dto.number,
+                    TypeOfFinish = dto.typeOfFinish,
+                    TypeOfWall = dto.typeOfWall,
+                    TypeOfLand = dto.typeOfLand,
+                    Height = dto.height,
+                    heightWall = dto.heightWall,
+                    Width = dto.width,
+                    Max = dto.max,
+                    IsSpecial = dto.isSpecial,
+                    Notes = dto.notes,
+                    LevatorReport = report,
+                    Scaffolds = new List<Scaffold>()
+                };
+
+                // معالجة Scaffolds
+                foreach(var scaffoldDto in dto.scaffolds)
+                {
+                    var scaffold = new Scaffold
+                    {
+                        Id = dto.id,
+                        TypeOfUse = scaffoldDto.typeOfUse,
+                        TypeOfGroup = scaffoldDto.typeOfGroup,
+                        SetGroup = scaffoldDto.setGroup,
+                        TypeBox = scaffoldDto.typeBox,
+                        HeightBox = scaffoldDto.heightBox,
+                        WidthBox = scaffoldDto.widthBox,
+                        NumberTransfers = scaffoldDto.numberTransfers,
+                        Wirelength = scaffoldDto.wirelength,
+                        ElectricWirelength = scaffoldDto.electricWirelength,
+                        PowerSource = scaffoldDto.powerSource,
+                        Liftingoods = scaffoldDto.liftingLoads, 
+                        Notes = scaffoldDto.notes,
+                        facade = facade
+                    };
+
+                    facade.Scaffolds.Add(scaffold);
+                }
+
+                newFacades.Add(facade);
+            }
+
+            report.facades=newFacades;
+        }
+        // =========================
+        // IMAGES (ADD ONLY)
+        // =========================
+
+        string uploadRoot = Path.Combine(
+        _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
+        "uploads");
+
+        if(!Directory.Exists(uploadRoot))
+            Directory.CreateDirectory(uploadRoot);
+
+        foreach(var file in form.Files)
+        {
+            if(file.Length==0)
+                continue;
+
+            string fileName = $"{Guid.NewGuid()}_{file.FileName}";
+            string path = Path.Combine(uploadRoot, fileName);
+
+            using var stream = new FileStream(path, FileMode.Create);
+            await file.CopyToAsync(stream);
+
+            _db.LevatorImage.Add(new LevatorImage
+            {
+                FilePath="/uploads/"+fileName ,
+                FileName=file.FileName ,
+                LevatorReport=report
+            });
+        }
+
+        await _db.SaveChangesAsync();
+
+        return Ok(new
+        {
+            success = true ,
+            report.Id ,
+            report.ReportNumber
+        });
+    }
+
+
+
+    [HttpGet("GetLevatorReportDetails")]
+    public async Task<IActionResult> GetLevatorReportDetails(int reportId)
+    {
+        try
+        {
+            var report = await _db.LevatorReport
+                .Include(r => r.facades)
+                    .ThenInclude(f => f.Scaffolds)
+                .FirstOrDefaultAsync(r => r.Id == reportId);
+            var imagesDb = await _db.LevatorImage.Where(i => i.LevatorReportId == reportId).ToListAsync();
+            if(report==null)
+            {
+                return NotFound(new
+                {
+                    success = false ,
+                    message = "التقرير غير موجود"
+                });
+            }
+
+            // تحويل إلى DTO
+            var reportDto = new ReportDetailsDto
+            {
+                id = report.Id,
+                projectlocation = report.Projectlocation,
+                projectDescription = report.ProjectDescription,
+                reportNumber = report.ReportNumber,
+                invoiceNumber = report.InvoiceNumber,
+                buildingType = report.BuildingType,
+                buildingKind = report.BuildingKind,
+                companyName = report.CompanyName,
+                date = report.Date,
+                salesperson = report.salesperson,
+                techName = report.TechName,
+                phoneNum = report.PhoneNum,
+                x = report.x,
+                y = report.y,
+                facades = report.facades.Select(f => new FacadeDto
+                {
+                    id=f.Id,
+                    number = f.Number,
+                    typeOfFinish = f.TypeOfFinish,
+                    typeOfWall = f.TypeOfWall,
+                    typeOfLand = f.TypeOfLand,
+                    height = f.Height,
+                    width = f.Width,
+                    heightWall = f.heightWall,
+                    max = f.Max,
+                    notes = f.Notes,
+                    isSpecial = f.IsSpecial,
+                    scaffolds = f.Scaffolds.Select(s => new ScaffoldDto
+                    {
+                        id=f.Id,
+                        typeOfUse = s.TypeOfUse,
+                        typeOfGroup = s.TypeOfGroup,
+                        setGroup = s.SetGroup,
+                        typeBox = s.TypeBox,
+                        widthBox = s.WidthBox,
+                        heightBox = s.HeightBox,
+                        numberTransfers = s.NumberTransfers,
+                        wirelength = s.Wirelength,
+                        electricWirelength = s.ElectricWirelength,
+                        powerSource = s.PowerSource,
+                        liftingLoads = s.Liftingoods,
+                        notes = s.Notes,
+                        
+                    }).ToList()
+                }).ToList(),
+                images = imagesDb.Select(i => new ImageDto
+                {
+                    id = i.Id,
+                    fileName = i.FileName,
+                    filePath = GetFullImagePath(i.FilePath)
+                }).ToList()
+            };
+
+            return Ok(new
+            {
+                success = true ,
+                report = reportDto
+            });
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(500 , new
+            {
+                success = false ,
+                message = "حدث خطأ أثناء استرجاع التقرير" ,
+                error = ex.Message
+            });
+        }
+    }
+
+
+    [HttpGet("GenerateLevatorReportPdf")]
+
+    public IActionResult GenerateLevatorReportPdf(int Id)
+    {
+        QuestPDF.Settings.License=QuestPDF.Infrastructure.LicenseType.Community;
+
+        var fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fonts", "Cairo-Regular.ttf");
+        FontManager.RegisterFont(System.IO.File.OpenRead(fontPath));
+
+        var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "Picture1.jpg");
+        var logoBytes = System.IO.File.ReadAllBytes(logoPath);
+
+        var logoPathFooter = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "Picture1.jpg");
+        var logoBytesFooter = System.IO.File.ReadAllBytes(logoPathFooter);
+
+        var report = _db.LevatorReport
+            .Include(r => r.facades)
+                .ThenInclude(f => f.Scaffolds)
+            .FirstOrDefault(r => r.Id == Id);
+
+        if(report==null)
+            return NotFound("التقرير غير موجود");
+
+        var document = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Margin(20);
+                page.Size(PageSizes.A4);
+
+                // ===== Header =====
+                page.Header()
+     .Column(col =>
+     {
+         // 🖼️ الصورة بعرض الصفحة
+         col.Item()
+             .AlignCenter()
+             .Element(e =>
+             {
+                 e.Width(150)
+                     .Height(75)
+                     .Image(logoBytes)
+                     .FitWidth()
+                     ; // يجعل الصورة تمتد بعرض الصفحة تلقائيًا
+             });
+         col.Item().LineHorizontal(1)
+             .LineColor(Colors.Grey.Lighten2);
+         // 📝 العنوان أسفل الصورة
+         col.Item()
+             .AlignCenter()
+             .PaddingTop(5)
+             .Text("Report")
+             .FontFamily("Cairo")
+             .FontSize(20)
+             .Bold();
+         col.Item().LineHorizontal(1)
+             .LineColor(Colors.Grey.Lighten2);
+     });
+
+                // ===== Basic Info =====
+              
+
+                //col.Item().PaddingVertical(10).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+
+                // ===== Facades Table =====
+                page.Content().ContentFromRightToLeft().Column(col =>
+                {
+                    col.Spacing(5);
+
+                    col.Item().Text($"الموقع: {report.Projectlocation}").FontFamily("Cairo");
+                    col.Item().Text($"وصف المشروع: {report.ProjectDescription}").FontFamily("Cairo");
+                    col.Item().Text($"نوع المبنى: {report.BuildingType}").FontFamily("Cairo");
+                    col.Item().Text($"الشركة: {report.CompanyName}").FontFamily("Cairo");
+                    col.Item().Text($"تاريخ التقرير: {report.Date:yyyy/MM/dd}").FontFamily("Cairo");
+                    col.Item().Text($"الفني: {report.TechName} - الهاتف: {report.PhoneNum}").FontFamily("Cairo");
+
+                    col.Item().Text("جدول الواجهات").FontSize(14).Bold().FontFamily("Cairo");
+
+                    foreach (var facade in report.facades)
+                    {
+                        col.Item().PaddingTop(5).Border(1).Padding(5).Column(fCol =>
+                        {
+                            fCol.Item().Text($"الواجهة رقم: {facade.Number}")
+    .FontFamily("Cairo").Bold();
+
+                            fCol.Item().Text($"نوع التشطيب: {facade.TypeOfFinish ?? "-"}")
+    .FontFamily("Cairo");
+
+                            fCol.Item().Text($"نوع الجدار: {facade.TypeOfWall ?? "-"}")
+    .FontFamily("Cairo");
+
+                            fCol.Item().Text(
+    $"ارتفاع: {facade.Height?.ToString() ?? "-"} - " +
+    $"عرض: {facade.Width?.ToString() ?? "-"} - " +
+    $"ارتفاع الجدار: {facade.heightWall?.ToString() ?? "-"} - " +
+    $"أقصى: {facade.Max?.ToString() ?? "-"}"
+).FontFamily("Cairo");
+                            // ===== Scaffolds Table for this Facade =====
+                            if (facade.Scaffolds.Any())
+                            {
+                                fCol.Item().PaddingTop(5).Text("السقالات التابعة:").FontFamily("Cairo").Bold();
+                                fCol.Item().Table(table =>
+                                {
+                                    table.ColumnsDefinition(columns =>
+                                    {
+                                        columns.RelativeColumn(8); 
+                                        columns.RelativeColumn(8);
+                                        columns.RelativeColumn(8);
+                                        columns.RelativeColumn(8);
+                                        columns.RelativeColumn(8);
+                                        columns.RelativeColumn(8);
+                                        columns.RelativeColumn(8);
+                                        columns.RelativeColumn(8);
+                                        columns.RelativeColumn(8);
+                                        columns.RelativeColumn(8);
+                                        columns.RelativeColumn(8);
+                                        columns.RelativeColumn(8);
+                                    });
+
+                                    // Header
+                                    table.Header(header =>
+                                    {
+                                        header.Cell().Border(1).Padding(1).AlignCenter().Text("رقم").FontFamily("Cairo").FontSize(8).Bold();
+                                        header.Cell().Border(1).Padding(1).AlignCenter().Text("نوع الاستخدام").FontFamily("Cairo").FontSize(8).Bold();
+                                        header.Cell().Border(1).Padding(1).AlignCenter().Text("نوع المجموعة").FontFamily("Cairo").FontSize(8).Bold();
+                                        header.Cell().Border(1).Padding(1).AlignCenter().Text("تركيب المجموعه").FontFamily("Cairo").FontSize(8).Bold();
+                                        header.Cell().Border(1).Padding(1).AlignCenter().Text("نوع الصندوق").FontFamily("Cairo").FontSize(8).Bold();
+                                        header.Cell().Border(1).Padding(1).AlignCenter().Text("عرض الصندوق").FontFamily("Cairo").FontSize(8).Bold();
+                                        header.Cell().Border(1).Padding(1).AlignCenter().Text("الاطوال المطلوبه").FontFamily("Cairo").FontSize(8).Bold();
+                                        header.Cell().Border(1).Padding(1).AlignCenter().Text("عدد النقلات").FontFamily("Cairo").FontSize(8).Bold();
+                                        header.Cell().Border(1).Padding(1).AlignCenter().Text("طول الوايرات").FontFamily("Cairo").FontSize(8).Bold();
+                                        header.Cell().Border(1).Padding(1).AlignCenter().Text("طول كابل الكهرباء").FontFamily("Cairo").FontSize(8).Bold();
+                                        header.Cell().Border(1).Padding(1).AlignCenter().Text("يوجد مصدر كهرباء").FontFamily("Cairo").FontSize(8).Bold();
+                                        header.Cell().Border(1).Padding(1).AlignCenter().Text("يوجد مصعد لرفع البضائع").FontFamily("Cairo").FontSize(8).Bold();
+                                    });
+                                    int i = 1;
+                                    foreach (var scaffold in facade.Scaffolds)
+                                    {
+                                        table.Cell().Border(1).Padding(2).AlignCenter().Text(i.ToString()).FontFamily("Cairo");
+                                        table.Cell().Border(1).Padding(2).AlignCenter().Text(scaffold.TypeOfUse ?? "").FontFamily("Cairo");
+                                        table.Cell().Border(1).Padding(2).AlignCenter().Text(scaffold.TypeOfGroup ?? "").FontFamily("Cairo");
+                                        table.Cell().Border(1).Padding(2).AlignCenter().Text(scaffold.SetGroup ?? "").FontFamily("Cairo");
+                                        table.Cell().Border(1).Padding(2).AlignCenter().Text(scaffold.TypeBox ?? "").FontFamily("Cairo");
+                                        table.Cell().Border(1).Padding(2).AlignCenter().Text(scaffold.WidthBox?.ToString() ?? "").FontFamily("Cairo");
+                                        table.Cell().Border(1).Padding(2).AlignCenter().Text(scaffold.HeightBox?.ToString() ?? "").FontFamily("Cairo");
+                                        table.Cell().Border(1).Padding(2).AlignCenter().Text(scaffold.NumberTransfers?.ToString() ?? "").FontFamily("Cairo");
+                                        table.Cell().Border(1).Padding(2).AlignCenter().Text(scaffold.Wirelength ?.ToString() ?? "-").FontFamily("Cairo");
+                                        table.Cell().Border(1).Padding(2).AlignCenter().Text(scaffold.ElectricWirelength ?.ToString() ?? "-").FontFamily("Cairo");
+                                        table.Cell().Border(1).Padding(2).AlignCenter().Text(scaffold.PowerSource ?? "").FontFamily("Cairo");
+                                        table.Cell().Border(1).Padding(2).AlignCenter().Text(scaffold.Liftingoods ?? "").FontFamily("Cairo");
+
+                                        i++;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+
+                // ===== Footer =====
+                page.Footer()
+                    .BorderBottom(1)
+                    .PaddingVertical(2)
+                    .Row(row =>
+                    {
+                        row.Spacing(10);
+
+                        // ✅ الشعار على اليسار
+                        row.ConstantItem(150).Image(logoBytesFooter).FitWidth();
+
+                        // ✅ معلومات الاتصال في المنتصف
+                        row.RelativeItem().Column(col =>
+                        {
+                            col.Spacing(6);
+
+                            col.Item().Row(r =>
+                            {
+                                r.Spacing(6);
+                                r.RelativeItem().Background("#B91C1C").Padding(5).Text("qatar@marinaplt.com")
+                                    .FontColor(Colors.White).FontFamily("Cairo").FontSize(12);
+                                r.RelativeItem().Background("#1E3A8A").Padding(5).Text("www.marinaplt.com")
+                                    .FontColor(Colors.White).FontFamily("Cairo").FontSize(12);
+                            });
+
+                            col.Item().Row(r =>
+                            {
+                                r.Spacing(6);
+                                r.RelativeItem().Background("#1E3A8A").Padding(5).Text("Tel.: 44 32 32 46")
+                                    .FontColor(Colors.White).FontFamily("Cairo").FontSize(12);
+                                r.RelativeItem().Background("#B91C1C").Padding(5).Text("Fax: 44 27 70 76")
+                                    .FontColor(Colors.White).FontFamily("Cairo").FontSize(12);
+                            });
+                        });
+                    });
+            });
+        });
+
+        var pdf = document.GeneratePdf();
+        return File(pdf , "application/pdf" , $"LevatorReport_{report.ReportNumber}.pdf");
+    }
+
+    private string GetFullImagePath(string? filePath)
+    {
+        if(string.IsNullOrEmpty(filePath))
+            return string.Empty;
+
+        // إضافة الـ Base URL إذا كان مطلوباً
+        var request = HttpContext.Request;
+        var baseUrl = $"{request.Scheme}://{request.Host}";
+
+        return $"{baseUrl}{filePath}";
+    }
+
 
 
     // -------------------------------------------------

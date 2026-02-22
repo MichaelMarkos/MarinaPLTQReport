@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using maria.Model;
 
@@ -11,9 +12,11 @@ using maria.Model;
 namespace maria.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260219091240_goods")]
+    partial class goods
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -642,12 +645,6 @@ namespace maria.Migrations
                     b.Property<string>("salesperson")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal?>("x")
-                        .HasColumnType("decimal(18,8)");
-
-                    b.Property<decimal?>("y")
-                        .HasColumnType("decimal(18,8)");
-
                     b.HasKey("Id");
 
                     b.ToTable("LevatorReport");
@@ -990,6 +987,12 @@ namespace maria.Migrations
 
                     b.Property<int?>("Wirelength")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("x")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("y")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 

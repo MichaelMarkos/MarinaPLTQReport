@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using maria.Model;
 
@@ -11,9 +12,11 @@ using maria.Model;
 namespace maria.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260219101524_removexansy")]
+    partial class removexansy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -641,12 +644,6 @@ namespace maria.Migrations
 
                     b.Property<string>("salesperson")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal?>("x")
-                        .HasColumnType("decimal(18,8)");
-
-                    b.Property<decimal?>("y")
-                        .HasColumnType("decimal(18,8)");
 
                     b.HasKey("Id");
 

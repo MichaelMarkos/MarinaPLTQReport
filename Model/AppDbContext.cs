@@ -27,6 +27,10 @@ namespace maria.Model
         public DbSet<ElevatorChechingItems> ElevatorChechingItems { get; set; }
         public DbSet<ElevatorInspectionItems> ElevatorInspectionItems { get; set; }
         public DbSet<ElevatorInspectionImage> ElevatorInspectionImage { get; set; }
+        public DbSet<LevatorReport> LevatorReport { get; set; }
+        public DbSet<Facade> Facade { get; set; }
+        public DbSet<Scaffold> Scaffold { get; set; }
+        public DbSet<LevatorImage> LevatorImage { get; set; }
 
     }
 }
