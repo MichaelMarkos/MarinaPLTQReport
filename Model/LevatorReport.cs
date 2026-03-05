@@ -27,5 +27,6 @@ namespace maria.Model
         public decimal? y { get; set; }
 
         public ICollection<Facade> facades { get; set; } = new List<Facade>();
+        public ICollection<LevatorImage> LevatorImages { get; set; } = new List<LevatorImage>();
     }
 }

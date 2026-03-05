@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using static maria.Dto.DeliveryReportDetailDto;
 using static System.Net.Mime.MediaTypeNames;
 using ElevatorInspectionImage = maria.Model.ElevatorInspectionImage;
+using EquipmentOfLevator = maria.Model.EquipmentOfLevator;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -1046,7 +1047,7 @@ public class EquipmentReportController : ControllerBase
     }
 
 
-  
+
 
     [HttpGet("GetElevatorInspectionReportDetails/{id}")]
     public async Task<IActionResult> GetElevatorInspectionReportDetails(int id)
@@ -1743,7 +1744,7 @@ public class EquipmentReportController : ControllerBase
             sitereport.ClientName=request ["clientName"];
             sitereport.Date=DateTime.TryParse(request ["date"] , out var parsedDate) ? parsedDate : DateTime.Now;
             sitereport.PhoneNum=request ["phoneNum"];
-           // sitereport.CreatedAt=DateTime.Now;
+            // sitereport.CreatedAt=DateTime.Now;
 
 
 
@@ -2108,10 +2109,10 @@ public class EquipmentReportController : ControllerBase
                 ClientName = request["clientName"],
                 UserId = long.Parse(request["userId"]),
                 Date = DateTime.TryParse(request["date"], out var parsedDate) ? parsedDate : DateTime.Now,
-                PhoneNum = request["phoneNum"],      
+                PhoneNum = request["phoneNum"],
                 ProjectDescription = request["projectDescription"],
                 Projectlocation = request["projectlocation"],
-               
+
             };
 
             if(clientSig!=null)
@@ -7130,7 +7131,7 @@ public class EquipmentReportController : ControllerBase
         {
             var faceades = _db.Facade.Where(x => x.LevatorReportId == id).ToList();
             var faceIds = faceades.Select(x => x.Id).ToList();
-             _db.Facade.RemoveRange(faceades);
+            _db.Facade.RemoveRange(faceades);
             var scfaffolding = _db.Scaffold.Where(x => faceIds.Contains(x.FacadeId)).ToList();
             _db.Scaffold.RemoveRange(scfaffolding);
             _db.Facade.RemoveRange(faceades);
@@ -7367,7 +7368,7 @@ public class EquipmentReportController : ControllerBase
                 PhoneNum = x.PhoneNum,
                 InvoiceNumber = x.InvoiceNumber,
                 Date = x.Date,
-                
+
                 ReportNumber = x.ReportNumber,
                 ClientName = x.salesperson,
                 TechName = x.TechName,
@@ -7390,36 +7391,51 @@ public class EquipmentReportController : ControllerBase
         });
     }
 
-
     [HttpPost("addLevatorReport")]
     [RequestSizeLimit(20_000_000)]
     public async Task<IActionResult> addLevatorReport()
     {
         var form = await Request.ReadFormAsync();
-
         int.TryParse(form ["Id"] , out int id);
+
+        string uploadRoot = Path.Combine(
+            _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
+            "uploads");
+
+        if(!Directory.Exists(uploadRoot))
+            Directory.CreateDirectory(uploadRoot);
 
         LevatorReport report;
 
+        // ===============================
+        // CREATE OR UPDATE
+        // ===============================
         if(id>0)
         {
             report=await _db.LevatorReport
                 .Include(r => r.facades)
-                .ThenInclude(f => f.Scaffolds)
+                    .ThenInclude(f => f.Scaffolds)
+                .Include(r => r.facades)
+                    .ThenInclude(f => f.equipmentOfLevator)
+                .Include(r => r.facades)
+                    .ThenInclude(f => f.FacadeImages)
+                .Include(r => r.LevatorImages)
                 .FirstOrDefaultAsync(r => r.Id==id);
 
             if(report==null)
                 return NotFound("Report not found");
+
+            // حذف الواجهات القديمة بالكامل (Cascade يحذف التابعين)
+            _db.Facade.RemoveRange(report.facades);
         }
-       
         else
         {
             var year = DateTime.Now.Year.ToString().Substring(2);
 
             var last = await _db.LevatorReport
-            .Where(r => r.ReportNumber.StartsWith(year + "/"))
-            .OrderByDescending(r => r.ReportNumber)
-            .FirstOrDefaultAsync();
+                .Where(r => r.ReportNumber.StartsWith(year + "/"))
+                .OrderByDescending(r => r.ReportNumber)
+                .FirstOrDefaultAsync();
 
             int next = 1;
 
@@ -7438,8 +7454,9 @@ public class EquipmentReportController : ControllerBase
             _db.LevatorReport.Add(report);
         }
 
-        
-
+        // ===============================
+        // BASIC DATA
+        // ===============================
         report.Projectlocation=form ["projectlocation"];
         report.ProjectDescription=form ["projectDescription"];
         report.InvoiceNumber=form ["invoiceNumber"];
@@ -7449,44 +7466,32 @@ public class EquipmentReportController : ControllerBase
         report.salesperson=form ["salesperson"];
         report.TechName=form ["techName"];
         report.PhoneNum=form ["phoneNum"];
-        if(!string.IsNullOrEmpty(form ["x"]))
-        {
-            if(decimal.TryParse(form ["x"] , out decimal xValue))
-                report.x=xValue;
-        }
 
-        if(!string.IsNullOrEmpty(form ["y"]))
-        {
-            if(decimal.TryParse(form ["y"] , out decimal yValue))
-                report.y=yValue;
-        }
+        if(decimal.TryParse(form ["x"] , out decimal xValue))
+            report.x=xValue;
+
+        if(decimal.TryParse(form ["y"] , out decimal yValue))
+            report.y=yValue;
+
         if(DateTime.TryParse(form ["date"] , out var dt))
             report.Date=dt;
 
-            report.UserId=1;
+        report.UserId=1;
 
-
-
+        // ===============================
+        // FACADES
+        // ===============================
         if(!string.IsNullOrEmpty(form ["facades"]))
         {
-            // قراءة البيانات من JSON كـ DTO
             var facadeDtos = JsonSerializer.Deserialize<List<FacadeDto>>(form["facades"]);
-
-            // حذف القديم إذا كان موجوداً
-            if(id>0)
-            {
-                var oldFacades = _db.Facade.Where(f => f.LevatorReportId == report.Id);
-                _db.Facade.RemoveRange(oldFacades);
-            }
-
-            // تحويل DTO إلى الكيان الفعلي
             var newFacades = new List<Facade>();
 
-            foreach(var dto in facadeDtos)
+            for(int i = 0 ;i<facadeDtos.Count ;i++)
             {
+                var dto = facadeDtos[i];
+
                 var facade = new Facade
                 {
-                    Id = dto.id,
                     Number = dto.number,
                     TypeOfFinish = dto.typeOfFinish,
                     TypeOfWall = dto.typeOfWall,
@@ -7497,32 +7502,69 @@ public class EquipmentReportController : ControllerBase
                     Max = dto.max,
                     IsSpecial = dto.isSpecial,
                     Notes = dto.notes,
-                    LevatorReport = report,
-                    Scaffolds = new List<Scaffold>()
+                    LevatorReport = report
                 };
 
-                // معالجة Scaffolds
-                foreach(var scaffoldDto in dto.scaffolds)
+                // ===== Scaffolds =====
+                if(dto.scaffolds!=null)
                 {
-                    var scaffold = new Scaffold
+                    foreach(var s in dto.scaffolds)
                     {
-                        Id = dto.id,
-                        TypeOfUse = scaffoldDto.typeOfUse,
-                        TypeOfGroup = scaffoldDto.typeOfGroup,
-                        SetGroup = scaffoldDto.setGroup,
-                        TypeBox = scaffoldDto.typeBox,
-                        HeightBox = scaffoldDto.heightBox,
-                        WidthBox = scaffoldDto.widthBox,
-                        NumberTransfers = scaffoldDto.numberTransfers,
-                        Wirelength = scaffoldDto.wirelength,
-                        ElectricWirelength = scaffoldDto.electricWirelength,
-                        PowerSource = scaffoldDto.powerSource,
-                        Liftingoods = scaffoldDto.liftingLoads, 
-                        Notes = scaffoldDto.notes,
-                        facade = facade
-                    };
+                        facade.Scaffolds.Add(new Scaffold
+                        {
+                            TypeOfUse=s.typeOfUse ,
+                            TypeOfGroup=s.typeOfGroup ,
+                            SetGroup=s.setGroup ,
+                            TypeBox=s.typeBox ,
+                            HeightBox=s.heightBox ,
+                            WidthBox=s.widthBox ,
+                            NumberTransfers=s.numberTransfers ,
+                            Wirelength=s.wirelength ,
+                            ElectricWirelength=s.electricWirelength ,
+                            PowerSource=s.powerSource ,
+                            Liftingoods=s.liftingLoads ,
+                            Notes=s.notes ,
+                            Model=s.model ,
+                            SpecialText=s.specialText
+                        });
+                    }
+                }
 
-                    facade.Scaffolds.Add(scaffold);
+                // ===== Equipment =====
+                if(dto.equipments!=null)
+                {
+                    foreach(var e in dto.equipments)
+                    {
+                        facade.equipmentOfLevator.Add(new EquipmentOfLevator
+                        {
+                            Type=e.type ,
+                            Description=e.description
+                        });
+                    }
+                }
+
+                // ===== Facade Images =====
+                string facadeKey = $"facade_images_{i}";
+                var facadeFiles = form.Files
+                    .Where(f => f.Name == facadeKey)
+                    .ToList();
+
+                foreach(var file in facadeFiles)
+                {
+                    if(file.Length==0)
+                        continue;
+
+                    string fileName = $"{Guid.NewGuid()}_{file.FileName}";
+                    string path = Path.Combine(uploadRoot, fileName);
+
+                    using var stream = new FileStream(path, FileMode.Create);
+                    await file.CopyToAsync(stream);
+
+                    facade.FacadeImages.Add(new FacadeImage
+                    {
+                        FilePath="/uploads/"+fileName ,
+                        FileName=file.FileName
+                    });
                 }
 
                 newFacades.Add(facade);
@@ -7530,18 +7572,15 @@ public class EquipmentReportController : ControllerBase
 
             report.facades=newFacades;
         }
-        // =========================
-        // IMAGES (ADD ONLY)
-        // =========================
 
-        string uploadRoot = Path.Combine(
-        _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
-        "uploads");
+        // ===============================
+        // REPORT IMAGES ONLY
+        // ===============================
+        var reportImages = form.Files
+            .Where(f => f.Name == "images")
+            .ToList();
 
-        if(!Directory.Exists(uploadRoot))
-            Directory.CreateDirectory(uploadRoot);
-
-        foreach(var file in form.Files)
+        foreach(var file in reportImages)
         {
             if(file.Length==0)
                 continue;
@@ -7552,11 +7591,10 @@ public class EquipmentReportController : ControllerBase
             using var stream = new FileStream(path, FileMode.Create);
             await file.CopyToAsync(stream);
 
-            _db.LevatorImage.Add(new LevatorImage
+            report.LevatorImages.Add(new LevatorImage
             {
                 FilePath="/uploads/"+fileName ,
-                FileName=file.FileName ,
-                LevatorReport=report
+                FileName=file.FileName
             });
         }
 
@@ -7571,7 +7609,6 @@ public class EquipmentReportController : ControllerBase
     }
 
 
-
     [HttpGet("GetLevatorReportDetails")]
     public async Task<IActionResult> GetLevatorReportDetails(int reportId)
     {
@@ -7580,8 +7617,16 @@ public class EquipmentReportController : ControllerBase
             var report = await _db.LevatorReport
                 .Include(r => r.facades)
                     .ThenInclude(f => f.Scaffolds)
+                .Include(r => r.facades)
+                    .ThenInclude(f => f.equipmentOfLevator)
+                .Include(r => r.facades)
+                    .ThenInclude(f => f.FacadeImages)
                 .FirstOrDefaultAsync(r => r.Id == reportId);
-            var imagesDb = await _db.LevatorImage.Where(i => i.LevatorReportId == reportId).ToListAsync();
+
+            var imagesDb = await _db.LevatorImage
+                .Where(i => i.LevatorReportId == reportId)
+                .ToListAsync();
+
             if(report==null)
             {
                 return NotFound(new
@@ -7591,7 +7636,6 @@ public class EquipmentReportController : ControllerBase
                 });
             }
 
-            // تحويل إلى DTO
             var reportDto = new ReportDetailsDto
             {
                 id = report.Id,
@@ -7608,9 +7652,10 @@ public class EquipmentReportController : ControllerBase
                 phoneNum = report.PhoneNum,
                 x = report.x,
                 y = report.y,
+
                 facades = report.facades.Select(f => new FacadeDto
                 {
-                    id=f.Id,
+                    id = f.Id,
                     number = f.Number,
                     typeOfFinish = f.TypeOfFinish,
                     typeOfWall = f.TypeOfWall,
@@ -7621,9 +7666,12 @@ public class EquipmentReportController : ControllerBase
                     max = f.Max,
                     notes = f.Notes,
                     isSpecial = f.IsSpecial,
+
+                    // SCAFFOLDS
+                     
                     scaffolds = f.Scaffolds.Select(s => new ScaffoldDto
                     {
-                        id=f.Id,
+                        id = s.Id,
                         typeOfUse = s.TypeOfUse,
                         typeOfGroup = s.TypeOfGroup,
                         setGroup = s.SetGroup,
@@ -7635,10 +7683,28 @@ public class EquipmentReportController : ControllerBase
                         electricWirelength = s.ElectricWirelength,
                         powerSource = s.PowerSource,
                         liftingLoads = s.Liftingoods,
-                        notes = s.Notes,
-                        
+                        notes = s.Notes
+                    }).ToList(),
+
+                    // EQUIPMENT
+                    equipments = f.equipmentOfLevator.Select(e => new EquipmentDto
+                    {
+                        id = e.Id,
+                        type = e.Type,
+                        description = e.Description
+                    }).ToList(),
+
+                    // FACADE IMAGES
+                    images = f.FacadeImages.Select(img => new ImageDto
+                    {
+                        id = img.Id,
+                        fileName = img.FileName,
+                        filePath = GetFullImagePath(img.FilePath)
                     }).ToList()
+
                 }).ToList(),
+
+                // REPORT IMAGES
                 images = imagesDb.Select(i => new ImageDto
                 {
                     id = i.Id,
@@ -7664,7 +7730,6 @@ public class EquipmentReportController : ControllerBase
         }
     }
 
-
     [HttpGet("GenerateLevatorReportPdf")]
 
     public IActionResult GenerateLevatorReportPdf(int Id)
@@ -7682,7 +7747,8 @@ public class EquipmentReportController : ControllerBase
 
         var report = _db.LevatorReport
             .Include(r => r.facades)
-                .ThenInclude(f => f.Scaffolds)
+                .ThenInclude(f => f.Scaffolds).Include(r => r.facades)
+                    .ThenInclude(f => f.equipmentOfLevator)
             .FirstOrDefault(r => r.Id == Id);
 
         if(report==null)
@@ -7732,36 +7798,35 @@ public class EquipmentReportController : ControllerBase
                 // ===== Facades Table =====
                 page.Content().ContentFromRightToLeft().Column(col =>
                 {
-                    col.Spacing(5);
+                col.Spacing(5);
+                col.Item().Text($"الشركة: {report.CompanyName}").FontFamily("Cairo");
+                col.Item().Text($"تاريخ التقرير: {report.Date:yyyy/MM/dd}").FontFamily("Cairo");
+                col.Item().Text($"وصف المشروع: {report.ProjectDescription}").FontFamily("Cairo");
+                col.Item().Text($"نوع المبنى: {report.BuildingType}").FontFamily("Cairo");
+                col.Item().Text($"مسئول المبيعات: {report.salesperson}").FontFamily("Cairo");
+                col.Item().Text($"الفني: {report.TechName} - الهاتف: {report.PhoneNum}").FontFamily("Cairo");
 
-                    col.Item().Text($"الموقع: {report.Projectlocation}").FontFamily("Cairo");
-                    col.Item().Text($"وصف المشروع: {report.ProjectDescription}").FontFamily("Cairo");
-                    col.Item().Text($"نوع المبنى: {report.BuildingType}").FontFamily("Cairo");
-                    col.Item().Text($"الشركة: {report.CompanyName}").FontFamily("Cairo");
-                    col.Item().Text($"تاريخ التقرير: {report.Date:yyyy/MM/dd}").FontFamily("Cairo");
-                    col.Item().Text($"الفني: {report.TechName} - الهاتف: {report.PhoneNum}").FontFamily("Cairo");
-
-                    col.Item().Text("جدول الواجهات").FontSize(14).Bold().FontFamily("Cairo");
+                col.Item().Text("جدول الواجهات").FontSize(14).Bold().FontFamily("Cairo");
 
                     foreach (var facade in report.facades)
                     {
                         col.Item().PaddingTop(5).Border(1).Padding(5).Column(fCol =>
                         {
                             fCol.Item().Text($"الواجهة رقم: {facade.Number}")
-    .FontFamily("Cairo").Bold();
+                                    .FontFamily("Cairo").Bold();
 
                             fCol.Item().Text($"نوع التشطيب: {facade.TypeOfFinish ?? "-"}")
-    .FontFamily("Cairo");
+                                .FontFamily("Cairo");
 
                             fCol.Item().Text($"نوع الجدار: {facade.TypeOfWall ?? "-"}")
-    .FontFamily("Cairo");
+                                    .FontFamily("Cairo");
 
                             fCol.Item().Text(
-    $"ارتفاع: {facade.Height?.ToString() ?? "-"} - " +
-    $"عرض: {facade.Width?.ToString() ?? "-"} - " +
-    $"ارتفاع الجدار: {facade.heightWall?.ToString() ?? "-"} - " +
-    $"أقصى: {facade.Max?.ToString() ?? "-"}"
-).FontFamily("Cairo");
+                                        $"ارتفاع: {facade.Height?.ToString() ?? "-"} - " +
+                                        $"عرض: {facade.Width?.ToString() ?? "-"} - " +
+                                        $"ارتفاع الجدار: {facade.heightWall?.ToString() ?? "-"} - " +
+                                        $"أقصى: {facade.Max?.ToString() ?? "-"}"
+                                    ).FontFamily("Cairo");
                             // ===== Scaffolds Table for this Facade =====
                             if (facade.Scaffolds.Any())
                             {
@@ -7770,7 +7835,7 @@ public class EquipmentReportController : ControllerBase
                                 {
                                     table.ColumnsDefinition(columns =>
                                     {
-                                        columns.RelativeColumn(8); 
+                                        columns.RelativeColumn(8);
                                         columns.RelativeColumn(8);
                                         columns.RelativeColumn(8);
                                         columns.RelativeColumn(8);
@@ -7821,8 +7886,27 @@ public class EquipmentReportController : ControllerBase
                                 });
                             }
                         });
+
+
+
+                        if (facade.equipmentOfLevator.Any())
+                        {
+                            foreach (var equ in facade.equipmentOfLevator)
+                            {
+                                col.Item().Text("المعدات").FontFamily("Cairo").FontSize(16).Bold();
+                                col.Item().Text($"النوع: {equ.Type} - الوصف : {equ.Description}").FontFamily("Cairo");
+                            }
+
+
+                        }
+
                     }
+                   
                 });
+
+
+
+
 
                 // ===== Footer =====
                 page.Footer()

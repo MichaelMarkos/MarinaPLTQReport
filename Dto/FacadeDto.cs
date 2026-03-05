@@ -20,10 +20,18 @@ namespace maria.Dto
         public int LevatorReportId { get; set; }
         public LevatorReport LevatorReport { get; set; }
         public ICollection<ScaffoldDto> scaffolds { get; set; } = new List<ScaffoldDto>();
+        public List<EquipmentDto> equipments { get; set; } = new List<EquipmentDto>();
+        public List<ImageDto> images { get; set; }
+
     }
 
 
-
+    public class EquipmentDto
+    {
+        public int id { get; set; }
+        public string type { get; set; }
+        public string description { get; set; }
+    }
 
     public class ScaffoldDto
     {
@@ -31,6 +39,8 @@ namespace maria.Dto
         public string? typeOfUse { get; set; }
         public string? typeOfGroup { get; set; }
         public string? setGroup { get; set; }
+        public string? model { get; set; }
+        public string? specialText { get; set; }
         public string? typeBox { get; set; }
         public string? heightBox { get; set; }
         public decimal? widthBox { get; set; }
@@ -38,11 +48,9 @@ namespace maria.Dto
         public int? wirelength { get; set; }
         public int? electricWirelength { get; set; }
         public string? powerSource { get; set; }
-        public string? liftingLoads { get; set; }    
-        public string? notes { get; set; }    
+        public string? liftingLoads { get; set; }
+        public string? notes { get; set; }
     }
-
-  
 
     public class ImageDto
     {

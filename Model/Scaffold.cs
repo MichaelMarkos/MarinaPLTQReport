@@ -13,6 +13,8 @@ namespace maria.Model
         public string? TypeOfUse { get; set; }
         public string? TypeOfGroup { get; set; }
         public string? SetGroup { get; set; }
+        public string? SpecialText { get; set; }
+        public string? Model { get; set; }
         public string? TypeBox { get; set; }
         public string? HeightBox { get; set; }
         public decimal? WidthBox { get; set; }

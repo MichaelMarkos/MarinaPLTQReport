@@ -31,6 +31,8 @@ namespace maria.Model
         public DbSet<Facade> Facade { get; set; }
         public DbSet<Scaffold> Scaffold { get; set; }
         public DbSet<LevatorImage> LevatorImage { get; set; }
+        public DbSet<EquipmentOfLevator> EquipmentOfLevator { get; set; }
+        public DbSet<FacadeImage> facadeImages { get; set; }
 
     }
 }

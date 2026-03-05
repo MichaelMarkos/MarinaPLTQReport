@@ -19,5 +19,7 @@ namespace maria.Model
         public int LevatorReportId { get; set; }
         public LevatorReport LevatorReport { get; set; }
         public ICollection<Scaffold> Scaffolds { get; set; } = new List<Scaffold>();
+        public ICollection<EquipmentOfLevator> equipmentOfLevator { get; set; } = new List<EquipmentOfLevator>();
+        public ICollection<FacadeImage> FacadeImages { get; set; } = new List<FacadeImage>();
     }
 }
