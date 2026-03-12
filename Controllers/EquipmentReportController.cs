@@ -7802,6 +7802,7 @@ public class EquipmentReportController : ControllerBase
                 col.Item().Text($"الشركة: {report.CompanyName}").FontFamily("Cairo");
                 col.Item().Text($"تاريخ التقرير: {report.Date:yyyy/MM/dd}").FontFamily("Cairo");
                 col.Item().Text($"وصف المشروع: {report.ProjectDescription}").FontFamily("Cairo");
+                col.Item().Text($"عنوان المشروع: {report.Projectlocation}").FontFamily("Cairo");
                 col.Item().Text($"نوع المبنى: {report.BuildingType}").FontFamily("Cairo");
                 col.Item().Text($"مسئول المبيعات: {report.salesperson}").FontFamily("Cairo");
                 col.Item().Text($"الفني: {report.TechName} - الهاتف: {report.PhoneNum}").FontFamily("Cairo");
@@ -7820,13 +7821,16 @@ public class EquipmentReportController : ControllerBase
 
                             fCol.Item().Text($"نوع الجدار: {facade.TypeOfWall ?? "-"}")
                                     .FontFamily("Cairo");
+                            fCol.Item().Text($"نوع الارض: {facade.TypeOfLand ?? "-"}")
+                                    .FontFamily("Cairo");
 
                             fCol.Item().Text(
                                         $"ارتفاع: {facade.Height?.ToString() ?? "-"} - " +
                                         $"عرض: {facade.Width?.ToString() ?? "-"} - " +
-                                        $"ارتفاع الجدار: {facade.heightWall?.ToString() ?? "-"} - " +
-                                        $"أقصى: {facade.Max?.ToString() ?? "-"}"
+                                        $"اقصي بروز: {facade.Max?.ToString() ?? "-"}" +
+                                        $"ارتفاع الجدار: {facade.heightWall?.ToString() ?? "-"} - " 
                                     ).FontFamily("Cairo");
+
                             // ===== Scaffolds Table for this Facade =====
                             if (facade.Scaffolds.Any())
                             {
