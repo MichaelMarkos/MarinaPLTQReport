@@ -4,4 +4,7 @@
     <NameOfLastUsedPublishProfile>D:\MarinaPLTQReport\MarinaPLTQReport-GIT\MarinaPLTQReport\Properties\PublishProfiles\FolderProfile.pubxml</NameOfLastUsedPublishProfile>
     <ActiveDebugProfile>https</ActiveDebugProfile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>

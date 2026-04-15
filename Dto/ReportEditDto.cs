@@ -9,6 +9,8 @@
         public string? ReportNumber { get; set; }
         public string? InvoiceNumber { get; set; }
         public string CompanyName { get; set; }
+        public int? ContractId { get; set; }
+        public string? ContractDetails { get; set; }
         public string? ProjectAddress { get; set; }
         public string? EquipmentType { get; set; }
         public string? ModelMarnia { get; set; }

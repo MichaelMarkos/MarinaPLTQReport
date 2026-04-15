@@ -69,6 +69,9 @@ namespace maria.Dto
         public string? buildingType { get; set; }
         public string? buildingKind { get; set; }
         public string? companyName { get; set; }
+        public int? ContractId { get; set; }
+        public string? ContractDetails { get; set; }
+
         public DateTime? date { get; set; }
         public string? salesperson { get; set; }
         public string? techName { get; set; }

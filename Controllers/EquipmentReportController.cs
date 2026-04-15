@@ -19,10 +19,13 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
 using static maria.Dto.DeliveryReportDetailDto;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using ElevatorInspectionImage = maria.Model.ElevatorInspectionImage;
 using EquipmentOfLevator = maria.Model.EquipmentOfLevator;
 
@@ -90,6 +93,7 @@ public class EquipmentReportController : ControllerBase
             ReportType = form["reportType"],
             ReportNumber = newReportNumber, //InvoiceNumber = form["invoiceNumber"],
             CompanyName = form["companyName"],
+            ContractId = int.TryParse(form["contractId"], out var contractId) ? contractId : null,
             ProjectAddress = GetFormValueOrDefault(form, "projectAddress"),
             EquipmentType = form["equipmentType"],
             ModelMarnia = form["modelMarnia"],
@@ -215,6 +219,7 @@ public class EquipmentReportController : ControllerBase
             Date = DateTime.TryParse(form["date"], out var parsedDate) ? parsedDate : DateTime.UtcNow,
             ReportNumber = newReportNumber, //InvoiceNumber = form["invoiceNumber"],
             CompanyName = form["companyName"],
+            ContractId = int.TryParse(form["contractId"], out var contractId) ? contractId : null,
             salesName = form["personName"],
             ProjectAddress = GetFormValueOrDefault(form, "projectAddress"),
             widthShape = int.TryParse(form["width"], out var width) ? width : 0,
@@ -345,6 +350,7 @@ public class EquipmentReportController : ControllerBase
 
         oldReport.Date=DateTime.TryParse(form ["date"] , out var parsedDate) ? parsedDate : DateTime.UtcNow;
         oldReport.CompanyName=form ["companyName"];
+        oldReport.ContractId=int.TryParse(form ["contractId"] , out var contractId) ? contractId : null;
         oldReport.salesName=form ["salesName"];
         oldReport.ProjectAddress=GetFormValueOrDefault(form , "projectAddress");
         oldReport.widthShape=int.TryParse(form ["width"] , out var width) ? width : 0;
@@ -626,7 +632,12 @@ public class EquipmentReportController : ControllerBase
         var query = _db.Elevator.FirstOrDefault(x => x.Id == reportId);
 
 
-
+        var project = new  ProjectContractDto ();
+        if(query.ContractId!=null)
+        {
+            var projects = await GetMaintenanceProjects((int)query.ContractId);
+            project=projects.FirstOrDefault();
+        }
 
         var imagesDb = await _db.ElevatorImage.ToListAsync();
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
@@ -639,6 +650,8 @@ public class EquipmentReportController : ControllerBase
                 .Where(y => y.ElevatorId==reportId)
                 .Select(p => baseUrl+p.FilePath)
                 .ToList();
+        elevatordto.ContractDetails=project!=null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null;
+
         return Ok(new
         {
 
@@ -1014,12 +1027,21 @@ public class EquipmentReportController : ControllerBase
             return NotFound();
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
+        var project = new  ProjectContractDto ();
+        if(report.ContractId != null)
+        {
+            var projects = await GetMaintenanceProjects((int)report.ContractId);
+            project = projects.FirstOrDefault();
+        }
+
         var result = new SiteReportDetailDto
         {
             ReportType = report.ReportType,
             Projectlocation = report.Projectlocation,
             ProjectDescription = report.ProjectDescription,
             CompanyName = report.CompanyName,
+            ContractId = report.ContractId,
+            ContractDetails = project != null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null,
             Date = report.Date,
             PhoneNum = report.PhoneNum,
             TechName = report.TechName,
@@ -1069,6 +1091,7 @@ public class EquipmentReportController : ControllerBase
             Projectlocation = report.Projectlocation,
             ProjectDescription = report.ProjectDescription,
             CompanyName = report.CompanyName,
+            ContractId = report.ContractId,
             Date = report.Date,
             PhoneNum = report.PhoneNum,
             TechName = report.TechName,
@@ -1117,6 +1140,7 @@ public class EquipmentReportController : ControllerBase
             PhoneNum = report.PhoneNum,
             TechName = report.TechName,
             CompanyName = report.CompanyName,
+            ContractId= report.ContractId,
             Date = report.Date,
             TeamNum = report.TeamNum,
             TeamLeaderName = report.TeamLeaderName,
@@ -1184,10 +1208,17 @@ public class EquipmentReportController : ControllerBase
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
         var imagesDb = await _db.DelivryReportImages.Where(x => x.deliveryReportId == id).ToListAsync();
 
+        var project = new  ProjectContractDto ();
+        if(report.ContractId!=null)
+        {
+            var projects = await GetMaintenanceProjects((int)report.ContractId);
+            project=projects.FirstOrDefault();
+        }
         return Ok(new DeliveryReportDetailDto
         {
             ReportType=report.ReportType ,
             CompanyName=report.CompanyName ,
+            ContractDetails=project!=null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null ,
             ReportNumber=report.ReportNumber ,
             Date=report.Date ,
             ProjectAddress=report.ProjectAddress ,
@@ -1386,6 +1417,7 @@ public class EquipmentReportController : ControllerBase
             CompanyName = report.CompanyName,
             PhoneNum = report.PhoneNum,
             ClientName = report.ClientName,
+            ContractId = report.ContractId,
             TechName = report.TechName,
             Notes = report.Notes,
             ProjectAddress = report.ProjectAddress,
@@ -1508,6 +1540,7 @@ public class EquipmentReportController : ControllerBase
                 ProjectDescription = request["projectDescription"],
                 Projectlocation = request["projectlocation"],
                 CompanyName = request["companyName"],
+                ContractId = int.TryParse(request["contractId"], out var contractId) ? contractId : null,
                 ReportNumber = newReportNumber,
                 TechName = request["techName"],
                 ClientName = request["clientName"],
@@ -1644,6 +1677,8 @@ public class EquipmentReportController : ControllerBase
             sitereport.ProjectDescription=request ["projectDescription"];
             sitereport.Projectlocation=request ["projectlocation"];
             sitereport.CompanyName=request ["companyName"];
+            sitereport.ContractId=int.TryParse(request ["contractId"] , out var contractId) ? contractId : null;
+
             sitereport.TechName=request ["techName"];
             sitereport.ClientName=request ["clientName"];
             sitereport.Date=DateTime.TryParse(request ["date"] , out var parsedDate) ? parsedDate : DateTime.Now;
@@ -1740,6 +1775,8 @@ public class EquipmentReportController : ControllerBase
             sitereport.ProjectDescription=request ["projectDescription"];
             sitereport.Projectlocation=request ["projectlocation"];
             sitereport.CompanyName=request ["companyName"];
+            sitereport.ContractId=int.TryParse(request ["contractId"] , out var contractId) ? contractId : null;
+
             sitereport.TechName=request ["techName"];
             sitereport.ClientName=request ["clientName"];
             sitereport.Date=DateTime.TryParse(request ["date"] , out var parsedDate) ? parsedDate : DateTime.Now;
@@ -1835,6 +1872,7 @@ public class EquipmentReportController : ControllerBase
             sitereport.ProjectDescription=request ["projectDescription"];
             sitereport.Projectlocation=request ["projectlocation"];
             sitereport.CompanyName=request ["companyName"];
+            sitereport.ContractId=int.TryParse(request ["contractId"] , out var contractId) ? contractId : null;
             sitereport.TechName=request ["techName"];
             sitereport.ClientName=request ["clientName"];
             sitereport.Date=DateTime.TryParse(request ["date"] , out var parsedDate) ? parsedDate : DateTime.Now;
@@ -1951,6 +1989,7 @@ public class EquipmentReportController : ControllerBase
                 ReportNumber = newReportNumber,
                 TechName = request["techName"],
                 ClientName = request["clientName"],
+                ContractId = int.TryParse(request["contractId"], out var contractId) ? contractId : null,
                 UserId = long.Parse(request["userId"]),
                 Date = DateTime.TryParse(request["date"], out var parsedDate) ? parsedDate : DateTime.Now,
                 PhoneNum = request["phoneNum"],
@@ -2104,6 +2143,7 @@ public class EquipmentReportController : ControllerBase
             var elevatorInspectionreport = new ElevatorInspectionReport
             {
                 CompanyName = request["companyName"],
+                ContractId = int.TryParse(request["contractId"], out var contractId) ? contractId : null,
                 ReportNumber = newReportNumber,
                 TechName = request["techName"],
                 ClientName = request["clientName"],
@@ -2306,6 +2346,7 @@ public class EquipmentReportController : ControllerBase
             var deliveryreport = new DeliveryReport
             {
                 CompanyName = request["companyName"],
+                ContractId = int.TryParse(request["contractId"], out var contractId) ? contractId : null,
                 ClientName = request["clientName"],
                 TechName = request["techName"],
                 Date = DateTime.TryParse(request["date"], out var parsedDate) ? parsedDate : DateTime.Now,
@@ -6396,7 +6437,16 @@ public class EquipmentReportController : ControllerBase
             return NotFound();
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
+        var project = new  ProjectContractDto ();
+        if(report.ContractId!=null)
+        {
+            var projects = await GetMaintenanceProjects((int)report.ContractId);
+            project=projects.FirstOrDefault();
+        }
+
         var result = _mapper.Map<ReportEditDto>(report);
+        result.ContractDetails=project!=null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null;
+
         result.ClientSignaturePath=baseUrl+report.ClientSignaturePath;
         result.TechSignaturePath=baseUrl+report.TechSignaturePath;
         result.Images=imagesDb.Select(x => baseUrl+x.FilePath).ToList();
@@ -6661,6 +6711,8 @@ public class EquipmentReportController : ControllerBase
 
             deliveryreport.CompanyName=request ["companyName"];
             deliveryreport.ClientName=request ["clientName"];
+            deliveryreport.ContractId=int.TryParse(request ["contractId"] , out var contractId) ? contractId : null;
+
             deliveryreport.TechName=request ["techName"];
             deliveryreport.Date=DateTime.TryParse(request ["date"] , out var parsedDate) ? parsedDate : DateTime.Now;
             deliveryreport.PhoneNum=request ["phoneNum"];
@@ -6943,6 +6995,8 @@ public class EquipmentReportController : ControllerBase
         report.Date=DateTime.TryParse(form ["date"] , out var dateVal) ? dateVal : report.Date;
         report.ReportType=form ["reportType"];
         report.CompanyName=form ["companyName"];
+        report.ContractId=int.TryParse(form ["contractId"] , out var contractId) ? contractId : null;
+
         report.ProjectAddress=form ["projectAddress"];
 
         // Equipment Type (other → custom)
@@ -7463,6 +7517,7 @@ public class EquipmentReportController : ControllerBase
         report.BuildingType=form ["buildingType"];
         report.BuildingKind=form ["buildingKind"];
         report.CompanyName=form ["companyName"];
+        report.ContractId=int.TryParse(form ["contractId"] , out var contractId) ? contractId : null;
         report.salesperson=form ["salesperson"];
         report.TechName=form ["techName"];
         report.PhoneNum=form ["phoneNum"];
@@ -7636,6 +7691,14 @@ public class EquipmentReportController : ControllerBase
                 });
             }
 
+
+            var project = new  ProjectContractDto ();
+            if(report.ContractId!=null)
+            {
+                var projects = await GetMaintenanceProjects((int)report.ContractId);
+                project=projects.FirstOrDefault();
+            }
+
             var reportDto = new ReportDetailsDto
             {
                 id = report.Id,
@@ -7646,6 +7709,8 @@ public class EquipmentReportController : ControllerBase
                 buildingType = report.BuildingType,
                 buildingKind = report.BuildingKind,
                 companyName = report.CompanyName,
+                ContractId =report.ContractId,
+                ContractDetails=report!=null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null ,
                 date = report.Date,
                 salesperson = report.salesperson,
                 techName = report.TechName,
@@ -7730,6 +7795,136 @@ public class EquipmentReportController : ControllerBase
         }
     }
 
+
+
+
+    [HttpGet("GetAllReportsForContractId")]
+    public async Task<IActionResult> GetAllReportsForContractId(int ContractId)
+    {
+
+        BaseResponseWithData<List<GetAllReportsForContractIdDto>> response = new BaseResponseWithData<List<GetAllReportsForContractIdDto>>();
+        response.Result=true;
+        response.Errors=new List<Error>();
+
+        var allReports = new List<GetAllReportsForContractIdDto>();
+
+        try
+        {
+
+           
+
+            // Reports
+            var Reports = await _db.Reports
+                .Where(r => r.ContractId == ContractId)
+                .ToListAsync();
+
+            var allReport= Reports.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Site Reports" ,
+                DateTime =(DateTime) r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/repoertdetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allReport);
+
+            // Delivery Notes Reports
+            var DeliveryReports = await _db.DeliveryReport
+                .Where(r => r.ContractId == ContractId)
+                .ToListAsync();
+
+            var allDeliveryReports= DeliveryReports.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Delivery Notes Reports" ,
+                DateTime =(DateTime) r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/deliveryDetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allDeliveryReports);
+
+            // LevatorReport
+
+            var levatorReport = await _db.LevatorReport
+                .Where(r => r.ContractId == ContractId)
+                .ToListAsync();
+
+           var allReportlevator= levatorReport.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Equipment Preview Reports" ,
+               DateTime =(DateTime) r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/levatorDetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allReportlevator);
+
+            // Checking Site Report
+
+            var siteReport = await _db.SiteReports
+                .Where(r => r.ContractId == ContractId)
+                .ToListAsync();
+
+            var allReportSite= siteReport.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Checking Site Report" ,
+                DateTime = r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/reportDetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allReportSite);
+
+
+            // Elevator preview Reports
+
+            var ElevatorReport = await _db.Elevator
+                .Where(r => r.ContractId == ContractId)
+                .ToListAsync();
+
+            var allElevatorReport= siteReport.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Elevator preview Reports" ,
+                DateTime = r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/elevatordetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allElevatorReport);
+
+            // Safety Reports
+
+            var SafetyReport = await _db.SafetyReport
+                .Where(r => r.ContractId == ContractId)
+                .ToListAsync();
+
+            var allSafetyReport= SafetyReport.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Safety preview Reports" ,
+                DateTime = (DateTime) r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/safetyDetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allSafetyReport);
+
+            // Elevator Inspection Report
+
+            var InspectionReport = await _db.ElevatorInspectionReport
+                .Where(r => r.ContractId == ContractId)
+                .ToListAsync();
+
+            var allInspectionReport= InspectionReport.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Elevator Inspection Report" ,
+                DateTime = r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/inspectiondetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allInspectionReport);
+
+           
+            response.Data = allReports;
+
+            return Ok(response);
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(500 , new
+            {
+                success = false ,
+                message = "حدث خطأ أثناء استرجاع التقرير" ,
+                error = ex.Message
+            });
+        }
+    }
     [HttpGet("GenerateLevatorReportPdf")]
 
     public IActionResult GenerateLevatorReportPdf(int Id)
@@ -7798,16 +7993,16 @@ public class EquipmentReportController : ControllerBase
                 // ===== Facades Table =====
                 page.Content().ContentFromRightToLeft().Column(col =>
                 {
-                col.Spacing(5);
-                col.Item().Text($"الشركة: {report.CompanyName}").FontFamily("Cairo");
-                col.Item().Text($"تاريخ التقرير: {report.Date:yyyy/MM/dd}").FontFamily("Cairo");
-                col.Item().Text($"وصف المشروع: {report.ProjectDescription}").FontFamily("Cairo");
-                col.Item().Text($"عنوان المشروع: {report.Projectlocation}").FontFamily("Cairo");
-                col.Item().Text($"نوع المبنى: {report.BuildingType}").FontFamily("Cairo");
-                col.Item().Text($"مسئول المبيعات: {report.salesperson}").FontFamily("Cairo");
-                col.Item().Text($"الفني: {report.TechName} - الهاتف: {report.PhoneNum}").FontFamily("Cairo");
+                    col.Spacing(5);
+                    col.Item().Text($"الشركة: {report.CompanyName}").FontFamily("Cairo");
+                    col.Item().Text($"تاريخ التقرير: {report.Date:yyyy/MM/dd}").FontFamily("Cairo");
+                    col.Item().Text($"وصف المشروع: {report.ProjectDescription}").FontFamily("Cairo");
+                    col.Item().Text($"عنوان المشروع: {report.Projectlocation}").FontFamily("Cairo");
+                    col.Item().Text($"نوع المبنى: {report.BuildingType}").FontFamily("Cairo");
+                    col.Item().Text($"مسئول المبيعات: {report.salesperson}").FontFamily("Cairo");
+                    col.Item().Text($"الفني: {report.TechName} - الهاتف: {report.PhoneNum}").FontFamily("Cairo");
 
-                col.Item().Text("جدول الواجهات").FontSize(14).Bold().FontFamily("Cairo");
+                    col.Item().Text("جدول الواجهات").FontSize(14).Bold().FontFamily("Cairo");
 
                     foreach (var facade in report.facades)
                     {
@@ -7828,7 +8023,7 @@ public class EquipmentReportController : ControllerBase
                                         $"ارتفاع: {facade.Height?.ToString() ?? "-"} - " +
                                         $"عرض: {facade.Width?.ToString() ?? "-"} - " +
                                         $"اقصي بروز: {facade.Max?.ToString() ?? "-"}" +
-                                        $"ارتفاع الجدار: {facade.heightWall?.ToString() ?? "-"} - " 
+                                        $"ارتفاع الجدار: {facade.heightWall?.ToString() ?? "-"} - "
                                     ).FontFamily("Cairo");
 
                             // ===== Scaffolds Table for this Facade =====
@@ -7905,7 +8100,7 @@ public class EquipmentReportController : ControllerBase
                         }
 
                     }
-                   
+
                 });
 
 
@@ -8235,4 +8430,41 @@ public class EquipmentReportController : ControllerBase
 
         return string.Concat(input.Reverse());
     }
+
+
+    private async Task<List<ProjectContractDto>> GetMaintenanceProjects(int contractId)
+    {
+        using(var client = new HttpClient())
+        {
+            string baseUrl = "https://testcoreapi.garassolutions.com";
+            string url = $"{baseUrl}/Maintenance/GetProjectWithContractList";
+
+            client.DefaultRequestHeaders.Add("CompanyName" , "marinapltq");
+            client.DefaultRequestHeaders.Add("ContractId" , contractId.ToString());
+            try
+            {
+                var response = await client.GetAsync(url);
+
+                if(response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<ApiResponse>();
+
+                    if(result!=null&&result.Result)
+                    {
+                        return result.Data;
+                    }
+                }
+
+                return new List<ProjectContractDto>();
+            }
+            catch(Exception ex)
+            {
+                // يمكنك هنا تسجيل الخطأ (Logging)
+                Console.WriteLine($"Error: {ex.Message}");
+                return new List<ProjectContractDto>();
+            }
+        }
+    }
+
+
 }

@@ -7,6 +7,8 @@
         public string CompanyName { get; set; }
         public string PhoneNum { get; set; }
         public string ClientName { get; set; }
+        public int? ContractId { get; set; }
+
         public string TechName { get; set; }
 
         public string Notes { get; set; }

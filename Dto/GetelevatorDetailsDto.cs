@@ -8,6 +8,9 @@
         public string reportType { get; set; }
         public string? InvoiceNumber { get; set; }
         public string CompanyName { get; set; }
+        public int? ContractId { get; set; }
+        public string? ContractDetails { get; set; }
+
         public string salesName { get; set; }
         public string? ProjectAddress { get; set; }
 

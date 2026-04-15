@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using maria.Model;
 
@@ -11,9 +12,11 @@ using maria.Model;
 namespace maria.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260405081652_ProjectId")]
+    partial class ProjectId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -149,9 +152,6 @@ namespace maria.Migrations
                     b.Property<string>("CompanyName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ContractId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -169,6 +169,9 @@ namespace maria.Migrations
 
                     b.Property<string>("ProjectAddress")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
 
                     b.Property<string>("ReportNumber")
                         .HasColumnType("nvarchar(max)");
@@ -228,9 +231,6 @@ namespace maria.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ContractId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -252,6 +252,9 @@ namespace maria.Migrations
 
                     b.Property<string>("ProjectAddress")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
 
                     b.Property<string>("ReportNumber")
                         .HasColumnType("nvarchar(max)");
@@ -498,9 +501,6 @@ namespace maria.Migrations
                     b.Property<string>("CompanyName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ContractId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
@@ -512,6 +512,9 @@ namespace maria.Migrations
 
                     b.Property<string>("ProjectDescription")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Projectlocation")
                         .HasColumnType("nvarchar(max)");
@@ -676,9 +679,6 @@ namespace maria.Migrations
                     b.Property<string>("CompanyName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ContractId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
@@ -690,6 +690,9 @@ namespace maria.Migrations
 
                     b.Property<string>("ProjectDescription")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Projectlocation")
                         .HasColumnType("nvarchar(max)");
@@ -737,9 +740,6 @@ namespace maria.Migrations
 
                     b.Property<string>("CompanyName")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ContractId")
-                        .HasColumnType("int");
 
                     b.Property<int?>("Cradle")
                         .HasColumnType("int");
@@ -791,6 +791,9 @@ namespace maria.Migrations
 
                     b.Property<string>("ProjectAddress")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
 
                     b.Property<int?>("Removing")
                         .HasColumnType("int");
@@ -934,9 +937,6 @@ namespace maria.Migrations
                     b.Property<string>("CompanyName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ContractId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -954,6 +954,9 @@ namespace maria.Migrations
 
                     b.Property<string>("ProjectDescription")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Projectlocation")
                         .HasColumnType("nvarchar(max)");
@@ -1091,9 +1094,6 @@ namespace maria.Migrations
                     b.Property<string>("CompanyName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ContractId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -1108,6 +1108,9 @@ namespace maria.Migrations
 
                     b.Property<string>("ProjectDescription")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Projectlocation")
                         .HasColumnType("nvarchar(max)");

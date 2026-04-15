@@ -6,6 +6,8 @@ namespace maria.Dto
     {
         public int Id { get; set; }
         public string? CompanyName { get; set; }
+        public int? ContractId { get; set; }
+        public string? ContractDetails { get; set; }
         public string? ReportType { get; set; }
         public string? Projectlocation { get; set; }
         public string? ProjectDescription { get; set; }

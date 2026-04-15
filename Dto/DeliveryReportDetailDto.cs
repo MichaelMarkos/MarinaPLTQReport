@@ -7,6 +7,7 @@
         public string? ReportType { get; set; }
         public string? ReportNumber { get; set; }
         public string? CompanyName { get; set; }
+        public string? ContractDetails { get; set; }
         public string? ProjectAddress { get; set; }
         public DateTime? Date { get; set; }
         public string? ClientSignaturePath { get; set; }

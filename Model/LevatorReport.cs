@@ -5,6 +5,7 @@ namespace maria.Model
     public class LevatorReport
     {
         public int Id { get; set; }
+        public int? ContractId { get; set; }
         //public string? ReportType { get; set; }
         public string? Projectlocation { get; set; }
         public string? ProjectDescription { get; set; }

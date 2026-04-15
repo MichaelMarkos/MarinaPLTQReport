@@ -3,6 +3,7 @@
     public class Elevator
     {
         public int Id { get; set; }
+        public int? ContractId { get; set; }
         public DateTime Date { get; set; }
         public long UserId { get; set; } = 1;
         public string? ReportNumber { get; set; }
