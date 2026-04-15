@@ -7798,7 +7798,7 @@ public class EquipmentReportController : ControllerBase
 
 
 
-    [HttpGet("GetAllReportsForContractId")]
+    [HttpGet("GetAllReportsForContractId")] 
     public async Task<IActionResult> GetAllReportsForContractId(int ContractId)
     {
 
