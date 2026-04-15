@@ -8163,9 +8163,7 @@ public class EquipmentReportController : ControllerBase
 
 
 
-    // -------------------------------------------------
-    // Helpers
-    // -------------------------------------------------
+
     private int TryInt(string? v)
     {
         return int.TryParse(v , out int val) ? val : 0;
