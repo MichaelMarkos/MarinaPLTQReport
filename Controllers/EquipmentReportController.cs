@@ -7222,9 +7222,17 @@ public class EquipmentReportController : ControllerBase
         if(report!=null)
         {
             var elevatorInspectionitem = _db.ElevatorInspectionItems.FirstOrDefault(x => x.ElevatorInspectionReportId == id);
-            _db.ElevatorInspectionItems.Remove(elevatorInspectionitem);
+            if(elevatorInspectionitem != null)
+            {
+                _db.ElevatorInspectionItems.Remove(elevatorInspectionitem);
+
+            }
             var reportImages = _db.ElevatorInspectionImage.Where(x => x.ElevatorInspectionId == id).ToList();
-            _db.ElevatorInspectionImage.RemoveRange(reportImages);
+            if(reportImages.Any())
+            {
+                _db.ElevatorInspectionImage.RemoveRange(reportImages);
+
+            }
             _db.ElevatorInspectionReport.Remove(report);
 
 
