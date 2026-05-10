@@ -1085,6 +1085,12 @@ public class EquipmentReportController : ControllerBase
             return NotFound();
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
+        var project = new  ProjectContractDto ();
+        if(report.ContractId!=null)
+        {
+            var projects = await GetMaintenanceProjects((int)report.ContractId);
+            project=projects.FirstOrDefault();
+        }
         var result = new SiteReportDetailDto
         {
             //ReportType = report.ReportType,
@@ -1092,6 +1098,7 @@ public class EquipmentReportController : ControllerBase
             ProjectDescription = report.ProjectDescription,
             CompanyName = report.CompanyName,
             ContractId = report.ContractId,
+            ContractDetails = project != null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null,
             Date = report.Date,
             PhoneNum = report.PhoneNum,
             TechName = report.TechName,
@@ -1132,7 +1139,12 @@ public class EquipmentReportController : ControllerBase
         if(report==null)
             return NotFound();
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
-
+        var project = new  ProjectContractDto ();
+        if(report.ContractId!=null)
+        {
+            var projects = await GetMaintenanceProjects((int)report.ContractId);
+            project=projects.FirstOrDefault();
+        }
         var result = new SafetyReportDetailDto
         {
             ReportNumber = report.ReportNumber,
@@ -1145,6 +1157,7 @@ public class EquipmentReportController : ControllerBase
             TeamNum = report.TeamNum,
             TeamLeaderName = report.TeamLeaderName,
             TeamLeaderNum = report.TeamLeaderNum,
+            ContractDetails = project != null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null,
 
             ClientSignaturePath = report.ClientSignaturePath != null ? baseUrl + report.ClientSignaturePath : null,
             TechSignaturePath = baseUrl + report.TechSignaturePath != null ? baseUrl + report.TechSignaturePath : null,
@@ -1218,7 +1231,7 @@ public class EquipmentReportController : ControllerBase
         {
             ReportType=report.ReportType ,
             CompanyName=report.CompanyName ,
-            ContractDetails=project!=null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null ,
+            ContractDetails=project!=null ? $"ClientName: {project.Client} - ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate} "  : null ,
             ReportNumber=report.ReportNumber ,
             Date=report.Date ,
             ProjectAddress=report.ProjectAddress ,
@@ -6445,7 +6458,7 @@ public class EquipmentReportController : ControllerBase
         }
 
         var result = _mapper.Map<ReportEditDto>(report);
-        result.ContractDetails=project!=null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null;
+        result.ContractDetails=project!=null ? $"ClientName: {project.Client} - ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate} " : null;
 
         result.ClientSignaturePath=baseUrl+report.ClientSignaturePath;
         result.TechSignaturePath=baseUrl+report.TechSignaturePath;
@@ -7718,7 +7731,7 @@ public class EquipmentReportController : ControllerBase
                 buildingKind = report.BuildingKind,
                 companyName = report.CompanyName,
                 ContractId =report.ContractId,
-                ContractDetails=report!=null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null ,
+                ContractDetails = project != null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null,
                 date = report.Date,
                 salesperson = report.salesperson,
                 techName = report.TechName,

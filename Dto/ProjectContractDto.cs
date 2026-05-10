@@ -12,6 +12,7 @@
         public string ContractSerial { get; set; }
         public string ContractStatus { get; set; }
         public string ContractInfo { get; set; }
+        public string Client { get; set; }
     }
 
     public class ApiResponse
