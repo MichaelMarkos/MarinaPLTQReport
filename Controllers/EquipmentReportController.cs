@@ -650,8 +650,7 @@ public class EquipmentReportController : ControllerBase
                 .Where(y => y.ElevatorId==reportId)
                 .Select(p => baseUrl+p.FilePath)
                 .ToList();
-        elevatordto.ContractDetails=project!=null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null;
-
+        elevatordto.ContractDetails=project!=null ? $"ClientName: {project.Client} - ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate} " : null;
         return Ok(new
         {
 
@@ -1041,7 +1040,7 @@ public class EquipmentReportController : ControllerBase
             ProjectDescription = report.ProjectDescription,
             CompanyName = report.CompanyName,
             ContractId = report.ContractId,
-            ContractDetails = project != null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null,
+            ContractDetails=project!=null ? $"ClientName: {project.Client} - ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate} "  : null ,
             Date = report.Date,
             PhoneNum = report.PhoneNum,
             TechName = report.TechName,
@@ -1098,7 +1097,7 @@ public class EquipmentReportController : ControllerBase
             ProjectDescription = report.ProjectDescription,
             CompanyName = report.CompanyName,
             ContractId = report.ContractId,
-            ContractDetails = project != null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null,
+            ContractDetails=project!=null ? $"ClientName: {project.Client} - ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate} "  : null ,
             Date = report.Date,
             PhoneNum = report.PhoneNum,
             TechName = report.TechName,
@@ -1157,7 +1156,7 @@ public class EquipmentReportController : ControllerBase
             TeamNum = report.TeamNum,
             TeamLeaderName = report.TeamLeaderName,
             TeamLeaderNum = report.TeamLeaderNum,
-            ContractDetails = project != null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null,
+            ContractDetails=project!=null ? $"ClientName: {project.Client} - ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate} "  : null ,
 
             ClientSignaturePath = report.ClientSignaturePath != null ? baseUrl + report.ClientSignaturePath : null,
             TechSignaturePath = baseUrl + report.TechSignaturePath != null ? baseUrl + report.TechSignaturePath : null,
@@ -7731,7 +7730,7 @@ public class EquipmentReportController : ControllerBase
                 buildingKind = report.BuildingKind,
                 companyName = report.CompanyName,
                 ContractId =report.ContractId,
-                ContractDetails = project != null ? $"ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate}" : null,
+                ContractDetails=project!=null ? $"ClientName: {project.Client} - ProductSerial: {project.ProductSerial} - StartDate :{project.ContractStartDate} - EndDate :{project.ContractEndDate} "  : null ,
                 date = report.Date,
                 salesperson = report.salesperson,
                 techName = report.TechName,
