@@ -15,6 +15,7 @@
         public string? InvoiceNumber { get; set; }
         public string? CompanyName { get; set; }
         public string? Notes { get; set; }
+        public bool? CheckBox { get; set; }=false;
 
         public string? ProjectAddress { get; set; }
         public string? ClientName { get; set; }

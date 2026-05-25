@@ -16,6 +16,7 @@
         public string? ClientName { get; set; }
         public string? TechName { get; set; }
         public string? Notes { get; set; }
+        public bool? CheckBox { get; set; }
 
         public int CheckingItemsCount { get; set; }
         public List<string>? Images { get; set; }

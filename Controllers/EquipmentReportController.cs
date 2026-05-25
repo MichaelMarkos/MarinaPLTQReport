@@ -2690,6 +2690,7 @@ public class EquipmentReportController : ControllerBase
                 TechName = x.TechName,
                 Notes = x.Notes,
                 ReportType = x.ReportType,
+                CheckBox = x.CheckBox,
                 Images = imagesDb != null
                     ? imagesDb
                         .Where(y => y.deliveryReportId == x.Id)
@@ -6575,6 +6576,27 @@ public class EquipmentReportController : ControllerBase
             report.PhoneNum=model.PhoneNum;
             report.ReportNumber=model.ReportNumber;
             report.InvoiceNumber=model.InvoiceNumber;
+
+
+            _db.DeliveryReport.Update(report);
+            _db.SaveChanges();
+        }
+
+        return Ok(new { message = "تم حفظ التقرير بنجاح" , id = report.Id });
+    }
+
+    [HttpPost("UpdateCheckBoxDeliveryReport")]
+    public IActionResult UpdateCheckBoxDeliveryReport( [FromHeader] int Id , [FromHeader] bool? checkBox)
+    {
+        // مثال: إذا كنت تستخدم EF Core
+        var report = _db.DeliveryReport.FirstOrDefault(x => x.Id == Id);
+
+        if(report!=null)
+        {
+            // إضافة جديد
+
+            report.CheckBox=checkBox;
+           
 
 
             _db.DeliveryReport.Update(report);
