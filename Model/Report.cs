@@ -3,7 +3,7 @@
     public class Report
     {
         public int Id { get; set; }
-        public int? ContractId { get; set; }
+        // public int? ContractId { get; set; }
         public DateTime? Date { get; set; }
         public string? ReportType { get; set; }
         public long UserId { get; set; } = 1;
