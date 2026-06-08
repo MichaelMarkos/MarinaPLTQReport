@@ -7840,133 +7840,134 @@ public class EquipmentReportController : ControllerBase
 
 
 
-    //[HttpGet("GetAllReportsForContractId")] 
-    //public async Task<IActionResult> GetAllReportsForContractId(int ContractId)
-    //{
+    [HttpGet("GetAllReportsForContractId")]
+    public async Task<IActionResult> GetAllReportsForContractId(int MaintenanceForId)
+    {
 
-    //    BaseResponseWithData<List<GetAllReportsForContractIdDto>> response = new BaseResponseWithData<List<GetAllReportsForContractIdDto>>();
-    //    response.Result=true;
-    //    response.Errors=new List<Error>();
+        BaseResponseWithData<List<GetAllReportsForContractIdDto>> response = new BaseResponseWithData<List<GetAllReportsForContractIdDto>>();
+        response.Result=true;
+        response.Errors=new List<Error>();
 
-    //    var allReports = new List<GetAllReportsForContractIdDto>();
+        var allReports = new List<GetAllReportsForContractIdDto>();
 
-    //    try
-    //    {
-
-           
-
-    //        // Reports
-    //        var Reports = await _db.Reports
-    //            .Where(r => r.ContractId == ContractId)
-    //            .ToListAsync();
-
-    //        var allReport= Reports.Select(r => new GetAllReportsForContractIdDto
-    //        {
-    //            Type ="Site Reports" ,
-    //            DateTime =(DateTime) r.Date,
-    //            ViewUrl =$"https://marinapltqreportapi.garassolutions.com/repoertdetails/{r.Id}"
-    //        }).ToList();
-    //        allReports.AddRange(allReport);
-
-    //        // Delivery Notes Reports
-    //        var DeliveryReports = await _db.DeliveryReport
-    //            .Where(r => r.ContractId == ContractId)
-    //            .ToListAsync();
-
-    //        var allDeliveryReports= DeliveryReports.Select(r => new GetAllReportsForContractIdDto
-    //        {
-    //            Type ="Delivery Notes Reports" ,
-    //            DateTime =(DateTime) r.Date,
-    //            ViewUrl =$"https://marinapltqreportapi.garassolutions.com/deliveryDetails/{r.Id}"
-    //        }).ToList();
-    //        allReports.AddRange(allDeliveryReports);
-
-    //        // LevatorReport
-
-    //        var levatorReport = await _db.LevatorReport
-    //            .Where(r => r.ContractId == ContractId)
-    //            .ToListAsync();
-
-    //       var allReportlevator= levatorReport.Select(r => new GetAllReportsForContractIdDto
-    //        {
-    //            Type ="Equipment Preview Reports" ,
-    //           DateTime =(DateTime) r.Date,
-    //            ViewUrl =$"https://marinapltqreportapi.garassolutions.com/levatorDetails/{r.Id}"
-    //        }).ToList();
-    //        allReports.AddRange(allReportlevator);
-
-    //        // Checking Site Report
-
-    //        var siteReport = await _db.SiteReports
-    //            .Where(r => r.ContractId == ContractId)
-    //            .ToListAsync();
-
-    //        var allReportSite= siteReport.Select(r => new GetAllReportsForContractIdDto
-    //        {
-    //            Type ="Checking Site Report" ,
-    //            DateTime = r.Date,
-    //            ViewUrl =$"https://marinapltqreportapi.garassolutions.com/reportDetails/{r.Id}"
-    //        }).ToList();
-    //        allReports.AddRange(allReportSite);
+        try
+        {
 
 
-    //        // Elevator preview Reports
 
-    //        var ElevatorReport = await _db.Elevator
-    //            .Where(r => r.ContractId == ContractId)
-    //            .ToListAsync();
+            // Reports
+            //var Reports = await _db.Reports
+            //    .Where(r => r.ContractId == ContractId)
+            //    .ToListAsync();
 
-    //        var allElevatorReport= siteReport.Select(r => new GetAllReportsForContractIdDto
-    //        {
-    //            Type ="Elevator preview Reports" ,
-    //            DateTime = r.Date,
-    //            ViewUrl =$"https://marinapltqreportapi.garassolutions.com/elevatordetails/{r.Id}"
-    //        }).ToList();
-    //        allReports.AddRange(allElevatorReport);
+            //var allReport= Reports.Select(r => new GetAllReportsForContractIdDto
+            //{
+            //    Type ="Site Reports" ,
+            //    DateTime =(DateTime) r.Date,
+            //    ViewUrl =$"https://marinapltqreportapi.garassolutions.com/repoertdetails/{r.Id}"
+            //}).ToList();
+            //allReports.AddRange(allReport);
 
-    //        // Safety Reports
+            // Delivery Notes Reports
+            var DeliveryReports = await _db.DeliveryReport
+                .Where(r => r.ContractId == MaintenanceForId)
+                .ToListAsync();
 
-    //        var SafetyReport = await _db.SafetyReport
-    //            .Where(r => r.ContractId == ContractId)
-    //            .ToListAsync();
+            var allDeliveryReports= DeliveryReports.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Delivery Notes Reports" ,
+                DateTime =(DateTime) r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/deliveryDetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allDeliveryReports);
 
-    //        var allSafetyReport= SafetyReport.Select(r => new GetAllReportsForContractIdDto
-    //        {
-    //            Type ="Safety preview Reports" ,
-    //            DateTime = (DateTime) r.Date,
-    //            ViewUrl =$"https://marinapltqreportapi.garassolutions.com/safetyDetails/{r.Id}"
-    //        }).ToList();
-    //        allReports.AddRange(allSafetyReport);
+            // LevatorReport
 
-    //        // Elevator Inspection Report
+            var levatorReport = await _db.LevatorReport
+                .Where(r => r.ContractId == MaintenanceForId)
+                .ToListAsync();
 
-    //        var InspectionReport = await _db.ElevatorInspectionReport
-    //            .Where(r => r.ContractId == ContractId)
-    //            .ToListAsync();
+            var allReportlevator= levatorReport.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Equipment Preview Reports" ,
+                DateTime =(DateTime) r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/levatorDetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allReportlevator);
 
-    //        var allInspectionReport= InspectionReport.Select(r => new GetAllReportsForContractIdDto
-    //        {
-    //            Type ="Elevator Inspection Report" ,
-    //            DateTime = r.Date,
-    //            ViewUrl =$"https://marinapltqreportapi.garassolutions.com/inspectiondetails/{r.Id}"
-    //        }).ToList();
-    //        allReports.AddRange(allInspectionReport);
+            // Checking Site Report
 
-           
-    //        response.Data = allReports;
+            var siteReport = await _db.SiteReports
+                .Where(r => r.ContractId == MaintenanceForId)
+                .ToListAsync();
 
-    //        return Ok(response);
-    //    }
-    //    catch(Exception ex)
-    //    {
-    //        return StatusCode(500 , new
-    //        {
-    //            success = false ,
-    //            message = "حدث خطأ أثناء استرجاع التقرير" ,
-    //            error = ex.Message
-    //        });
-    //    }
-    //}
+            var allReportSite= siteReport.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Checking Site Report" ,
+                DateTime = r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/reportDetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allReportSite);
+
+
+            // Elevator preview Reports
+
+            var ElevatorReport = await _db.Elevator
+                .Where(r => r.ContractId == MaintenanceForId)
+                .ToListAsync();
+
+            var allElevatorReport= siteReport.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Elevator preview Reports" ,
+                DateTime = r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/elevatordetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allElevatorReport);
+
+            // Safety Reports
+
+            var SafetyReport = await _db.SafetyReport
+                .Where(r => r.ContractId == MaintenanceForId)
+                .ToListAsync();
+
+            var allSafetyReport= SafetyReport.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Safety preview Reports" ,
+                DateTime = (DateTime) r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/safetyDetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allSafetyReport);
+
+            // Elevator Inspection Report
+
+            var InspectionReport = await _db.ElevatorInspectionReport
+                .Where(r => r.ContractId == MaintenanceForId)
+                .ToListAsync();
+
+            var allInspectionReport= InspectionReport.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Elevator Inspection Report" ,
+                DateTime = r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/inspectiondetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allInspectionReport);
+
+
+            response.Data=allReports;
+
+            return Ok(response);
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(500 , new
+            {
+                success = false ,
+                message = "حدث خطأ أثناء استرجاع التقرير" ,
+                error = ex.Message
+            });
+        }
+    }
+
     [HttpGet("GenerateLevatorReportPdf")]
 
     public IActionResult GenerateLevatorReportPdf(int Id)
