@@ -3052,24 +3052,29 @@ public class EquipmentReportController : ControllerBase
                                 row.Spacing(15);
 
                                 // الصورة الأولى (توقيع الفني)
-                                row.RelativeItem().Element(e =>
+                                if (techImage.Length > 0)
                                 {
-                                    e.Padding(5)
-                                        .Width(150)
+                                    row.RelativeItem().Element(e =>
+                                    {
+                                        e.Padding(5)
+                                        .Width(130)
                                         .Height(100)
                                         .Image(techImage)
                                         .FitWidth();
-                                });
+                                    });
+                                }
 
-                                // الصورة الثانية (توقيع العميل)
-                                row.RelativeItem().Element(e =>
+                                if (clientImage.Length > 0)
                                 {
-                                    e.Padding(5)
-                                        .Width(150)
+                                    row.RelativeItem().Element(e =>
+                                    {
+                                        e.Padding(5)
+                                        .Width(130)
                                         .Height(100)
                                         .Image(clientImage)
                                         .FitWidth();
-                                });
+                                    });
+                                }
                             });
 
                             // ✅ الطبقة الثانية (الختم فوق الصورتين)
