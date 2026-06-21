@@ -3058,7 +3058,7 @@ public class EquipmentReportController : ControllerBase
                                     {
                                         e.Padding(5)
                                         .Width(130)
-                                        .Height(100)
+                                        //.Height(100)
                                         .Image(techImage)
                                         .FitWidth();
                                     });
@@ -3070,7 +3070,7 @@ public class EquipmentReportController : ControllerBase
                                     {
                                         e.Padding(5)
                                         .Width(130)
-                                        .Height(100)
+                                       // .Height(100)
                                         .Image(clientImage)
                                         .FitWidth();
                                     });
