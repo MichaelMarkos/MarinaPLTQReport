@@ -72,7 +72,7 @@ public class EquipmentReportController : ControllerBase
         // ابحث عن آخر تقرير في نفس السنة
         var lastReport = _db.Reports
             .Where(r => r.ReportNumber.StartsWith(currentYear + "/"))
-            .OrderByDescending(r => r.ReportNumber)
+            .OrderByDescending(r => r.Id)
             .FirstOrDefault();
         int nextNumber = 1;
         if(lastReport!=null)
@@ -199,7 +199,7 @@ public class EquipmentReportController : ControllerBase
         // ابحث عن آخر تقرير في نفس السنة
         var lastReport = _db.Elevator
             .Where(r => r.ReportNumber.StartsWith(currentYear + "/"))
-            .OrderByDescending(r => r.ReportNumber)
+            .OrderByDescending(r => r.Id)
             .FirstOrDefault();
         int nextNumber = 1;
         if(lastReport!=null)
@@ -1532,7 +1532,7 @@ public class EquipmentReportController : ControllerBase
             // ابحث عن آخر تقرير في نفس السنة
             var lastReport = _db.SiteReports
                 .Where(r => r.ReportNumber.StartsWith(currentYear + "/"))
-                .OrderByDescending(r => r.ReportNumber)
+            .OrderByDescending(r => r.Id)
                 .FirstOrDefault();
             int nextNumber = 1;
             if(lastReport!=null)
@@ -1981,7 +1981,7 @@ public class EquipmentReportController : ControllerBase
             // ابحث عن آخر تقرير في نفس السنة
             var lastReport = _db.SafetyReport
                 .Where(r => r.ReportNumber.StartsWith(currentYear + "/"))
-                .OrderByDescending(r => r.ReportNumber)
+            .OrderByDescending(r => r.Id)
                 .FirstOrDefault();
             int nextNumber = 1;
             if(lastReport!=null)
@@ -2138,7 +2138,7 @@ public class EquipmentReportController : ControllerBase
             // ابحث عن آخر تقرير في نفس السنة
             var lastReport = _db.ElevatorInspectionReport
                 .Where(r => r.ReportNumber.StartsWith(currentYear + "/"))
-                .OrderByDescending(r => r.ReportNumber)
+            .OrderByDescending(r => r.Id)
                 .FirstOrDefault();
             int nextNumber = 1;
             if(lastReport!=null)
@@ -2254,7 +2254,7 @@ public class EquipmentReportController : ControllerBase
             // ابحث عن آخر تقرير في نفس السنة
             var lastReport = _db.DeliveryReport
                 .Where(r => r.ReportNumber.StartsWith(currentYear + "/"))
-                .OrderByDescending(r => r.ReportNumber)
+            .OrderByDescending(r => r.Id)
                 .FirstOrDefault();
             int nextNumber = 1;
             if(lastReport!=null)
@@ -7535,7 +7535,7 @@ public class EquipmentReportController : ControllerBase
 
             var last = await _db.LevatorReport
                 .Where(r => r.ReportNumber.StartsWith(year + "/"))
-                .OrderByDescending(r => r.ReportNumber)
+            .OrderByDescending(r => r.Id)
                 .FirstOrDefaultAsync();
 
             int next = 1;
