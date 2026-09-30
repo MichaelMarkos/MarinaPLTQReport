@@ -33,6 +33,19 @@ namespace maria.Model
         public DbSet<LevatorImage> LevatorImage { get; set; }
         public DbSet<EquipmentOfLevator> EquipmentOfLevator { get; set; }
         public DbSet<FacadeImage> facadeImages { get; set; }
+        public DbSet<PeriodicMaintanceReport> PeriodicMaintanceReport { get; set; }
+        public DbSet<PeriodicMaintanceCheckingItems> PeriodicMaintanceCheckingItems { get; set; }
+        public DbSet<PeriodicMaintanceItems> PeriodicMaintanceItems { get; set; }
+        public DbSet<PeriodicMaintanceSparePart> PeriodicMaintanceSparePart { get; set; }
+        public DbSet<PeriodicMaintanceImage> PeriodicMaintanceImage { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<PeriodicMaintanceCheckingItems>()
+                .HasData(PeriodicMaintanceSeed.CheckingItems);
+        }
 
     }
 }

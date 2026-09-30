@@ -720,6 +720,410 @@ namespace maria.Migrations
                     b.ToTable("LevatorReport");
                 });
 
+            modelBuilder.Entity("maria.Model.PeriodicMaintanceCheckingItems", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Item")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PeriodicMaintanceCheckingItems");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Item = "عمل جرس الانذار & توقف الطوارئ (فوتوسيل - بروكسيمتي سويتش - ليميت سويتش - مفتاح توقف)\nAlarm & emergency stop work (Photocell - Proximity switch - Limit switch - Stop switch)",
+                            Type = "First: the cabin - اولا : الكابينة"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Item = "سهولة حركة الابواب في الفتح والغلق & سرعة الابواب (الاوتوماتيك)\nEase of movement of the doors in opening and closing & the speed of the doors (automatic)",
+                            Type = "First: the cabin - اولا : الكابينة"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Item = "تنظيف المروحة واماكن التهوية في الكابينة\nCleaning the fan and ventilation places in the cabin",
+                            Type = "First: the cabin - اولا : الكابينة"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Item = "عمل مفاتيح التشغيل & عمل الاضاءة بشكل سليم\nThe operation of the operating keys & the operation of the lighting properly",
+                            Type = "First: the cabin - اولا : الكابينة"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Item = "عمل اضاءة الطوارئ ومفاتيح الطوارئ لنزول المصعد من داخل الكابينة\nWork emergency lighting + emergency keys to get the elevator down from inside the cabin",
+                            Type = "First: the cabin - اولا : الكابينة"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Item = "التحقق من مسامير الكابينة",
+                            Type = "First: the cabin - اولا : الكابينة"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Item = "عمل علبة التشغيل اعلى الكابينة\nThe work of the operating box on top of the cabin",
+                            Type = "Second: the doors + the top of the cabin - ثانيا : الابواب + أعلى الكابينة"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Item = "لميت سويتش ترخية الويرات\nReleasing wire rope limit switch",
+                            Type = "Second: the doors + the top of the cabin - ثانيا : الابواب + أعلى الكابينة"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Item = "تنظيف مجاري الابواب السفلية والعلوية (وضع شحم في حالة الحاجة)\nCleaning the ducts of the lower and upper doors (apply grease if needed)",
+                            Type = "Second: the doors + the top of the cabin - ثانيا : الابواب + أعلى الكابينة"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Item = "عمل الاستدعاء في الادوار\nCalling buttons on floors",
+                            Type = "Second: the doors + the top of the cabin - ثانيا : الابواب + أعلى الكابينة"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Item = "عمل البكر والبلى الخاص بالابواب (صلاحية البرشام في باب الاوكورديون)\nBulley and bearing of doors",
+                            Type = "Second: the doors + the top of the cabin - ثانيا : الابواب + أعلى الكابينة"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Item = "عمل لوك الابواب الميكانيكي والكهربي\nMechanical and electrical door lock",
+                            Type = "Second: the doors + the top of the cabin - ثانيا : الابواب + أعلى الكابينة"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Item = "مراجعة خلوصات الكابينة مع ابواب الادوار في كل دور\nReview the cabin clearances with the doors of the floors on each floor",
+                            Type = "Second: the doors + the top of the cabin - ثانيا : الابواب + أعلى الكابينة"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Item = "سلامة مسار خراطيم الهيدروليك & الكابلات & سوست اسفل الكابينة & الكابل المتحرك مع الكابينة\nSafety (hydraulic hoses track & cables & springs under the cab & moving cable with cab)",
+                            Type = "Third: the shaft - ثالثا : البئر"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Item = "سلامة دلائل الحركة الرئيسية للكابينة وتنظيفها وتزييتها وسلامة المزيتة\nSafety of the main movement guides of the cab, its cleaning and lubrication, and the safety of the lubricator",
+                            Type = "Third: the shaft - ثالثا : البئر"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Item = "تزييت الدلائل & تثبيت أفيز البستم & تثبيت المسامير الخاصة بالكوابل\nLubrication of guides & fixing of piston fuses & fixing screws for cables",
+                            Type = "Third: the shaft - ثالثا : البئر"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Item = "الويرات لا يوجد بها الاتي (لمعة - تفتيل - تطبيق)\nWires does not have the following (shine - wicking - drape)",
+                            Type = "Third: the shaft - ثالثا : البئر"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Item = "البكر لا يوجد به تآكل & الرولمان بلى الخاص بالبكر\nWire rope bulley and bolts",
+                            Type = "Third: the shaft - ثالثا : البئر"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Item = "لميت سويتش ترخية الويرات\nAll limit switches",
+                            Type = "Third: the shaft - ثالثا : البئر"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Item = "شرائح المغناطيس ملصقة\nMagnet strips fixing well",
+                            Type = "Third: the shaft - ثالثا : البئر"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            Item = "التحقق من تشغيل الكابينة من علبة الصيانة اعلى الكابينة بسرعة منخفضة\nVerify the cab is operating from the maintenance box at the top of the cab at low speed",
+                            Type = "Third: the shaft - ثالثا : البئر"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            Item = "عمل لميتات سويتش البراشوت\nLimit switch of the safety device working well",
+                            Type = "Third: the shaft - ثالثا : البئر"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            Item = "فحص غرفة الماكينة ، البئر ، اعلى الكابينة ، اسفل الكابينة ، مجاري الابواب\nInspect the machine room, the shaft, the top of the cabin, the bottom of the cabin, the ducts of the doors",
+                            Type = "Fourth: general - رابعا : بنود عامة"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Item = "تجربة الكابينة . التحقق من عدم وجود ضوضاء غير عادية، التحقق من استواء وقفات الادوار\nCabin checking . Check that there are no unusual noises. Checking the alignment of the floor stops",
+                            Type = "Fourth: general - رابعا : بنود عامة"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            Item = "ليميت سويتش الماكينة لبداية ونهاية المشوار\nLimit switch the machine for the beginning and end of the travel",
+                            Type = "Machine - الماكينة الدرامات"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Item = "تشحيم الكاتينة والفتيل\nGreasing for all parts , guide rails , shoes",
+                            Type = "Machine - الماكينة الدرامات"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            Item = "الوايرات في مسارتها على الدرام\nAl-Wairat is on its way to the bulley",
+                            Type = "Machine - الماكينة الدرامات"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            Item = "ربط افيز الواير على الدرام\nConnect the wire rope clips",
+                            Type = "Machine - الماكينة الدرامات"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            Item = "الرولمان بلى الخاص بالمجموعة يعمل بحالة جيدة",
+                            Type = "Machine - الماكينة الدرامات"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Item = "تجربة نزول الطوارئ من الموتور والبطاريات\nEmergency test from motor and batteries",
+                            Type = "Machine - الماكينة الدرامات"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            Item = "مراجعة مستوى الزيت\nCheck oil level",
+                            Type = "The hydraulic machine - الماكينة الهيدروليك"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            Item = "مراجعة عدم وجود تسرب في جميع أنحاء الصمامات والخراطيم والبساتم\nCheck the absence of leaks throughout valves, hoses and pistons",
+                            Type = "The hydraulic machine - الماكينة الهيدروليك"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            Item = "مراجعة نزول الكابينة من صمام اليدوي\nCheck the cab descent from the manual valve",
+                            Type = "The hydraulic machine - الماكينة الهيدروليك"
+                        },
+                        new
+                        {
+                            Id = 34,
+                            Item = "التحقق من relays & contractors & selectors & Fuses\nChecking relays & contractors & selectors & Fuses",
+                            Type = "Control box - الكنترول"
+                        },
+                        new
+                        {
+                            Id = 35,
+                            Item = "عدم وجود كباري مؤقتة على الروزيتة\nThere are no temporary bridges on the rosette",
+                            Type = "Control box - الكنترول"
+                        },
+                        new
+                        {
+                            Id = 36,
+                            Item = "تنظيف الكنترول\nControl cleaning",
+                            Type = "Control box - الكنترول"
+                        },
+                        new
+                        {
+                            Id = 37,
+                            Item = "التحقق من الفولت و وصلات الموتور\nChecking the voltage and motor connections",
+                            Type = "Control box - الكنترول"
+                        },
+                        new
+                        {
+                            Id = 38,
+                            Item = "اختبار الاوفرلود\nOverload test",
+                            Type = "Control box - الكنترول"
+                        });
+                });
+
+            modelBuilder.Entity("maria.Model.PeriodicMaintanceImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PeriodicMaintanceReportId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PeriodicMaintanceReportId");
+
+                    b.ToTable("PeriodicMaintanceImage");
+                });
+
+            modelBuilder.Entity("maria.Model.PeriodicMaintanceItems", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CheckingItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PeriodicMaintanceReportId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Working")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckingItemId");
+
+                    b.HasIndex("PeriodicMaintanceReportId");
+
+                    b.ToTable("PeriodicMaintanceItems");
+                });
+
+            modelBuilder.Entity("maria.Model.PeriodicMaintanceReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClientName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClientSignaturePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ContractId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ForTheNotWorkingItems")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LiftModel")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LiftType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNum")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReasonOfVisit")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReportNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("SerialNumberOfLift")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TechName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TechSignaturePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("VisitNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VisitType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PeriodicMaintanceReport");
+                });
+
+            modelBuilder.Entity("maria.Model.PeriodicMaintanceSparePart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsSupplied")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PeriodicMaintanceReportId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PeriodicMaintanceReportId");
+
+                    b.ToTable("PeriodicMaintanceSparePart");
+                });
+
             modelBuilder.Entity("maria.Model.Report", b =>
                 {
                     b.Property<int>("Id")
@@ -1292,6 +1696,47 @@ namespace maria.Migrations
                     b.Navigation("LevatorReport");
                 });
 
+            modelBuilder.Entity("maria.Model.PeriodicMaintanceImage", b =>
+                {
+                    b.HasOne("maria.Model.PeriodicMaintanceReport", "PeriodicMaintanceReport")
+                        .WithMany("Images")
+                        .HasForeignKey("PeriodicMaintanceReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PeriodicMaintanceReport");
+                });
+
+            modelBuilder.Entity("maria.Model.PeriodicMaintanceItems", b =>
+                {
+                    b.HasOne("maria.Model.PeriodicMaintanceCheckingItems", "PeriodicMaintanceCheckingItems")
+                        .WithMany("PeriodicMaintanceItems")
+                        .HasForeignKey("CheckingItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("maria.Model.PeriodicMaintanceReport", "PeriodicMaintanceReport")
+                        .WithMany("PeriodicMaintanceItems")
+                        .HasForeignKey("PeriodicMaintanceReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PeriodicMaintanceCheckingItems");
+
+                    b.Navigation("PeriodicMaintanceReport");
+                });
+
+            modelBuilder.Entity("maria.Model.PeriodicMaintanceSparePart", b =>
+                {
+                    b.HasOne("maria.Model.PeriodicMaintanceReport", "PeriodicMaintanceReport")
+                        .WithMany("SpareParts")
+                        .HasForeignKey("PeriodicMaintanceReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PeriodicMaintanceReport");
+                });
+
             modelBuilder.Entity("maria.Model.ReportImage", b =>
                 {
                     b.HasOne("maria.Model.Report", "Report")
@@ -1399,6 +1844,20 @@ namespace maria.Migrations
                     b.Navigation("LevatorImages");
 
                     b.Navigation("facades");
+                });
+
+            modelBuilder.Entity("maria.Model.PeriodicMaintanceCheckingItems", b =>
+                {
+                    b.Navigation("PeriodicMaintanceItems");
+                });
+
+            modelBuilder.Entity("maria.Model.PeriodicMaintanceReport", b =>
+                {
+                    b.Navigation("Images");
+
+                    b.Navigation("PeriodicMaintanceItems");
+
+                    b.Navigation("SpareParts");
                 });
 
             modelBuilder.Entity("maria.Model.Report", b =>

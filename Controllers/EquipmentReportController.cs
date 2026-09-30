@@ -31,7 +31,7 @@ using EquipmentOfLevator = maria.Model.EquipmentOfLevator;
 
 [Route("api/[controller]")]
 [ApiController]
-public class EquipmentReportController : ControllerBase
+public partial class EquipmentReportController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly IWebHostEnvironment _env;
@@ -7846,7 +7846,8 @@ public class EquipmentReportController : ControllerBase
 
 
     [HttpGet("GetAllReportsForContractId")]
-    public async Task<IActionResult> GetAllReportsForContractId(int MaintenanceForId)
+    public async Task<IActionResult> GetAllReportsForContractId(int MaintenanceForId ,
+        [FromHeader(Name = "DeliveryOnly")] bool DeliveryOnly = false)
     {
 
         BaseResponseWithData<List<GetAllReportsForContractIdDto>> response = new BaseResponseWithData<List<GetAllReportsForContractIdDto>>();
@@ -7886,6 +7887,13 @@ public class EquipmentReportController : ControllerBase
             }).ToList();
             allReports.AddRange(allDeliveryReports);
 
+            // لو تم ارسال DeliveryOnly = true في الـ header يتم ارجاع تقارير الـ Delivery فقط
+            if(DeliveryOnly)
+            {
+                response.Data=allReports;
+                return Ok(response);
+            }
+
             // LevatorReport
 
             var levatorReport = await _db.LevatorReport
@@ -7921,7 +7929,7 @@ public class EquipmentReportController : ControllerBase
                 .Where(r => r.ContractId == MaintenanceForId)
                 .ToListAsync();
 
-            var allElevatorReport= siteReport.Select(r => new GetAllReportsForContractIdDto
+            var allElevatorReport= ElevatorReport.Select(r => new GetAllReportsForContractIdDto
             {
                 Type ="Elevator preview Reports" ,
                 DateTime = r.Date,
@@ -7956,6 +7964,20 @@ public class EquipmentReportController : ControllerBase
                 ViewUrl =$"https://marinapltqreportapi.garassolutions.com/inspectiondetails/{r.Id}"
             }).ToList();
             allReports.AddRange(allInspectionReport);
+
+            // Periodic Maintenance Report
+
+            var periodicMaintanceReport = await _db.PeriodicMaintanceReport
+                .Where(r => r.ContractId == MaintenanceForId)
+                .ToListAsync();
+
+            var allPeriodicMaintanceReport= periodicMaintanceReport.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Periodic Maintenance Report" ,
+                DateTime = r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/periodicmaintancedetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allPeriodicMaintanceReport);
 
 
             response.Data=allReports;
