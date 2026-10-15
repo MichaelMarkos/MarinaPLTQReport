@@ -5884,6 +5884,11 @@ public partial class EquipmentReportController : ControllerBase
                 widthShape = x.widthShape,
                 heightShape = x.heightShape,
                 radiusShape = x.radiusShape,
+                liftWidth = x.liftWidth,
+                rightWidth = x.rightWidth,
+                centerWidth = x.centerWidth,
+                directionWidth = x.directionWidth,
+                directionHeight = x.directionHeight,
                 floors = x.floors,
                 garagsNum = x.garagsNum,
                 foundationHeight = x.foundationHeight,
@@ -6034,6 +6039,8 @@ public partial class EquipmentReportController : ControllerBase
             rightWidth = ElevatorReportDb.rightWidth,
             liftWidth = ElevatorReportDb.liftWidth,
             centerWidth = ElevatorReportDb.centerWidth,
+            directionWidth = ElevatorReportDb.directionWidth,
+            directionHeight = ElevatorReportDb.directionHeight,
             WallStatusForList = ElevatorReportDb.WallStatusForList,
         };
 
@@ -6205,10 +6212,17 @@ public partial class EquipmentReportController : ControllerBase
                         });
                     });
 
-                    // Row 7: نوع المصعد
-                    col.Item().AlignRight()
-                        .Text($"نوع المصعد : {ElevatorReportDb.typeElevator}")
-                        .FontFamily("Cairo").FontSize(12);
+                    // Row 7: نوع المصعد وعدد الأدوار
+                    col.Item().AlignRight().Row(row =>
+                    {
+                        row.RelativeItem()
+                            .Text($"نوع المصعد : {ElevatorReportDb.typeElevator}")
+                            .FontFamily("Cairo").FontSize(12);
+
+                        row.RelativeItem()
+                            .Text($"عدد الأدوار : {ElevatorReportDb.floors}")
+                            .FontFamily("Cairo").FontSize(12);
+                    });
 
                     // ===== جدول الأدوار =====
                     col.Item().AlignRight().Scale(0.85f).Table(table =>

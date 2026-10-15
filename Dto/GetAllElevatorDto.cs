@@ -19,6 +19,8 @@
         public int? liftWidth { get; set; }
         public int? rightWidth { get; set; }
         public int? centerWidth { get; set; }
+        public int directionWidth { get; set; }
+        public int directionHeight { get; set; }
 
 
         public string typeElevator { get; set; }
