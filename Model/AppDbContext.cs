@@ -38,6 +38,8 @@ namespace maria.Model
         public DbSet<PeriodicMaintanceItems> PeriodicMaintanceItems { get; set; }
         public DbSet<PeriodicMaintanceSparePart> PeriodicMaintanceSparePart { get; set; }
         public DbSet<PeriodicMaintanceImage> PeriodicMaintanceImage { get; set; }
+        public DbSet<ElevatorSpecification> ElevatorSpecification { get; set; }
+        public DbSet<ElevatorSpecificationImage> ElevatorSpecificationImage { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -536,6 +536,256 @@ namespace maria.Migrations
                     b.ToTable("ElevatorInspectionReport");
                 });
 
+            modelBuilder.Entity("maria.Model.ElevatorSpecification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ContractId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DirectionImagePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("InvoiceNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNum")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProjectAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReportNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResizableImagePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TechName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("WallStatusForList")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WellImagePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("backWall")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("cabinPassword")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("callButtons")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("capinaHeight")
+                        .HasColumnType("int");
+
+                    b.Property<string>("capinaStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ceiling")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("centerWidth")
+                        .HasColumnType("int");
+
+                    b.Property<string>("control")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("countryOfOrigin")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("directionHeight")
+                        .HasColumnType("int");
+
+                    b.Property<int>("directionWidth")
+                        .HasColumnType("int");
+
+                    b.Property<string>("doorDirections")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("doorFrameDecor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("doorOpenSize")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("doorSafetyKey")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("doorType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("doorsDecor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("doortwoDirections")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("dvdScreen")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("elevatorCategory")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("floorHeights")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("flooring")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("floors")
+                        .HasColumnType("int");
+
+                    b.Property<int>("foundationHeight")
+                        .HasColumnType("int");
+
+                    b.Property<string>("garagsDirections")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("garagsHeights")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("garagsNum")
+                        .HasColumnType("int");
+
+                    b.Property<string>("garagstwoDirections")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("handrail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("heightShape")
+                        .HasColumnType("int");
+
+                    b.Property<string>("innerButtons")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("liftWidth")
+                        .HasColumnType("int");
+
+                    b.Property<string>("lightingColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("load")
+                        .HasColumnType("int");
+
+                    b.Property<string>("machineType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("mobileLine")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("radiusShape")
+                        .HasColumnType("int");
+
+                    b.Property<string>("reportType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("resizableSquareHeight")
+                        .HasColumnType("int");
+
+                    b.Property<int>("resizableSquarewidth")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("rightWidth")
+                        .HasColumnType("int");
+
+                    b.Property<string>("salesName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("shapeType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("sideWalls")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("speed")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("stainlessType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("stopsCount")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("twoDirectionFlag")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("typeElevator")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("wellStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("widthShape")
+                        .HasColumnType("int");
+
+                    b.Property<string>("workRequied")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ElevatorSpecification");
+                });
+
+            modelBuilder.Entity("maria.Model.ElevatorSpecificationImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ElevatorSpecificationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ElevatorSpecificationId");
+
+                    b.ToTable("ElevatorSpecificationImage");
+                });
+
             modelBuilder.Entity("maria.Model.EquipmentOfLevator", b =>
                 {
                     b.Property<int>("Id")
@@ -1652,6 +1902,17 @@ namespace maria.Migrations
                     b.Navigation("elevatorInspectionReport");
                 });
 
+            modelBuilder.Entity("maria.Model.ElevatorSpecificationImage", b =>
+                {
+                    b.HasOne("maria.Model.ElevatorSpecification", "ElevatorSpecification")
+                        .WithMany("elevatorSpecificationFiles")
+                        .HasForeignKey("ElevatorSpecificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ElevatorSpecification");
+                });
+
             modelBuilder.Entity("maria.Model.EquipmentOfLevator", b =>
                 {
                     b.HasOne("maria.Model.Facade", "facade")
@@ -1828,6 +2089,11 @@ namespace maria.Migrations
             modelBuilder.Entity("maria.Model.ElevatorInspectionReport", b =>
                 {
                     b.Navigation("elevatorInspectionItems");
+                });
+
+            modelBuilder.Entity("maria.Model.ElevatorSpecification", b =>
+                {
+                    b.Navigation("elevatorSpecificationFiles");
                 });
 
             modelBuilder.Entity("maria.Model.Facade", b =>

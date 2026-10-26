@@ -21,7 +21,7 @@ public partial class EquipmentReportController
 
     [HttpGet("GetPagedPeriodicMaintanceReports")]
     public async Task<IActionResult> GetPagedPeriodicMaintanceReports(long userId , string? reportNumber , string? companyName ,
-        string? techName , string? phoneNum , string? from , string? to , int page = 1 , int pageSize = 5)
+        string? techName , string? phoneNum , string? from , string? to , string? search , int page = 1 , int pageSize = 5)
     {
         var query = _db.PeriodicMaintanceReport
             .Include(x => x.PeriodicMaintanceItems)
@@ -32,6 +32,11 @@ public partial class EquipmentReportController
         // فلتر المستخدم
         if(userId>0)
             query=query.Where(x => x.UserId==userId);
+
+        // بحث موحد: رقم التقرير أو الشركة أو الفني أو الهاتف
+        if(!string.IsNullOrWhiteSpace(search))
+            query=query.Where(x => x.ReportNumber.Contains(search)||x.CompanyName.Contains(search)||x.ClientName.Contains(search)||
+                x.TechName.Contains(search)||x.PhoneNum.Contains(search));
 
         // فلتر رقم التقرير
         if(!string.IsNullOrWhiteSpace(reportNumber))

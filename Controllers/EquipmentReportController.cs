@@ -742,7 +742,7 @@ public partial class EquipmentReportController : ControllerBase
     //}
     [HttpGet("GetPagedSiteReports")]
     public async Task<IActionResult> GetPagedSiteReports(long userId , string? reportNumber , string? companyName ,
-        string? techName , string? phoneNum , string? from , string? to , int page = 1 , int pageSize = 5)
+        string? techName , string? phoneNum , string? from , string? to , string? search , int page = 1 , int pageSize = 5)
     {
         var query = _db.SiteReports
             .Include(x => x.checkingItemReport)
@@ -751,6 +751,11 @@ public partial class EquipmentReportController : ControllerBase
         // فلتر المستخدم
         if(userId>0)
             query=query.Where(x => x.UserId==userId);
+
+        // بحث موحد: رقم التقرير أو الشركة أو الفني أو الهاتف
+        if(!string.IsNullOrWhiteSpace(search))
+            query=query.Where(x => x.ReportNumber.Contains(search)||x.CompanyName.Contains(search)||
+                x.TechName.Contains(search)||x.PhoneNum.Contains(search));
 
         // فلتر رقم التقرير
         if(!string.IsNullOrWhiteSpace(reportNumber))
@@ -830,7 +835,7 @@ public partial class EquipmentReportController : ControllerBase
 
     [HttpGet("GetPagedElevatorInspectionReports")]
     public async Task<IActionResult> GetPagedElevatorInspectionReports(long userId , string? reportNumber , string? companyName ,
-        string? techName , string? phoneNum , string? from , string? to , int page = 1 , int pageSize = 5)
+        string? techName , string? phoneNum , string? from , string? to , string? search , int page = 1 , int pageSize = 5)
     {
         var query = _db.ElevatorInspectionReport
             .Include(x => x.elevatorInspectionItems)
@@ -839,6 +844,11 @@ public partial class EquipmentReportController : ControllerBase
         // فلتر المستخدم
         if(userId>0)
             query=query.Where(x => x.UserId==userId);
+
+        // بحث موحد: رقم التقرير أو الشركة أو الفني أو الهاتف
+        if(!string.IsNullOrWhiteSpace(search))
+            query=query.Where(x => x.ReportNumber.Contains(search)||x.CompanyName.Contains(search)||
+                x.TechName.Contains(search)||x.PhoneNum.Contains(search));
 
         // فلتر رقم التقرير
         if(!string.IsNullOrWhiteSpace(reportNumber))
@@ -918,7 +928,7 @@ public partial class EquipmentReportController : ControllerBase
 
     [HttpGet("GetPagedSafetyReports")]
     public async Task<IActionResult> GetPagedSafetyReports(long userId , string? reportNumber , string? companyName ,
-        string? techName , string? phoneNum , string? from , string? to , int page = 1 ,
+        string? techName , string? phoneNum , string? from , string? to , string? search , int page = 1 ,
         int pageSize = 5)
     {
         var query = _db.SafetyReport
@@ -928,6 +938,11 @@ public partial class EquipmentReportController : ControllerBase
         // فلتر المستخدم
         if(userId>0)
             query=query.Where(x => x.UserId==userId);
+
+        // بحث موحد: رقم التقرير أو الشركة أو الفني أو الهاتف
+        if(!string.IsNullOrWhiteSpace(search))
+            query=query.Where(x => x.ReportNumber.Contains(search)||x.CompanyName.Contains(search)||
+                x.TechName.Contains(search)||x.PhoneNum.Contains(search));
 
         // فلتر رقم التقرير
         if(!string.IsNullOrWhiteSpace(reportNumber))
@@ -5778,6 +5793,7 @@ public partial class EquipmentReportController : ControllerBase
         string? salesPersom ,
         string? from ,
         string? to ,
+        string? search ,
         int pageNumber = 1 ,
         int pageSize = 10)
     {
@@ -5791,6 +5807,11 @@ public partial class EquipmentReportController : ControllerBase
         // فلتر المستخدم
         if(userId>0)
             query=query.Where(x => x.UserId==userId);
+
+        // بحث موحد: رقم التقرير أو الشركة أو الفني أو الهاتف
+        if(!string.IsNullOrWhiteSpace(search))
+            query=query.Where(x => x.ReportNumber.Contains(search)||x.CompanyName.Contains(search)||
+                x.TechName.Contains(search)||x.PhoneNum.Contains(search));
 
         // فلتر رقم التقرير
         if(!string.IsNullOrWhiteSpace(reportNumber))
@@ -7422,13 +7443,18 @@ public partial class EquipmentReportController : ControllerBase
 
     [HttpGet("GetPagedLevatorReports")]
     public async Task<IActionResult> GetPagedLevatorReports(long userId , string? reportNumber , string? companyName ,
-        string? techName , string? phoneNum , string? from , string? to , string? salesName , int page = 1 , int pageSize = 5)
+        string? techName , string? phoneNum , string? from , string? to , string? salesName , string? search , int page = 1 , int pageSize = 5)
     {
         var query = _db.LevatorReport .AsQueryable();
 
         // فلتر المستخدم
         if(userId>0)
             query=query.Where(x => x.UserId==userId);
+
+        // بحث موحد: رقم التقرير أو الشركة أو الفني أو الهاتف
+        if(!string.IsNullOrWhiteSpace(search))
+            query=query.Where(x => x.ReportNumber.Contains(search)||x.CompanyName.Contains(search)||
+                x.TechName.Contains(search)||x.PhoneNum.Contains(search));
 
         // فلتر رقم التقرير
         if(!string.IsNullOrWhiteSpace(reportNumber))
@@ -7950,6 +7976,20 @@ public partial class EquipmentReportController : ControllerBase
                 ViewUrl =$"https://marinapltqreportapi.garassolutions.com/elevatordetails/{r.Id}"
             }).ToList();
             allReports.AddRange(allElevatorReport);
+
+            // Elevator Specification Reports
+
+            var ElevatorSpecificationReport = await _db.ElevatorSpecification
+                .Where(r => r.ContractId == MaintenanceForId)
+                .ToListAsync();
+
+            var allElevatorSpecificationReport= ElevatorSpecificationReport.Select(r => new GetAllReportsForContractIdDto
+            {
+                Type ="Elevator Specification Reports" ,
+                DateTime = r.Date,
+                ViewUrl =$"https://marinapltqreportapi.garassolutions.com/elevatorspecificationdetails/{r.Id}"
+            }).ToList();
+            allReports.AddRange(allElevatorSpecificationReport);
 
             // Safety Reports
 

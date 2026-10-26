@@ -15,6 +15,9 @@ namespace maria.Helpers
 
             CreateMap<Report , ReportEditDto>().ReverseMap();
             CreateMap<Elevator , GetelevatorDetailsDto>().ReverseMap();
+            CreateMap<Model.ElevatorSpecification ,ElevatorSpecificationDto>()
+                .ForMember(d => d.Images , o => o.Ignore())
+                .ForMember(d => d.imageSva , o => o.Ignore());
 
 
         }
